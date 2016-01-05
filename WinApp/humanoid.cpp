@@ -604,14 +604,13 @@ bool goto_HOMING_RUN(WIN32_DAT *pWinData)
 
 		if(_kbhit())
 		{
-			//key = _getch();
-			//if(key == '1')
-			//{
-			//	RtSetEvent(oBhandle[SERVO_ON_AND_SET_CURR_POS_AS_HOME]);
-			//	break;
-			//}
-			//else 
-			if(key == 'h' || key == 's')
+			key = _getch();
+			if(key == '1')
+			{
+				RtSetEvent(oBhandle[SERVO_ON_AND_SET_CURR_POS_AS_HOME]);
+				break;
+			}
+			else if(key == 'h' || key == 's')
 			{
 				return goto_HOLD(pWinData);
 				break;
