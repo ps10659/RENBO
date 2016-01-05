@@ -488,8 +488,8 @@ bool goto_STOP_AND_HOLD(WIN32_DAT *pWinData)
 	printf("               GO_HOME(0)\n");
 			
 	pWinData->currentState = STOP_AND_HOLD;
-	pData->firstTimeHoldFlag = 0;
-	pData->holdSwitch = 1;
+	pWinData->firstTimeHoldFlag = 0;
+	pWinData->holdSwitch = 1;
 	RtSetEvent(oBhandle[STOP_AND_HOLD]);
 	return 0;
 }
@@ -499,7 +499,7 @@ bool goto_STOP_BUT_SOFT(WIN32_DAT *pWinData)
 	printf("next state   : SERVO_OFF(q)\n");
 			
 	pWinData->currentState = STOP_BUT_SOFT;
-	pData->setTargetTorqueSwitch = 0;
+	pWinData->setTargetTorqueSwitch = 0;
 	RtSetEvent(oBhandle[STOP_BUT_SOFT]);
 	return 0;
 }
@@ -561,8 +561,9 @@ bool goto_HOMING_MODE(WIN32_DAT *pWinData)
 bool goto_HOMING_RUN(WIN32_DAT *pWinData)
 {
 	printf("\ncurrent state: HOMING_RUN\n");
-	printf("next state   : HOLD(h)\n");
-	printf("n              STOP_BUT_SOFT(s)\n");
+	printf("next state   : Set Current Position As Home(1)\n");
+	printf("             : HOLD(h)\n");
+	printf("               STOP_BUT_SOFT(s)\n");
 	
 
 	pWinData->currentState = HOMING_RUN;
@@ -603,7 +604,13 @@ bool goto_HOMING_RUN(WIN32_DAT *pWinData)
 
 		if(_kbhit())
 		{
-			key = _getch();
+			//key = _getch();
+			//if(key == '1')
+			//{
+			//	RtSetEvent(oBhandle[SERVO_ON_AND_SET_CURR_POS_AS_HOME]);
+			//	break;
+			//}
+			//else 
 			if(key == 'h' || key == 's')
 			{
 				return goto_HOLD(pWinData);
@@ -611,6 +618,8 @@ bool goto_HOMING_RUN(WIN32_DAT *pWinData)
 			}
 		}
 	}
+
+	
 
 	return 0;
 }

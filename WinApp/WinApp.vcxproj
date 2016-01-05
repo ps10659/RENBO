@@ -39,16 +39,17 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>C:\Users\Humanoid\Desktop\GiGiFace\Lib\Eigen_3.2.4;$(IncludePath)</IncludePath>
     <LibraryPath>$(LibraryPath)</LibraryPath>
+    <ExecutablePath>C:\Users\Humanoid\Documents\GitHub\New\Lib\Eigen_3.2.4;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>C:\Users\Humanoid\Desktop\GiGiFace\Lib\Eigen_3.2.4;C:\Program Files\IntervalZero\RTX\include;C:\Users\Humanoid\Desktop\GiGiFace\Header;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Humanoid\Documents\GitHub\New\Lib\Eigen_3.2.4;C:\Program Files\IntervalZero\RTX\include;C:\Users\Humanoid\Documents\GitHub\New\Header;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Program Files\IntervalZero\RTX\lib;C:\Users\Humanoid\Desktop\GiGiFace\Lib\NexECMRtx\x32;C:\Users\Humanoid\Desktop\GiGiFace\Lib\NexECM\x32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Program Files\IntervalZero\RTX\lib;C:\Users\Humanoid\Documents\GitHub\New\Lib\NexECMRtx\x32;C:\Users\Humanoid\Desktop\GiGiFace\Lib\NexECM\x32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>NexECMRtx.lib;NexEcm.lib;rtapi_w32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

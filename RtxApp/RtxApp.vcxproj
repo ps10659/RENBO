@@ -78,6 +78,8 @@
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='RTSSRelease|Win32'">false</LinkIncremental>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='RTSSRelease|Win32'">false</GenerateManifest>
     <EmbedManifest Condition="'$(Configuration)|$(Platform)'=='RTSSRelease|Win32'">false</EmbedManifest>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IncludePath)</IncludePath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RTSSDebug|Win32'">
     <PostBuildEvent>
@@ -182,12 +184,12 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(RtxSdkDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Humanoid\Documents\GitHub\New\Header;$(RtxSdkDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>OldStyle</DebugInformationFormat>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;VISUALSTUDIO=100;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;UNDER_RTSS;_DEBUG;VISUALSTUDIO=100;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -202,8 +204,8 @@
     </ClCompile>
     <Link>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>$(RtxSdkDir)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>rtapi_w32.lib;libcmtd.lib;oldnames.lib;kernel32.lib;ws2_32.lib;mswsock.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\Humanoid\Documents\GitHub\New\Lib\NexECMRtx\x32;$(RtxSdkDir)\lib;$(RtxSdkDir)\lib\VisualStudio10;C:\Users\Humanoid\Documents\GitHub\New\Lib\NexECM\x32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>startupCRT.obj;rtxlibcmt.lib;oldnames.lib;rtapi_rtss.lib;rtx_rtss.lib;NexEcm.lib;NexECMRtx.lib</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
@@ -213,6 +215,7 @@
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <EnableUAC>false</EnableUAC>
+      <OutputFile>$(OutDir)/$(ProjectName).rtss</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

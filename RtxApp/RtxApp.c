@@ -319,19 +319,19 @@ void __RtCyclicCallback( void *UserDataPtr )
 		cnt++;
 
 		
-		if( ( cnt % PRINT_COUNT ) == 0 )
-		{
-			k=27;
-			//NEC_RtGetProcessDataInput(pData->masterId, 679, 4, (U8_T*)&homeSensorValue[k]);
-			NEC_RtGetSlaveProcessDataInput(pData->masterId, k, 10, (U8_T*)&homeSensorValue[k], 4);
-			RtPrintf("       %d, targetTheta %d, actualTheta %d, actualTorque %d, test: %d\n", 
-				k, 
-				(I32_T)(CB_targetTheta[k]*180.0/PI),
-				(I32_T)(actualTheta[k]*180.0/PI), 
-				trimmedTargetTorque[k], 
-				(I32_T)(homeSensorValue[k])
-				);
-		}
+		//if( ( cnt % PRINT_COUNT ) == 0 )
+		//{
+		//	k=27;
+		//	//NEC_RtGetProcessDataInput(pData->masterId, 679, 4, (U8_T*)&homeSensorValue[k]);
+		//	NEC_RtGetSlaveProcessDataInput(pData->masterId, k, 10, (U8_T*)&homeSensorValue[k], 4);
+		//	RtPrintf("       %d, targetTheta %d, actualTheta %d, actualTorque %d, test: %d\n", 
+		//		k, 
+		//		(I32_T)(CB_targetTheta[k]*180.0/PI),
+		//		(I32_T)(actualTheta[k]*180.0/PI), 
+		//		trimmedTargetTorque[k], 
+		//		(I32_T)(homeSensorValue[k])
+		//		);
+		//}
 		break;
 	}
 	
@@ -519,24 +519,25 @@ RTN_ERR MotorType_2342(CANAxis_T Axis)
 		ret = NEC_CoE402SetParameter(Axis,0x3902,0x00,2,24000);// Motor rated voltage
 		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 	
-		ret = NEC_CoE402SetParameter(Axis,0x3310,0x00,2,80);//PID-Controller - gain
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3311,0x00,2,50);//PID-Controller - integral factor
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3312,0x00,2,0);//PID-Controller - differential factor
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		
-		ret = NEC_CoE402SetParameter(Axis,0x3314,0x00,2,0);//PID-Controller - velocity feed forward
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3315,0x00,4,0);//PID-Controller - acceleration feed forward
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		
-		ret = NEC_CoE402SetParameter(Axis,0x3510,0x00,2,50);//SVel PI-Controller - gain
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3511,0x00,2,50);//SVel PI-Controller - integral factor
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3517,0x00,2,0);//IxR factor
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3310,0x00,2,80);//PID-Controller - gain
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3311,0x00,2,50);//PID-Controller - integral factor
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3312,0x00,2,0);//PID-Controller - differential factor
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//
+		//ret = NEC_CoE402SetParameter(Axis,0x3314,0x00,2,0);//PID-Controller - velocity feed forward
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3315,0x00,4,0);//PID-Controller - acceleration feed forward
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//
+		//ret = NEC_CoE402SetParameter(Axis,0x3510,0x00,2,50);//SVel PI-Controller - gain
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3511,0x00,2,50);//SVel PI-Controller - integral factor
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3517,0x00,2,0);//IxR factor
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+
 		////////////////////////////////////////////////////////////////////////////////////////////////
 		ret = NEC_CoE402SetParameter(Axis,0x3210,0x00,2,213);//PI-Current controller - proportional factor
 		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
@@ -578,32 +579,32 @@ RTN_ERR MotorType_2342(CANAxis_T Axis)
 		////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-		ret = NEC_CoE402SetParameter(Axis,0x6007,0x00,2,1);//Abort Connection Option Code
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x6046,0x02,4,3600);//Maximal velocity
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x6048,0x01,4,1000);//Velocity acceleration - highest sub-index supported
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x6048,0x02,2,1);//Velocity acceleration - delta time
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x6049,0x01,4,1000);//Velocity deceleration - delta speed
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x6049,0x02,2,1);//Velocity deceleration - delta time
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x604A,0x01,4,1000);//Velocity quickstop - delta speed
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x604A,0x02,2,1);//Velocity quickstop - delta time
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x604C,0x01,4,1);//Velocity dimension factor - numerator
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x604C,0x02,4,1);//Velocity dimension factor - denominator
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x608C,0x00,1,163);//Velocity dimension index
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x6092,0x01,4,1);//Feed constant - feed
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x6092,0x02,4,1);//Feed constant - driving shaft revolutions
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x6007,0x00,2,1);//Abort Connection Option Code
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x6046,0x02,4,3600);//Maximal velocity
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x6048,0x01,4,1000);//Velocity acceleration - highest sub-index supported
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x6048,0x02,2,1);//Velocity acceleration - delta time
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x6049,0x01,4,1000);//Velocity deceleration - delta speed
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x6049,0x02,2,1);//Velocity deceleration - delta time
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x604A,0x01,4,1000);//Velocity quickstop - delta speed
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x604A,0x02,2,1);//Velocity quickstop - delta time
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x604C,0x01,4,1);//Velocity dimension factor - numerator
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x604C,0x02,4,1);//Velocity dimension factor - denominator
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x608C,0x00,1,163);//Velocity dimension index
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x6092,0x01,4,1);//Feed constant - feed
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x6092,0x02,4,1);//Feed constant - driving shaft revolutions
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 		ret = NEC_CoE402SetParameter(Axis,0x608A,0x00,1,172);//Position dimension index
 		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 		ret = NEC_CoE402SetParameter(Axis,0x6065,0x00,4,10000);//Following error window
@@ -614,30 +615,30 @@ RTN_ERR MotorType_2342(CANAxis_T Axis)
 		//ret = NEC_CoE402SetParameter(Axis,0x6072,0x00,2,1000);//Maximal torque
 		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 	
-		ret = NEC_CoE402SetParameter(Axis,0x3340,0x00,4,5000);//Velocity acceleration - delta V
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3341,0x00,4,1000);//Velocity acceleration - delta T
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3342,0x00,4,3000);//Velocity deceleration - delta V
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3343,0x00,4,1000);//Velocity deceleration - delta T
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3344,0x00,4,2000);//Velocity quick stop deceleration - delta V
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParam20eter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3345,0x00,4,1000);//Velocity quick stop deceleration - delta T
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x334c,0x00,1,1);//Ramp generator - ramp type
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3340,0x00,4,5000);//Velocity acceleration - delta V
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3341,0x00,4,1000);//Velocity acceleration - delta T
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3342,0x00,4,3000);//Velocity deceleration - delta V
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3343,0x00,4,1000);//Velocity deceleration - delta T
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3344,0x00,4,2000);//Velocity quick stop deceleration - delta V
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParam20eter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3345,0x00,4,1000);//Velocity quick stop deceleration - delta T
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x334c,0x00,1,1);//Ramp generator - ramp type
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 	
-		ret = NEC_CoE402SetParameter(Axis,0x3521,0x00,2,2147483647);//SVelocity max. limit - positive direction
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3523,0x00,2,2147483647);//SVelocity max. limit - negative direction
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3521,0x00,2,2147483647);//SVelocity max. limit - positive direction
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3523,0x00,2,2147483647);//SVelocity max. limit - negative direction
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 	
-		ret = NEC_CoE402SetParameter(Axis,0x3321,0x00,4,5000);//Velocity max. limit - positiv direction
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3323,0x00,4,5000);//Velocity max. limit - negativ direction
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3321,0x00,4,5000);//Velocity max. limit - positiv direction
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3323,0x00,4,5000);//Velocity max. limit - negativ direction
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 
 		return 0;
 }
@@ -680,24 +681,25 @@ RTN_ERR MotorType_2619(CANAxis_T Axis)
 		ret = NEC_CoE402SetParameter(Axis,0x3902,0x00,2,24000);// Motor rated voltage
 		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 	
-		ret = NEC_CoE402SetParameter(Axis,0x3310,0x00,2,80);//PID-Controller - gain
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3311,0x00,2,50);//PID-Controller - integral factor
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3312,0x00,2,0);//PID-Controller - differential factor
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		
-		ret = NEC_CoE402SetParameter(Axis,0x3314,0x00,2,0);//PID-Controller - velocity feed forward
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3315,0x00,4,0);//PID-Controller - acceleration feed forward
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		
-		ret = NEC_CoE402SetParameter(Axis,0x3510,0x00,2,50);//SVel PI-Controller - gain
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3511,0x00,2,50);//SVel PI-Controller - integral factor
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3517,0x00,2,0);//IxR factor
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3310,0x00,2,80);//PID-Controller - gain
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3311,0x00,2,50);//PID-Controller - integral factor
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3312,0x00,2,0);//PID-Controller - differential factor
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//
+		//ret = NEC_CoE402SetParameter(Axis,0x3314,0x00,2,0);//PID-Controller - velocity feed forward
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3315,0x00,4,0);//PID-Controller - acceleration feed forward
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//
+		//ret = NEC_CoE402SetParameter(Axis,0x3510,0x00,2,50);//SVel PI-Controller - gain
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3511,0x00,2,50);//SVel PI-Controller - integral factor
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3517,0x00,2,0);//IxR factor
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+
 		////////////////////////////////////////////////////////////////////////////////////////////////
 		ret = NEC_CoE402SetParameter(Axis,0x3210,0x00,2,1253);//PI-Current controller - proportional factor
 		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
@@ -739,32 +741,32 @@ RTN_ERR MotorType_2619(CANAxis_T Axis)
 		////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-		ret = NEC_CoE402SetParameter(Axis,0x6007,0x00,2,1);//Abort Connection Option Code
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x6046,0x02,4,3600);//Maximal velocity
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x6048,0x01,4,1000);//Velocity acceleration - highest sub-index supported
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x6048,0x02,2,1);//Velocity acceleration - delta time
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x6049,0x01,4,1000);//Velocity deceleration - delta speed
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x6049,0x02,2,1);//Velocity deceleration - delta time
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x604A,0x01,4,1000);//Velocity quickstop - delta speed
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x604A,0x02,2,1);//Velocity quickstop - delta time
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x604C,0x01,4,1);//Velocity dimension factor - numerator
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x604C,0x02,4,1);//Velocity dimension factor - denominator
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x608C,0x00,1,163);//Velocity dimension index
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x6092,0x01,4,1);//Feed constant - feed
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x6092,0x02,4,1);//Feed constant - driving shaft revolutions
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x6007,0x00,2,1);//Abort Connection Option Code
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x6046,0x02,4,3600);//Maximal velocity
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x6048,0x01,4,1000);//Velocity acceleration - highest sub-index supported
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x6048,0x02,2,1);//Velocity acceleration - delta time
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x6049,0x01,4,1000);//Velocity deceleration - delta speed
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x6049,0x02,2,1);//Velocity deceleration - delta time
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x604A,0x01,4,1000);//Velocity quickstop - delta speed
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x604A,0x02,2,1);//Velocity quickstop - delta time
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x604C,0x01,4,1);//Velocity dimension factor - numerator
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x604C,0x02,4,1);//Velocity dimension factor - denominator
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x608C,0x00,1,163);//Velocity dimension index
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x6092,0x01,4,1);//Feed constant - feed
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x6092,0x02,4,1);//Feed constant - driving shaft revolutions
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 		ret = NEC_CoE402SetParameter(Axis,0x608A,0x00,1,172);//Position dimension index
 		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 		ret = NEC_CoE402SetParameter(Axis,0x6065,0x00,4,10000);//Following error window
@@ -775,30 +777,30 @@ RTN_ERR MotorType_2619(CANAxis_T Axis)
 		//ret = NEC_CoE402SetParameter(Axis,0x6072,0x00,2,1000);//Maximal torque
 		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 	
-		ret = NEC_CoE402SetParameter(Axis,0x3340,0x00,4,5000);//Velocity acceleration - delta V
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3341,0x00,4,1000);//Velocity acceleration - delta T
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3342,0x00,4,3000);//Velocity deceleration - delta V
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3343,0x00,4,1000);//Velocity deceleration - delta T
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3344,0x00,4,2000);//Velocity quick stop deceleration - delta V
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParam20eter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3345,0x00,4,1000);//Velocity quick stop deceleration - delta T
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x334c,0x00,1,1);//Ramp generator - ramp type
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3340,0x00,4,5000);//Velocity acceleration - delta V
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3341,0x00,4,1000);//Velocity acceleration - delta T
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3342,0x00,4,3000);//Velocity deceleration - delta V
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3343,0x00,4,1000);//Velocity deceleration - delta T
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3344,0x00,4,2000);//Velocity quick stop deceleration - delta V
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParam20eter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3345,0x00,4,1000);//Velocity quick stop deceleration - delta T
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x334c,0x00,1,1);//Ramp generator - ramp type
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 	
-		ret = NEC_CoE402SetParameter(Axis,0x3521,0x00,2,2147483647);//SVelocity max. limit - positive direction
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3523,0x00,2,2147483647);//SVelocity max. limit - negative direction
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3521,0x00,2,2147483647);//SVelocity max. limit - positive direction
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3523,0x00,2,2147483647);//SVelocity max. limit - negative direction
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 	
-		ret = NEC_CoE402SetParameter(Axis,0x3321,0x00,4,5000);//Velocity max. limit - positiv direction
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3323,0x00,4,5000);//Velocity max. limit - negativ direction
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3321,0x00,4,5000);//Velocity max. limit - positiv direction
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3323,0x00,4,5000);//Velocity max. limit - negativ direction
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 
 		return 0;
 }
@@ -840,24 +842,24 @@ RTN_ERR MotorType_2642(CANAxis_T Axis)
 		ret = NEC_CoE402SetParameter(Axis,0x3902,0x00,2,24000);// Motor rated voltage
 		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 	
-		ret = NEC_CoE402SetParameter(Axis,0x3310,0x00,2,80);//PID-Controller - gain
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3311,0x00,2,50);//PID-Controller - integral factor
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3312,0x00,2,0);//PID-Controller - differential factor
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		
-		ret = NEC_CoE402SetParameter(Axis,0x3314,0x00,2,0);//PID-Controller - velocity feed forward
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3315,0x00,4,0);//PID-Controller - acceleration feed forward
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		
-		ret = NEC_CoE402SetParameter(Axis,0x3510,0x00,2,50);//SVel PI-Controller - gain
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3511,0x00,2,50);//SVel PI-Controller - integral factor
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3517,0x00,2,0);//IxR factor
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3310,0x00,2,80);//PID-Controller - gain
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3311,0x00,2,50);//PID-Controller - integral factor
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3312,0x00,2,0);//PID-Controller - differential factor
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//
+		//ret = NEC_CoE402SetParameter(Axis,0x3314,0x00,2,0);//PID-Controller - velocity feed forward
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3315,0x00,4,0);//PID-Controller - acceleration feed forward
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//
+		//ret = NEC_CoE402SetParameter(Axis,0x3510,0x00,2,50);//SVel PI-Controller - gain
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3511,0x00,2,50);//SVel PI-Controller - integral factor
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3517,0x00,2,0);//IxR factor
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 		
 		ret = NEC_CoE402SetParameter(Axis,0x3210,0x00,2, 237);//PI-Current controller - proportional factor
 		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
@@ -898,32 +900,32 @@ RTN_ERR MotorType_2642(CANAxis_T Axis)
 		////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-		ret = NEC_CoE402SetParameter(Axis,0x6007,0x00,2,1);//Abort Connection Option Code
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x6046,0x02,4,3600);//Maximal velocity
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x6048,0x01,4,1000);//Velocity acceleration - highest sub-index supported
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x6048,0x02,2,1);//Velocity acceleration - delta time
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x6049,0x01,4,1000);//Velocity deceleration - delta speed
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x6049,0x02,2,1);//Velocity deceleration - delta time
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x604A,0x01,4,1000);//Velocity quickstop - delta speed
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x604A,0x02,2,1);//Velocity quickstop - delta time
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x604C,0x01,4,1);//Velocity dimension factor - numerator
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x604C,0x02,4,1);//Velocity dimension factor - denominator
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x608C,0x00,1,163);//Velocity dimension index
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x6092,0x01,4,1);//Feed constant - feed
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x6092,0x02,4,1);//Feed constant - driving shaft revolutions
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x6007,0x00,2,1);//Abort Connection Option Code
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x6046,0x02,4,3600);//Maximal velocity
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x6048,0x01,4,1000);//Velocity acceleration - highest sub-index supported
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x6048,0x02,2,1);//Velocity acceleration - delta time
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x6049,0x01,4,1000);//Velocity deceleration - delta speed
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x6049,0x02,2,1);//Velocity deceleration - delta time
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x604A,0x01,4,1000);//Velocity quickstop - delta speed
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x604A,0x02,2,1);//Velocity quickstop - delta time
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x604C,0x01,4,1);//Velocity dimension factor - numerator
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x604C,0x02,4,1);//Velocity dimension factor - denominator
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x608C,0x00,1,163);//Velocity dimension index
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x6092,0x01,4,1);//Feed constant - feed
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x6092,0x02,4,1);//Feed constant - driving shaft revolutions
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 		ret = NEC_CoE402SetParameter(Axis,0x608A,0x00,1,172);//Position dimension index
 		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 		ret = NEC_CoE402SetParameter(Axis,0x6065,0x00,4,10000);//Following error window
@@ -934,30 +936,30 @@ RTN_ERR MotorType_2642(CANAxis_T Axis)
 		//ret = NEC_CoE402SetParameter(Axis,0x6072,0x00,2,1000);//Maximal torque
 		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 	
-		ret = NEC_CoE402SetParameter(Axis,0x3340,0x00,4,5000);//Velocity acceleration - delta V
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3341,0x00,4,1000);//Velocity acceleration - delta T
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3342,0x00,4,3000);//Velocity deceleration - delta V
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3343,0x00,4,1000);//Velocity deceleration - delta T
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3344,0x00,4,3000);//Velocity quick stop deceleration - delta V
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3345,0x00,4,1000);//Velocity quick stop deceleration - delta T
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x334c,0x00,1,1);//Ramp generator - ramp type
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3340,0x00,4,5000);//Velocity acceleration - delta V
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3341,0x00,4,1000);//Velocity acceleration - delta T
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3342,0x00,4,3000);//Velocity deceleration - delta V
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3343,0x00,4,1000);//Velocity deceleration - delta T
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3344,0x00,4,3000);//Velocity quick stop deceleration - delta V
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3345,0x00,4,1000);//Velocity quick stop deceleration - delta T
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x334c,0x00,1,1);//Ramp generator - ramp type
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 	
-		ret = NEC_CoE402SetParameter(Axis,0x3521,0x00,2,2147483647);//SVelocity max. limit - positive direction
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3523,0x00,2,2147483647);//SVelocity max. limit - negative direction
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3521,0x00,2,2147483647);//SVelocity max. limit - positive direction
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3523,0x00,2,2147483647);//SVelocity max. limit - negative direction
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 	
-		ret = NEC_CoE402SetParameter(Axis,0x3321,0x00,4,6000);//Velocity max. limit - positiv direction
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3323,0x00,4,6000);//Velocity max. limit - negativ direction
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3321,0x00,4,6000);//Velocity max. limit - positiv direction
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3323,0x00,4,6000);//Velocity max. limit - negativ direction
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 
 		return 0;
 }
@@ -999,24 +1001,24 @@ RTN_ERR MotorType_3863(CANAxis_T Axis)
 		ret = NEC_CoE402SetParameter(Axis,0x3902,0x00,2,24000);// Motor rated voltage
 		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 	
-		ret = NEC_CoE402SetParameter(Axis,0x3310,0x00,2,80);//PID-Controller - gain
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3311,0x00,2,50);//PID-Controller - integral factor
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3312,0x00,2,0);//PID-Controller - differential factor
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		//⊿Τ3313把计ぃ璶???
-		ret = NEC_CoE402SetParameter(Axis,0x3314,0x00,2,0);//PID-Controller - velocity feed forward
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3315,0x00,4,0);//PID-Controller - acceleration feed forward
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		
-		ret = NEC_CoE402SetParameter(Axis,0x3510,0x00,2,50);//SVel PI-Controller - gain
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3511,0x00,2,50);//SVel PI-Controller - integral factor
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3517,0x00,2,0);//IxR factor
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3310,0x00,2,80);//PID-Controller - gain
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3311,0x00,2,50);//PID-Controller - integral factor
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3312,0x00,2,0);//PID-Controller - differential factor
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		////⊿Τ3313把计ぃ璶???
+		//ret = NEC_CoE402SetParameter(Axis,0x3314,0x00,2,0);//PID-Controller - velocity feed forward
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3315,0x00,4,0);//PID-Controller - acceleration feed forward
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//
+		//ret = NEC_CoE402SetParameter(Axis,0x3510,0x00,2,50);//SVel PI-Controller - gain
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3511,0x00,2,50);//SVel PI-Controller - integral factor
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3517,0x00,2,0);//IxR factor
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 		
 		ret = NEC_CoE402SetParameter(Axis,0x3210,0x00,2,58);//PI-Current controller - proportional factor
 		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
@@ -1057,63 +1059,63 @@ RTN_ERR MotorType_3863(CANAxis_T Axis)
 		////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-		ret = NEC_CoE402SetParameter(Axis,0x6007,0x00,2,1);//Abort Connection Option Code
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		//??????????????????????????????????
-		ret = NEC_CoE402SetParameter(Axis,0x6046,0x02,4,3600);//Maximal velocity
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret );return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x6007,0x00,2,1);//Abort Connection Option Code
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		////??????????????????????????????????
+		//ret = NEC_CoE402SetParameter(Axis,0x6046,0x02,4,3600);//Maximal velocity
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret );return 1; }
 
-		ret = NEC_CoE402SetParameter(Axis,0x6048,0x01,4,1000);//Velocity acceleration - highest sub-index supported
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x6048,0x02,2,1);//Velocity acceleration - delta time
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x6049,0x01,4,1000);//Velocity deceleration - delta speed
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x6049,0x02,2,1);//Velocity deceleration - delta time
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x604A,0x01,4,1000);//Velocity quickstop - delta speed
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x604A,0x02,2,1);//Velocity quickstop - delta time
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x604C,0x01,4,1);//Velocity dimension factor - numerator
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x604C,0x02,4,1);//Velocity dimension factor - denominator
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x608C,0x00,1,163);//Velocity dimension index
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x6092,0x01,4,1);//Feed constant - feed
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x6092,0x02,4,1);//Feed constant - driving shaft revolutions
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x6048,0x01,4,1000);//Velocity acceleration - highest sub-index supported
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x6048,0x02,2,1);//Velocity acceleration - delta time
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x6049,0x01,4,1000);//Velocity deceleration - delta speed
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x6049,0x02,2,1);//Velocity deceleration - delta time
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x604A,0x01,4,1000);//Velocity quickstop - delta speed
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x604A,0x02,2,1);//Velocity quickstop - delta time
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x604C,0x01,4,1);//Velocity dimension factor - numerator
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x604C,0x02,4,1);//Velocity dimension factor - denominator
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x608C,0x00,1,163);//Velocity dimension index
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x6092,0x01,4,1);//Feed constant - feed
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x6092,0x02,4,1);//Feed constant - driving shaft revolutions
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 		ret = NEC_CoE402SetParameter(Axis,0x608A,0x00,1,172);//Position dimension index
 		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 		ret = NEC_CoE402SetParameter(Axis,0x6065,0x00,4,10000);//Following error window
 		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		
-		ret = NEC_CoE402SetParameter(Axis,0x3340,0x00,4,5000);//Velocity acceleration - delta V
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3341,0x00,4,1000);//Velocity acceleration - delta T
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3342,0x00,4,3000);//Velocity deceleration - delta V
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3343,0x00,4,1000);//Velocity deceleration - delta T
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3344,0x00,4,2000);//Velocity quick stop deceleration - delta V
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3345,0x00,4,1000);//Velocity quick stop deceleration - delta T
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x334c,0x00,1,1);//Ramp generator - ramp type
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//
+		//ret = NEC_CoE402SetParameter(Axis,0x3340,0x00,4,5000);//Velocity acceleration - delta V
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3341,0x00,4,1000);//Velocity acceleration - delta T
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3342,0x00,4,3000);//Velocity deceleration - delta V
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3343,0x00,4,1000);//Velocity deceleration - delta T
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3344,0x00,4,2000);//Velocity quick stop deceleration - delta V
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3345,0x00,4,1000);//Velocity quick stop deceleration - delta T
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x334c,0x00,1,1);//Ramp generator - ramp type
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 	
-		ret = NEC_CoE402SetParameter(Axis,0x3521,0x00,2,2147483647);//SVelocity max. limit - positive direction
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3523,0x00,2,2147483647);//SVelocity max. limit - negative direction
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3521,0x00,2,2147483647);//SVelocity max. limit - positive direction
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3523,0x00,2,2147483647);//SVelocity max. limit - negative direction
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 	
-		ret = NEC_CoE402SetParameter(Axis,0x3321,0x00,4,6000);//Velocity max. limit - positiv direction
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3323,0x00,4,6000);//Velocity max. limit - negativ direction
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3321,0x00,4,6000);//Velocity max. limit - positiv direction
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3323,0x00,4,6000);//Velocity max. limit - negativ direction
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 
 		return 0;
 }
@@ -1154,24 +1156,24 @@ RTN_ERR MotorType_3257(CANAxis_T Axis)
 	ret = NEC_CoE402SetParameter(Axis,0x3902,0x00,2,24000);// Motor rated voltage
 	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 	
-	ret = NEC_CoE402SetParameter(Axis,0x3310,0x00,2,80);//PID-Controller - gain
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x3311,0x00,2,50);//PID-Controller - integral factor
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x3312,0x00,2,0);//PID-Controller - differential factor
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	
-	ret = NEC_CoE402SetParameter(Axis,0x3314,0x00,2,0);//PID-Controller - velocity feed forward
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x3315,0x00,4,0);//PID-Controller - acceleration feed forward
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x3310,0x00,2,80);//PID-Controller - gain
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x3311,0x00,2,50);//PID-Controller - integral factor
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x3312,0x00,2,0);//PID-Controller - differential factor
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//
+	//ret = NEC_CoE402SetParameter(Axis,0x3314,0x00,2,0);//PID-Controller - velocity feed forward
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x3315,0x00,4,0);//PID-Controller - acceleration feed forward
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 
-	ret = NEC_CoE402SetParameter(Axis,0x3510,0x00,2,50);//SVel PI-Controller - gain
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x3511,0x00,2,50);//SVel PI-Controller - integral factor
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x3517,0x00,2,0);//IxR factor								????????????????????
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x3510,0x00,2,50);//SVel PI-Controller - gain
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x3511,0x00,2,50);//SVel PI-Controller - integral factor
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x3517,0x00,2,0);//IxR factor								????????????????????
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 
 	///////////////////////////////////////////////////////////////////////////////
 	ret = NEC_CoE402SetParameter(Axis,0x3210,0x00,2,72);//PI-Current controller - proportional factor
@@ -1212,61 +1214,61 @@ RTN_ERR MotorType_3257(CANAxis_T Axis)
 	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 	////////////////////////////////////////////////////////////////////////////////////////////////
 
-	ret = NEC_CoE402SetParameter(Axis,0x6007,0x00,2,1);//Abort Connection Option Code
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x6046,0x02,4,3600);//Maximal velocity
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x6048,0x01,4,1000);//Velocity acceleration - highest sub-index supported
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x6048,0x02,2,1);//Velocity acceleration - delta time
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x6049,0x01,4,1000);//Velocity deceleration - delta speed
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x6049,0x02,2,1);//Velocity deceleration - delta time
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x604A,0x01,4,1000);//Velocity quickstop - delta speed
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x604A,0x02,2,1);//Velocity quickstop - delta time
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x604C,0x01,4,1);//Velocity dimension factor - numerator
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x604C,0x02,4,1);//Velocity dimension factor - denominator
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x608C,0x00,1,163);//Velocity dimension index
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x6092,0x01,4,1);//Feed constant - feed
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x6092,0x02,4,1);//Feed constant - driving shaft revolutions
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x6007,0x00,2,1);//Abort Connection Option Code
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x6046,0x02,4,3600);//Maximal velocity
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x6048,0x01,4,1000);//Velocity acceleration - highest sub-index supported
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x6048,0x02,2,1);//Velocity acceleration - delta time
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x6049,0x01,4,1000);//Velocity deceleration - delta speed
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x6049,0x02,2,1);//Velocity deceleration - delta time
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x604A,0x01,4,1000);//Velocity quickstop - delta speed
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x604A,0x02,2,1);//Velocity quickstop - delta time
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x604C,0x01,4,1);//Velocity dimension factor - numerator
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x604C,0x02,4,1);//Velocity dimension factor - denominator
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x608C,0x00,1,163);//Velocity dimension index
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x6092,0x01,4,1);//Feed constant - feed
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x6092,0x02,4,1);//Feed constant - driving shaft revolutions
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 	ret = NEC_CoE402SetParameter(Axis,0x608A,0x00,1,172);//Position dimension index
 	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 	ret = NEC_CoE402SetParameter(Axis,0x6065,0x00,4,10000);//Following error window
 	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 	
-	ret = NEC_CoE402SetParameter(Axis,0x3340,0x00,4,5000);//Velocity acceleration - delta V
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x3341,0x00,4,1000);//Velocity acceleration - delta T
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x3342,0x00,4,3000);//Velocity deceleration - delta V
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x3343,0x00,4,1000);//Velocity deceleration - delta T
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x3344,0x00,4,2000);//Velocity quick stop deceleration - delta V
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x3345,0x00,4,1000);//Velocity quick stop deceleration - delta T
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x334c,0x00,1,1);//Ramp generator - ramp type
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	
-    ret = NEC_CoE402SetParameter(Axis,0x3521,0x00,2,2147483647);//SVelocity max. limit - positive direction
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x3523,0x00,2,2147483647);//SVelocity max. limit - negative direction
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	
-	ret = NEC_CoE402SetParameter(Axis,0x3321,0x00,4,5000);//Velocity max. limit - positiv direction
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x3323,0x00,4,5000);//Velocity max. limit - negativ direction
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x3340,0x00,4,5000);//Velocity acceleration - delta V
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x3341,0x00,4,1000);//Velocity acceleration - delta T
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x3342,0x00,4,3000);//Velocity deceleration - delta V
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x3343,0x00,4,1000);//Velocity deceleration - delta T
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x3344,0x00,4,2000);//Velocity quick stop deceleration - delta V
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x3345,0x00,4,1000);//Velocity quick stop deceleration - delta T
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x334c,0x00,1,1);//Ramp generator - ramp type
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//
+ //   ret = NEC_CoE402SetParameter(Axis,0x3521,0x00,2,2147483647);//SVelocity max. limit - positive direction
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x3523,0x00,2,2147483647);//SVelocity max. limit - negative direction
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//
+	//ret = NEC_CoE402SetParameter(Axis,0x3321,0x00,4,5000);//Velocity max. limit - positiv direction
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x3323,0x00,4,5000);//Velocity max. limit - negativ direction
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 
 	return 0;
 }
@@ -1307,24 +1309,24 @@ RTN_ERR MotorType_3890(CANAxis_T Axis)
 	ret = NEC_CoE402SetParameter(Axis,0x3902,0x00,2,24000);// Motor rated voltage a
 	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 	
-	ret = NEC_CoE402SetParameter(Axis,0x3310,0x00,2,80);//PID-Controller - gain b
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x3311,0x00,2,50);//PID-Controller - integral factor b
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x3312,0x00,2,0);//PID-Controller - differential factor b
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	
-	ret = NEC_CoE402SetParameter(Axis,0x3314,0x00,2,0);//PID-Controller - velocity feed forward b
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x3315,0x00,4,0);//PID-Controller - acceleration feed forward b
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x3310,0x00,2,80);//PID-Controller - gain b
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x3311,0x00,2,50);//PID-Controller - integral factor b
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x3312,0x00,2,0);//PID-Controller - differential factor b
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//
+	//ret = NEC_CoE402SetParameter(Axis,0x3314,0x00,2,0);//PID-Controller - velocity feed forward b
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x3315,0x00,4,0);//PID-Controller - acceleration feed forward b
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 
-	ret = NEC_CoE402SetParameter(Axis,0x3510,0x00,2,50);//SVel PI-Controller - gain b
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x3511,0x00,2,50);//SVel PI-Controller - integral factor b
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x3517,0x00,2,0);//IxR factor		b						????????????????????
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x3510,0x00,2,50);//SVel PI-Controller - gain b
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x3511,0x00,2,50);//SVel PI-Controller - integral factor b
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x3517,0x00,2,0);//IxR factor		b						????????????????????
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 
 	///////////////////////////////////////////////////////////////////////////////
 	ret = NEC_CoE402SetParameter(Axis,0x3210,0x00,2,72);//PI-Current controller - proportional factor c
@@ -1373,61 +1375,61 @@ RTN_ERR MotorType_3890(CANAxis_T Axis)
 	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 	////////////////////////////////////////////////////////////////////////////////////////////////
 
-	ret = NEC_CoE402SetParameter(Axis,0x6007,0x00,2,1);//Abort Connection Option Code
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x6046,0x02,4,5400);//Maximal velocity c
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x6048,0x01,4,1000);//Velocity acceleration - highest sub-index supported b
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x6048,0x02,2,1);//Velocity acceleration - delta time b
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x6049,0x01,4,1000);//Velocity deceleration - delta speed b
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x6049,0x02,2,1);//Velocity deceleration - delta time b
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x604A,0x01,4,1000);//Velocity quickstop - delta speed b
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x604A,0x02,2,1);//Velocity quickstop - delta time b
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x604C,0x01,4,1);//Velocity dimension factor - numerator b
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x604C,0x02,4,1);//Velocity dimension factor - denominator b
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x608C,0x00,1,163);//Velocity dimension index b
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x6092,0x01,4,1);//Feed constant - feed b
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x6092,0x02,4,1);//Feed constant - driving shaft revolutions b
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x6007,0x00,2,1);//Abort Connection Option Code
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x6046,0x02,4,5400);//Maximal velocity c
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x6048,0x01,4,1000);//Velocity acceleration - highest sub-index supported b
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x6048,0x02,2,1);//Velocity acceleration - delta time b
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x6049,0x01,4,1000);//Velocity deceleration - delta speed b
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x6049,0x02,2,1);//Velocity deceleration - delta time b
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x604A,0x01,4,1000);//Velocity quickstop - delta speed b
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x604A,0x02,2,1);//Velocity quickstop - delta time b
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x604C,0x01,4,1);//Velocity dimension factor - numerator b
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x604C,0x02,4,1);//Velocity dimension factor - denominator b
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x608C,0x00,1,163);//Velocity dimension index b
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x6092,0x01,4,1);//Feed constant - feed b
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x6092,0x02,4,1);//Feed constant - driving shaft revolutions b
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 	ret = NEC_CoE402SetParameter(Axis,0x608A,0x00,1,172);//Position dimension index b
 	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 	ret = NEC_CoE402SetParameter(Axis,0x6065,0x00,4,10000);//Following error window b
 	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 	
-	ret = NEC_CoE402SetParameter(Axis,0x3340,0x00,4,5000);//Velocity acceleration - delta V b 
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x3341,0x00,4,100);//Velocity acceleration - delta T b
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x3342,0x00,4,3000);//Velocity deceleration - delta V b
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x3343,0x00,4,1000);//Velocity deceleration - delta T b
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x3344,0x00,4,2000);//Velocity quick stop deceleration - delta V b
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x3345,0x00,4,1000);//Velocity quick stop deceleration - delta T b
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x334c,0x00,1,1);//Ramp generator - ramp type b
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	
-    ret = NEC_CoE402SetParameter(Axis,0x3521,0x00,2,2147483647);//SVelocity max. limit - positive direction b
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x3523,0x00,2,2147483647);//SVelocity max. limit - negative direction b
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	
-	ret = NEC_CoE402SetParameter(Axis,0x3321,0x00,4,5000);//Velocity max. limit - positiv direction b
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x3323,0x00,4,5000);//Velocity max. limit - negativ direction b
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x3340,0x00,4,5000);//Velocity acceleration - delta V b 
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x3341,0x00,4,100);//Velocity acceleration - delta T b
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x3342,0x00,4,3000);//Velocity deceleration - delta V b
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x3343,0x00,4,1000);//Velocity deceleration - delta T b
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x3344,0x00,4,2000);//Velocity quick stop deceleration - delta V b
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x3345,0x00,4,1000);//Velocity quick stop deceleration - delta T b
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x334c,0x00,1,1);//Ramp generator - ramp type b
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//
+ //   ret = NEC_CoE402SetParameter(Axis,0x3521,0x00,2,2147483647);//SVelocity max. limit - positive direction b
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x3523,0x00,2,2147483647);//SVelocity max. limit - negative direction b
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//
+	//ret = NEC_CoE402SetParameter(Axis,0x3321,0x00,4,5000);//Velocity max. limit - positiv direction b
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x3323,0x00,4,5000);//Velocity max. limit - negativ direction b
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 
 	return 0;
 }
