@@ -110,55 +110,6 @@ main(
 			RtPrintf("done\n\n");
 		}
 
-		ret = RtWaitForSingleObject( oBhandle[HOLD], 5 );
-		if( ret == 0 )
-		{
-			RtPrintf( "HOLD...\n    " );
-
-
-			RtPrintf("\ndone\n\n");
-		}
-
-		ret = RtWaitForSingleObject( oBhandle[HOMING], 5 );
-		if( ret == 0 )
-		{
-			RtPrintf( "HOMING...\n" );
-			RtPrintf("gg...\n");
-			RtPrintf("done\n\n");
-		}
-
-		ret = RtWaitForSingleObject( oBhandle[GO_HOME], 5 );
-		if( ret == 0 )
-		{
-			RtPrintf( "GO_HOME...\n" );
-			RtPrintf("gg...\n");
-			RtPrintf("done\n\n");
-		}
-
-		ret = RtWaitForSingleObject( oBhandle[STOP_AND_HOLD], 5 );
-		if( ret == 0 )
-		{
-			RtPrintf( "STOP_AND_HOLD...\n" );
-			pData->firstTimeHoldFlag = 0;
-			pData->holdSwitch = 1;
-			RtPrintf("done %d\n\n", pData->setTargetTorqueSwitch);
-		}
-
-		ret = RtWaitForSingleObject( oBhandle[STOP_BUT_SOFT], 5 );
-		if( ret == 0 )
-		{
-			RtPrintf( "STOP_BUT_SOFT...\n" );
-			pData->setTargetTorqueSwitch = 0;
-			RtPrintf("done %d\n\n", pData->setTargetTorqueSwitch);
-		}
-
-		ret = RtWaitForSingleObject( oBhandle[SERVO_OFF], 5 );
-		if( ret == 0 )
-		{
-			RtPrintf( "SERVO_OFF...\n" );
-			RtPrintf("\ndone %d\n\n", pData->setTargetTorqueSwitch);
-		}
-
 		ret = RtWaitForSingleObject( oBhandle[CLOSE_MASTER], 5 );
 		if( ret == 0 )
 		{
@@ -166,27 +117,7 @@ main(
 			goto _ERR;
 		}
 
-
-		ret = RtWaitForSingleObject( oBhandle[HOMING_MODE], 5 );
-		if( ret == 0 )
-		{
-			RtPrintf( "HOMING_MODE...\n" );
-			//RtPrintf("RTX HOMING_MODE triggered!!!!!!...\n"); // set and RESET parameters, 以免在下一步servo on爆衝!!!
-			RtPrintf("done %d\n\n", pData->setTargetTorqueSwitch);
-		}
-
-
-		ret = RtWaitForSingleObject( oBhandle[HOMING_RUN], 5 );
-		if( ret == 0 )
-		{
-			RtPrintf( "HOMING_RUN...\n" );
-			//RtPrintf("gg...\n");
-			RtPrintf("done\n\n");
-		}
-
 	}
-
-
 
 
 _ERR:

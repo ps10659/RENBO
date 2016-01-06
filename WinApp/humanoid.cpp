@@ -15,7 +15,7 @@ int _tmain(int argc)
 	ret = NEC_LoadRtxApp( "C:\\Program Files\\NEXCOM\\NexECMRtx\\Lib\\NexECMRtx\\x32\\NexECMRtx.rtss" );
 	if( ret != 0 ){ printf("NEC_LoadRtxApp NexECMRtx.rtss failed!");}
 	
-	ret = NEC_LoadRtxApp( "C:\\Users\\Humanoid\\Desktop\\GiGiFace\\Humanoid_20150807_homing\\RTSSDebug\\RtxApp.rtss" ); 
+	ret = NEC_LoadRtxApp( "C:..\\RTSSDebug\\RtxApp.rtss" ); 
 	if( ret != 0 ){ printf( "NEC_LoadRtxApp() RtxApp.rtss error %d \n", ret );}
 	
 	ret = NEC_StartDriver();
@@ -27,7 +27,7 @@ int _tmain(int argc)
 	ret = NEC_ResetEcMaster( masterId );
 	if( ret != 0 ) { printf( "NEC_ResetEcMaster failed!" );}
 
-	ret = NEC_LoadNetworkConfig( masterId, "c:\\Users\\Humanoid\\Desktop\\GiGiFace\\ENI\\ENI_33_Motor_hall.xml", START_NETWORK_OPT_MASK_NIC_PORT);
+	ret = NEC_LoadNetworkConfig( masterId, "c:..\\..\\ENI\\ENI_33_Motor_hall.xml", START_NETWORK_OPT_MASK_NIC_PORT);
 	if( ret != 0 ) { printf( "NEC_LoadNetworkConfig failed! (ENI_33_Motor.xml failed)" );}
 
 	//system("pause");
@@ -488,6 +488,8 @@ bool goto_STOP_AND_HOLD(WIN32_DAT *pWinData)
 	printf("               GO_HOME(0)\n");
 			
 	pWinData->currentState = STOP_AND_HOLD;
+	pData->firstTimeHoldFlag = 0;
+	pData->holdSwitch = 1;
 	RtSetEvent(oBhandle[STOP_AND_HOLD]);
 	return 0;
 }
@@ -497,6 +499,7 @@ bool goto_STOP_BUT_SOFT(WIN32_DAT *pWinData)
 	printf("next state   : SERVO_OFF(q)\n");
 			
 	pWinData->currentState = STOP_BUT_SOFT;
+	pData->setTargetTorqueSwitch = 0;
 	RtSetEvent(oBhandle[STOP_BUT_SOFT]);
 	return 0;
 }
@@ -1009,7 +1012,7 @@ void UpdateWalkingTrajectories(WIN32_DAT *pWinData)
 {
 	int i=0, j=0, cnt=0;
 	ifstream fin;
-    fin.open("C:\\Users\\Humanoid\\Desktop\\GiGiFace\\WalkingTrajectories\\WalkingTrajectories.txt", ios::in);
+    fin.open("C:..\\..\\WalkingTrajectories\\WalkingTrajectories.txt", ios::in);
 
 	fin>>pWinData->walkingTimeframe;
 	printf("Update walking trajectories (total timeframe = %d)\n", pWinData->walkingTimeframe);
@@ -1080,8 +1083,8 @@ void WriteWalkingTrajectories(WIN32_DAT *pWinData)
 
 	fstream file1;
 	fstream file2;
-	file1.open("C:\\Users\\Humanoid\\Desktop\\GiGiFace\\WalkingTrajectories\\CommandWalkingTrajectories.txt", ios::out);
-	file2.open("C:\\Users\\Humanoid\\Desktop\\GiGiFace\\WalkingTrajectories\\ActualWalkingTrajectories.txt", ios::out);
+	file1.open("C:..\\..\\WalkingTrajectories\\CommandWalkingTrajectories.txt", ios::out);
+	file2.open("C:..\\..\\WalkingTrajectories\\ActualWalkingTrajectories.txt", ios::out);
 	
 	for(int i=21; i<33; i++)
 	{
@@ -1104,7 +1107,7 @@ void ImportParameterTxt(WIN32_DAT *pWinData)
 	int i;
 	ifstream fin;
 	char buffer[20];
-    fin.open("C:..\\..\\parameter.txt", ios::in);
+    fin.open("C:..\\parameter.txt", ios::in);
 
 	fin >> buffer;
 	fin >> pWinData->walkingSpeed;
@@ -1184,7 +1187,7 @@ void WritePose(WIN32_DAT *pWinData)
 	fstream file;
 	UpdataAllActualTheta(pWinData);
 
-	file.open("C:..\\..\\write_pose.txt", ios::app);
+	file.open("C:..\\write_pose.txt", ios::app);
 	for(int i = 0; i<33; i++)
 		file << pWinData->actualTheta[i] * 180.0 / PI << " ";
 	file << endl;
@@ -1197,7 +1200,7 @@ void UpdateReadPoseTxtTheta(WIN32_DAT *pWinData)
 	int i=0, j=0;
 	ifstream fin;
 	printf("Import replay_pose.txt\n");
-    fin.open("C:..\\..\\pose.txt", ios::in);
+    fin.open("C:..\\pose.txt", ios::in);
 
 	fin >> pWinData->PP_Spline_totalPointCnt[5];
 	printf("totalPointCnt = %d\n", pWinData->PP_Spline_totalPointCnt[5]);
