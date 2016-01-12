@@ -265,7 +265,7 @@ void __RtCyclicCallback( void *UserDataPtr )
 						break;
 					case CSP_RUN:
 						CSP_UpdateCbTargetTheta(CB_targetTheta, pData, actualTheta, &CSP_cnt);
-						if(CSP_cnt == pData->walkingTimeframe) 
+						if(CSP_cnt >= pData->walkingTimeframe / pData->walkingSpeed) 
 						{
 							pData->resetCntFlag = 1;
 							pData->firstTimeHoldFlag = 0;
@@ -1549,25 +1549,16 @@ void PP_Spline_UpdateCbTargetTheta(F64_T *CB_targetTheta, USER_DAT *pData, F64_T
 void CSP_UpdateCbTargetTheta(F64_T *CB_targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *CSP_cnt)
 {
 	int i;
-	static int walkingSpeedCnt;
 
-	if((*CSP_cnt) == 0) walkingSpeedCnt = 0;
-	if(walkingSpeedCnt% (int)(pData->walkingSpeed) == 0)
+	for(i=0; i<TOTAL_AXIS; i++)
 	{
-		// TODO:
-		// 手的軌跡之後也要update
-		for(i=0; i<TOTAL_AXIS; i++)
+		if(i==3 || i== 5 || i==8 || i==11 || i==19 || i==20 || i>=21)
 		{
-			if(i==3 || i== 5 || i==8 || i==11 || i==19 || i==20 || i>=21)
-			{
-				CB_targetTheta[i] = pData->WalkingTrajectories[(*CSP_cnt)][i];
-				pData->ActualWalkingTrajectories[(*CSP_cnt)][i] = actualTheta[i];
-			}
+			CB_targetTheta[i] = pData->WalkingTrajectories[floor((*CSP_cnt) * pData->walkingSpeed)][i];
+			pData->ActualWalkingTrajectories[(*CSP_cnt)][i] = actualTheta[i];
 		}
-		(*CSP_cnt)++;
-		walkingSpeedCnt = 0;
 	}
-	walkingSpeedCnt++;
+	(*CSP_cnt)++;
 }
 
 I16_T TargetTorqueTrimming(F64_T tempTorque)
