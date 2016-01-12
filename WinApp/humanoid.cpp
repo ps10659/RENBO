@@ -114,7 +114,7 @@ int _tmain(int argc)
 				*pActualPos=20;
 				NEC_RWProcessImage(pWinData->masterId, READ_PDO, 871, pActualPos, 4);
 				printf("%s\n", *pActualPos);*/
-				//printf("%d\n", (I32_T)((pWinData->InputProcessDataPtr[784]*256*256*256 + pWinData->InputProcessDataPtr[783]*256*256 + pWinData->InputProcessDataPtr[782]*256 + pWinData->InputProcessDataPtr[781]) / axis_theta_to_motor_revolution[24] * 180.0/PI));
+				//printf("%d\n", (I32_T)((pWinData->InputProcessDataPtr[784]*256*256*256 + pWinData->InputProcessDataPtr[783]*256*256 + pWinData->InputProcessDataPtr[782]*256 + pWinData->InputProcessDataPtr[781]) / axis_theta_to_motor_resolution[24] * 180.0/PI));
 				//printf("%u %u\n", pWinData->InPDSizeInByte, pWinData->OutPDSizeInByte);
 			}
 			else

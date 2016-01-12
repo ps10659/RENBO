@@ -47,7 +47,7 @@ main(
 	// init global variables
 	for( i = 0; i<TOTAL_AXIS; ++i )
 	{
-        axis_theta_to_motor_revolution[i] = motor_direction[i] * reduction_ratio[i] * revolution[i] / (2.0*PI);
+        axis_theta_to_motor_resolution[i] = motor_direction[i] * reduction_ratio[i] * resolution[i] / (2.0*PI);
 	}
 
 	// init USER_DAT
@@ -61,12 +61,6 @@ main(
 	//pData->PP_allMovementCompleteFlag = 1;
 	//pData->PP_singleMovementCompleteFlag = 1;
 	pData->PP_Spline_currPointCnt = 0;
-
-	for(i=0; i<TOTAL_AXIS; i++)
-	{
-		pData->Kp[i] = Kp_default[i];
-		pData->Kd[i] = Kd_default[i];
-	}
 
 	for(i=0; i<MAX_MOTION_TIME_FRAME; i++)
 	{
@@ -152,7 +146,7 @@ void __RtCyclicCallback( void *UserDataPtr )
 
 	// state
 	static F64_T	CB_targetTheta[TOTAL_AXIS];
-	I32_T			actualPosition[TOTAL_AXIS];
+	I32_T			actualEncoderPos[TOTAL_AXIS];
 	F64_T			actualTheta[TOTAL_AXIS];
 	F64_T			errorTheta[TOTAL_AXIS];
 	F64_T			errorThetaDot[TOTAL_AXIS];
@@ -170,7 +164,7 @@ void __RtCyclicCallback( void *UserDataPtr )
 	if(cnt==0)
 	{
 		for(k=0; k<TOTAL_AXIS; k++){
-			actualPosition[k] = 0;
+			actualEncoderPos[k] = 0;
 			CB_targetTheta[k] = 0;
 			//CB_targetPosition[k] = 0;
 			preErrorTheta[k] = 0;
@@ -188,8 +182,8 @@ void __RtCyclicCallback( void *UserDataPtr )
 		// variabls needed to be updated every cycle
 		for(k=0; k<TOTAL_AXIS; k++) 
 		{
-			NEC_CoE402GetActualPosition( pData->axis[k], &actualPosition[k]);
-			actualTheta[k] = ((F64_T)actualPosition[k]) / axis_theta_to_motor_revolution[k];	
+			NEC_CoE402GetActualPosition( pData->axis[k], &actualEncoderPos[k]);
+			actualTheta[k] = ((F64_T)actualEncoderPos[k]) / axis_theta_to_motor_resolution[k];	
 		}
 
 		// flags
@@ -291,7 +285,8 @@ void __RtCyclicCallback( void *UserDataPtr )
 			for(k=0; k<TOTAL_AXIS; k++)
 			{
 				errorTheta[k] = CB_targetTheta[k] - actualTheta[k];
-				errorThetaSum[k] = errorThetaSum[k] + errorTheta[k];
+				if(errorThetaSum[k] < maxErrorThetaSum)
+					errorThetaSum[k] = errorThetaSum[k] + errorTheta[k];
 				errorThetaDot[k] = (errorTheta[k] - preErrorTheta[k]) / (((F64_T)pData->cycleTime) * MILISECOND_TO_SECOND);
 				preErrorTheta[k] = errorTheta[k];
 				targetTorque[k] = (pData->Kp[k] * errorTheta[k] + pData->Ki[k] * errorThetaSum[k] + pData->Kd[k] * errorThetaDot[k]) * motor_direction[k];
