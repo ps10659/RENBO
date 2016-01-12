@@ -66,16 +66,16 @@ typedef struct
 	BOOL_T		HOMING_allHomeSensorReachFlag;
 	
 
-	// PP_Spline related variables
-	BOOL_T		PP_Spline_singleMovementCompleteFlag;
-	F64_T		PP_Spline_initialTheta[TOTAL_AXIS];
-	F64_T		PP_Spline_targetTheta[TOTAL_AXIS];
-	F64_T		PP_Spline_splineVec[MAX_MOTION_TIME_FRAME];
-	I32_T		PP_Spline_motionTimeFrame;
-	I32_T		PP_Spline_currPointCnt;
-	I32_T		PP_Spline_motionType;
-	F64_T		PP_Spline_motionTimePeriod;
-	I32_T		PP_Spline_totalPointCnt[TOTAL_MOTION_NUMBER];
+	// PP related variables
+	BOOL_T		PP_singleMovementCompleteFlag;
+	F64_T		PP_initialTheta[TOTAL_AXIS];
+	F64_T		PP_targetTheta[TOTAL_AXIS];
+	F64_T		PP_splineVec[MAX_MOTION_TIME_FRAME];
+	I32_T		PP_motionTimeFrame;
+	I32_T		PP_currPointCnt;
+	I32_T		PP_motionType;
+	F64_T		PP_motionTimePeriod;
+	I32_T		PP_totalPointCnt[TOTAL_MOTION_NUMBER];
 
 	// motor status
 	F64_T		actualTheta[TOTAL_AXIS];
@@ -135,9 +135,9 @@ bool goto_HOLD(WIN32_DAT *pWinData);
 bool goto_HOMING_MODE(WIN32_DAT *pWinData);
 bool goto_HOMING_RUN(WIN32_DAT *pWinData);
 
-bool goto_PP_Spline_MODE(WIN32_DAT *pWinData);
-bool goto_PP_Spline_CHECK_IK_LIMIT(WIN32_DAT *pWinData);
-bool goto_PP_Spline_RUN(WIN32_DAT *pWinData);
+bool goto_PP_MODE(WIN32_DAT *pWinData);
+bool goto_PP_CHECK_IK_LIMIT(WIN32_DAT *pWinData);
+bool goto_PP_RUN(WIN32_DAT *pWinData);
 
 bool goto_CSP_MODE(WIN32_DAT *pWinData);
 bool goto_CSP_CHECK_IK_LIMIT(WIN32_DAT *pWinData);
@@ -149,7 +149,7 @@ bool goto_WRITE_FILE(WIN32_DAT *pWinData);
 
 void UpdateSplineVector(WIN32_DAT *pWinData, int splineType, F64_T motionTimePeriod);
 void UpdataAllActualTheta(WIN32_DAT *pWinData);
-//void UpdataPP_Spline_initialTheta(WIN32_DAT *pWinData);
+//void UpdataPP_initialTheta(WIN32_DAT *pWinData);
 void PrintAllActualTheta(WIN32_DAT *pWinData);
 void PrintUserDefinedTheta();
 void UpdateAllKp(WIN32_DAT *pWinData);
@@ -160,7 +160,7 @@ void PrintAllKd(WIN32_DAT *pWinData);
 
 //void PP_User_Input(WIN32_DAT *pWinData);
 //bool PP_setMotionType(WIN32_DAT *pWinData, F64_T targetTheta[][GoHomeTotalPoint], const int GoHomeTotalPoint);
-void SetPP_Spline_targetTheta(WIN32_DAT *pWinData, int motionType, int currPointCnt);
+void SetPP_targetTheta(WIN32_DAT *pWinData, int motionType, int currPointCnt);
 void UpdataUserDefineData();
 
 void UpdateWalkingTrajectories(WIN32_DAT *pWinData);

@@ -58,12 +58,12 @@ int _tmain(int argc)
 	}
 
 	// initital WinData
-	pWinData->PP_Spline_totalPointCnt[0] = UserDefineTotalPoint; 
-	pWinData->PP_Spline_totalPointCnt[1] = GoHomeTotalPoint; 
-	pWinData->PP_Spline_totalPointCnt[2] = SquatTotalPoint; 
-	pWinData->PP_Spline_totalPointCnt[3] = WalkingInitialReversePoint; 
-	pWinData->PP_Spline_totalPointCnt[4] = WalkingInitialReversePoint; 
-	pWinData->PP_Spline_totalPointCnt[5] = 1; 
+	pWinData->PP_totalPointCnt[0] = UserDefineTotalPoint; 
+	pWinData->PP_totalPointCnt[1] = GoHomeTotalPoint; 
+	pWinData->PP_totalPointCnt[2] = SquatTotalPoint; 
+	pWinData->PP_totalPointCnt[3] = WalkingInitialReversePoint; 
+	pWinData->PP_totalPointCnt[4] = WalkingInitialReversePoint; 
+	pWinData->PP_totalPointCnt[5] = 1; 
 
 	// update parameter
 	ImportParameterTxt(pWinData);
@@ -204,7 +204,7 @@ bool TriggerEvent(int key, WIN32_DAT *pWinData)
 				case '0':
 					return goto_HOMING_MODE(pWinData);
 				case '1':
-					return goto_PP_Spline_MODE(pWinData);
+					return goto_PP_MODE(pWinData);
 				case '2':
 					return goto_CSP_MODE(pWinData);
 				case 's':
@@ -326,11 +326,11 @@ bool TriggerEvent(int key, WIN32_DAT *pWinData)
 					printf("%c is not a valid input.\n", key);
 					return 0;
 			}
-		case PP_Spline_MODE:
+		case PP_MODE:
 			switch (key)
 			{
 				case '1':
-					return goto_PP_Spline_CHECK_IK_LIMIT(pWinData);
+					return goto_PP_CHECK_IK_LIMIT(pWinData);
 				case 'h':
 					return goto_HOLD(pWinData);
 				case ESC_KEY:
@@ -340,13 +340,13 @@ bool TriggerEvent(int key, WIN32_DAT *pWinData)
 					return 0;
 			}
 
-		case PP_Spline_CHECK_IK_LIMIT:
+		case PP_CHECK_IK_LIMIT:
 			switch (key)
 			{
 				case '1':
-					return goto_PP_Spline_RUN(pWinData);
+					return goto_PP_RUN(pWinData);
 				case '2':
-					return goto_PP_Spline_MODE(pWinData);
+					return goto_PP_MODE(pWinData);
 				case 'h':
 					return goto_HOLD(pWinData);
 				case ESC_KEY:
@@ -356,7 +356,7 @@ bool TriggerEvent(int key, WIN32_DAT *pWinData)
 					return 0;
 			}
 
-		case PP_Spline_RUN:
+		case PP_RUN:
 			switch (key)
 			{
 				case 'h':
@@ -531,7 +531,7 @@ bool goto_HOLD(WIN32_DAT *pWinData)
 {
 	printf("\ncurrent state: HOLD\n");
 	printf("next state   : HOMING_MODE(0)\n");
-	printf("               PP_Spline_MODE(1)\n");
+	printf("               PP_MODE(1)\n");
 	printf("               CSP_MODE(2)\n");
 	printf("               STOP_BUT_SOFT(s)\n");
 		
@@ -586,17 +586,17 @@ bool goto_HOMING_RUN(WIN32_DAT *pWinData)
 			WritePose(pWinData);
 			for(int i=0; i<TOTAL_AXIS; i++)
 			{
-				pWinData->PP_Spline_targetTheta[i] = pWinData->HOMING_homeSensorTheta[i] + pWinData->HOMING_homePositionOffset[i];
+				pWinData->PP_targetTheta[i] = pWinData->HOMING_homeSensorTheta[i] + pWinData->HOMING_homePositionOffset[i];
 				//腳伸直->腳三點共線的角度差
-				if(i==23 || i==29) pWinData->PP_Spline_targetTheta[i] += -15.65 * PI / 180.0;	//hip pitch
-				else if(i==24 || i==30) pWinData->PP_Spline_targetTheta[i] += 34.08 * PI / 180.0;	//knee
-				else if(i==25 || i==31) pWinData->PP_Spline_targetTheta[i] += -18.43 * PI / 180.0;	//ankld pitch
+				if(i==23 || i==29) pWinData->PP_targetTheta[i] += -15.65 * PI / 180.0;	//hip pitch
+				else if(i==24 || i==30) pWinData->PP_targetTheta[i] += 34.08 * PI / 180.0;	//knee
+				else if(i==25 || i==31) pWinData->PP_targetTheta[i] += -18.43 * PI / 180.0;	//ankld pitch
 			}
 
 			UpdateSplineVector(pWinData, splineType, goHomeTimePeriod);
 
-			pWinData->currentState = PP_Spline_RUN;
-			pWinData->PP_Spline_singleMovementCompleteFlag = 0;
+			pWinData->currentState = PP_RUN;
+			pWinData->PP_singleMovementCompleteFlag = 0;
 			pWinData->resetCntFlag = 1;
 			pWinData->holdSwitch = 0;
 			motionCnt += 1;
@@ -624,7 +624,7 @@ bool goto_HOMING_RUN(WIN32_DAT *pWinData)
 }
 
 ////////////////////////////////////////////////////////
-bool goto_PP_Spline_MODE(WIN32_DAT *pWinData)
+bool goto_PP_MODE(WIN32_DAT *pWinData)
 {
 
 	printf("\nChoose \"Motion\" and \"Time Period(s)\": \n");
@@ -635,14 +635,14 @@ bool goto_PP_Spline_MODE(WIN32_DAT *pWinData)
 	printf("         XXXXXWalking Initial ReverseSquat(4)\n");
 	printf("         ReadPoseTxt(5)\n");
 	//printf("               Shake Hand(4)\n");
-	cin >> pWinData->PP_Spline_motionType >> pWinData->PP_Spline_motionTimePeriod;
-	pWinData->PP_Spline_currPointCnt = 0;
+	cin >> pWinData->PP_motionType >> pWinData->PP_motionTimePeriod;
+	pWinData->PP_currPointCnt = 0;
 
-	if(pWinData->PP_Spline_motionType == 0) 
+	if(pWinData->PP_motionType == 0) 
 	{
 		UpdataUserDefineData();
 	}
-	else if(pWinData->PP_Spline_motionType == 3) 
+	else if(pWinData->PP_motionType == 3) 
 	{
 		printf("\nContinue(1)\n");
 		printf("Update walking trajectory(2)\n");
@@ -662,52 +662,52 @@ bool goto_PP_Spline_MODE(WIN32_DAT *pWinData)
 			}
 		}
 	}
-	else if(pWinData->PP_Spline_motionType == 5) 
+	else if(pWinData->PP_motionType == 5) 
 	{
 		UpdateReadPoseTxtTheta(pWinData);
 	}
 
-	printf("\ncurrent state: PP_Spline_MODE\n");
-	printf("next state   : PP_Spline_CHECK_IK_LIMIT(1)\n");
+	printf("\ncurrent state: PP_MODE\n");
+	printf("next state   : PP_CHECK_IK_LIMIT(1)\n");
 	printf("               HOLD(h)\n");
 
-	pWinData->currentState = PP_Spline_MODE;
-	RtSetEvent(oBhandle[PP_Spline_MODE]);
+	pWinData->currentState = PP_MODE;
+	RtSetEvent(oBhandle[PP_MODE]);
 	return 0;
 }
-bool goto_PP_Spline_CHECK_IK_LIMIT(WIN32_DAT *pWinData)
+bool goto_PP_CHECK_IK_LIMIT(WIN32_DAT *pWinData)
 {
-	printf("\ncurrent state: PP_Spline_CHECK_IK_LIMIT\n");
-	printf("next state   : PP_Spline_RUN(1)\n");
-	printf("               PP_Spline_MODE(2)\n");
+	printf("\ncurrent state: PP_CHECK_IK_LIMIT\n");
+	printf("next state   : PP_RUN(1)\n");
+	printf("               PP_MODE(2)\n");
 	printf("               HOLD(h)\n");
 	
-	pWinData->currentState = PP_Spline_CHECK_IK_LIMIT;
-	RtSetEvent(oBhandle[PP_Spline_CHECK_IK_LIMIT]);
+	pWinData->currentState = PP_CHECK_IK_LIMIT;
+	RtSetEvent(oBhandle[PP_CHECK_IK_LIMIT]);
 	return 0;
 }
-bool goto_PP_Spline_RUN(WIN32_DAT *pWinData)
+bool goto_PP_RUN(WIN32_DAT *pWinData)
 {
 	int key;
 	int splineType = 3;
 
-	printf("\ncurrent state: PP_Spline_RUN\n");
+	printf("\ncurrent state: PP_RUN\n");
 	printf("next state: Hold(h)\n");
 	printf("   \n");
 
-	pWinData->currentState = PP_Spline_RUN;
-	RtSetEvent(oBhandle[PP_Spline_RUN]);
+	pWinData->currentState = PP_RUN;
+	RtSetEvent(oBhandle[PP_RUN]);
 
-	pWinData->PP_Spline_singleMovementCompleteFlag = 1; // initialize
+	pWinData->PP_singleMovementCompleteFlag = 1; // initialize
 
-	while(pWinData->PP_Spline_currPointCnt < pWinData->PP_Spline_totalPointCnt[pWinData->PP_Spline_motionType])
+	while(pWinData->PP_currPointCnt < pWinData->PP_totalPointCnt[pWinData->PP_motionType])
 	{
-		if(pWinData->PP_Spline_singleMovementCompleteFlag == 1)
+		if(pWinData->PP_singleMovementCompleteFlag == 1)
 		{
-			SetPP_Spline_targetTheta(pWinData, pWinData->PP_Spline_motionType, pWinData->PP_Spline_currPointCnt);
-			UpdateSplineVector(pWinData, splineType, pWinData->PP_Spline_motionTimePeriod);
+			SetPP_targetTheta(pWinData, pWinData->PP_motionType, pWinData->PP_currPointCnt);
+			UpdateSplineVector(pWinData, splineType, pWinData->PP_motionTimePeriod);
 
-			pWinData->PP_Spline_singleMovementCompleteFlag = 0;
+			pWinData->PP_singleMovementCompleteFlag = 0;
 			pWinData->resetCntFlag = 1;
 			pWinData->holdSwitch = 0;
 		}
@@ -796,20 +796,20 @@ void UpdateSplineVector(WIN32_DAT *pWinData, int splineType, F64_T motionTimePer
 	int i, vec_length;
 	Eigen::VectorXd spline_vec;
 	vec_length = (int)(motionTimePeriod * SECOND_TO_MILISECOND / (F64_T)pWinData->cycleTime);
-	pWinData->PP_Spline_motionTimeFrame = vec_length;
+	pWinData->PP_motionTimeFrame = vec_length;
 	//printf("\n length = %d\n\n", vec_length);
 	spline_vec.resize(vec_length);
 
 	for(i=0; i<MAX_MOTION_TIME_FRAME; i++)
 	{
-		pWinData->PP_Spline_splineVec[i] = 1;
+		pWinData->PP_splineVec[i] = 1;
 	}
 
 	if(splineType == 1){
 		spline_vec.row(0).setLinSpaced(vec_length, 0, 1-1/vec_length);
 		for(i=0; i<vec_length; i++)
 		{
-			pWinData->PP_Spline_splineVec[i] = spline_vec(i);
+			pWinData->PP_splineVec[i] = spline_vec(i);
 		}
 	}
 	else if(splineType == 3){
@@ -834,7 +834,7 @@ void UpdateSplineVector(WIN32_DAT *pWinData, int splineType, F64_T motionTimePer
 
 		for(double j=0; j<vec_length; j++){
 			//printf("%e\n", S(0) * pow(j,3) + S(1) * pow(j,2) + S(2) * j + S(3));
-			pWinData->PP_Spline_splineVec[(int)j] = S(0) * pow(j,3) + S(1) * pow(j,2) + S(2) * j + S(3);
+			pWinData->PP_splineVec[(int)j] = S(0) * pow(j,3) + S(1) * pow(j,2) + S(2) * j + S(3);
 		}
 
 	}
@@ -863,12 +863,12 @@ void UpdateSplineVector(WIN32_DAT *pWinData, int splineType, F64_T motionTimePer
 		S = A.inverse() * B;
 
 		for(double j=0; j<vec_length; j++){
-			pWinData->PP_Spline_splineVec[(int)j] = S(0) * pow(j,5) + S(1) * pow(j,4) + S(2) * pow(j,3) + S(3) * pow(j,2) + S(4) * j + S(5);
+			pWinData->PP_splineVec[(int)j] = S(0) * pow(j,5) + S(1) * pow(j,4) + S(2) * pow(j,3) + S(3) * pow(j,2) + S(4) * j + S(5);
 		}
 	}
 	//for(i=0; i<vec_length; i=i+300)
 	//{
-	//	printf("%f ", pWinData->PP_Spline_splineVec[(int)i]);
+	//	printf("%f ", pWinData->PP_splineVec[(int)i]);
 	//}
 }
 void UpdataAllActualTheta(WIN32_DAT *pWinData)
@@ -876,12 +876,12 @@ void UpdataAllActualTheta(WIN32_DAT *pWinData)
 	pWinData->updateAllActualThetaFlag = 1;
 	while(pWinData->updateAllActualThetaFlag){}
 }
-//void UpdataPP_Spline_initialTheta(WIN32_DAT *pWinData)
+//void UpdataPP_initialTheta(WIN32_DAT *pWinData)
 //{
 //	int i;
 //	for(i=0; i<TOTAL_AXIS; i++) 
 //	{
-//		pWinData->PP_Spline_initialTheta[i] = pWinData->actualTheta[i];
+//		pWinData->PP_initialTheta[i] = pWinData->actualTheta[i];
 //	}
 //}
 void PrintAllActualTheta(WIN32_DAT *pWinData)
@@ -955,7 +955,7 @@ void PrintAllKd(WIN32_DAT *pWinData)
 	printf("\n");
 }
 
-void SetPP_Spline_targetTheta(WIN32_DAT *pWinData, int motionType, int currPointCnt)
+void SetPP_targetTheta(WIN32_DAT *pWinData, int motionType, int currPointCnt)
 {
 	int i;
 	switch(motionType)
@@ -963,37 +963,37 @@ void SetPP_Spline_targetTheta(WIN32_DAT *pWinData, int motionType, int currPoint
 		case 0:
 			for(i=0; i<TOTAL_AXIS; i++)
 			{
-				pWinData->PP_Spline_targetTheta[i] = UserDefineTheta[currPointCnt][i]*PI/180.0;
+				pWinData->PP_targetTheta[i] = UserDefineTheta[currPointCnt][i]*PI/180.0;
 			}
 			break;
 		case 1:
 			for(i=0; i<TOTAL_AXIS; i++)
 			{
-				pWinData->PP_Spline_targetTheta[i] = HomeTheta[currPointCnt][i]*PI/180.0;
+				pWinData->PP_targetTheta[i] = HomeTheta[currPointCnt][i]*PI/180.0;
 			}
 			break;
 		case 2:
 			for(i=0; i<TOTAL_AXIS; i++)
 			{
-				pWinData->PP_Spline_targetTheta[i] = SquatTheta[currPointCnt][i]*PI/180.0;
+				pWinData->PP_targetTheta[i] = SquatTheta[currPointCnt][i]*PI/180.0;
 			}
 			break;
 		case 3:
 			for(i=0; i<TOTAL_AXIS; i++)
 			{
-				pWinData->PP_Spline_targetTheta[i] = WalkingInitialTheta[currPointCnt][i]*PI/180.0;
+				pWinData->PP_targetTheta[i] = WalkingInitialTheta[currPointCnt][i]*PI/180.0;
 			}
 			break;
 		case 4:
 			for(i=0; i<TOTAL_AXIS; i++)
 			{
-				pWinData->PP_Spline_targetTheta[i] = WalkingInitialReverseTheta[currPointCnt][i]*PI/180.0;
+				pWinData->PP_targetTheta[i] = WalkingInitialReverseTheta[currPointCnt][i]*PI/180.0;
 			}
 			break;
 		case 5:
 			for(i=0; i<TOTAL_AXIS; i++)
 			{
-				pWinData->PP_Spline_targetTheta[i] = ReadPoseTxtTheta[currPointCnt][i]*PI/180.0;
+				pWinData->PP_targetTheta[i] = ReadPoseTxtTheta[currPointCnt][i]*PI/180.0;
 			}
 			break;
 	}
@@ -1210,10 +1210,10 @@ void UpdateReadPoseTxtTheta(WIN32_DAT *pWinData)
 	printf("Import replay_pose.txt\n");
     fin.open("C:..\\pose.txt", ios::in);
 
-	fin >> pWinData->PP_Spline_totalPointCnt[5];
-	printf("totalPointCnt = %d\n", pWinData->PP_Spline_totalPointCnt[5]);
+	fin >> pWinData->PP_totalPointCnt[5];
+	printf("totalPointCnt = %d\n", pWinData->PP_totalPointCnt[5]);
 
-	for(i=0;i<pWinData->PP_Spline_totalPointCnt[5];i++)
+	for(i=0;i<pWinData->PP_totalPointCnt[5];i++)
 	{
 		for(j=0; j<TOTAL_AXIS; j++)
 		{

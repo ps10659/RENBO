@@ -60,11 +60,11 @@ main(
 	pData->firstTimeHoldFlag = 0;
 	//pData->PP_allMovementCompleteFlag = 1;
 	//pData->PP_singleMovementCompleteFlag = 1;
-	pData->PP_Spline_currPointCnt = 0;
+	pData->PP_currPointCnt = 0;
 
 	for(i=0; i<MAX_MOTION_TIME_FRAME; i++)
 	{
-		pData->PP_Spline_splineVec[i] = 0;
+		pData->PP_splineVec[i] = 0;
 	}
 
 
@@ -141,7 +141,7 @@ void __RtCyclicCallback( void *UserDataPtr )
 	// counter
 	static I32_T	cnt = 0; // global counter
 	static I32_T	HOMING_cnt = 0;
-	static I32_T	PP_Spline_cnt = 0;
+	static I32_T	PP_cnt = 0;
 	static I32_T	CSP_cnt = 0;
 
 	// state
@@ -169,7 +169,7 @@ void __RtCyclicCallback( void *UserDataPtr )
 			//CB_targetPosition[k] = 0;
 			preErrorTheta[k] = 0;
 			errorThetaSum[k] = 0;
-			pData->PP_Spline_singleMovementCompleteFlag = 1;
+			pData->PP_singleMovementCompleteFlag = 1;
 		}
 	}
 
@@ -215,7 +215,7 @@ void __RtCyclicCallback( void *UserDataPtr )
 		{
 			HOMING_cnt = 0;
 			CSP_cnt = 0;
-			PP_Spline_cnt = 0;
+			PP_cnt = 0;
 			pData->resetCntFlag = 0;
 		}
 
@@ -252,12 +252,12 @@ void __RtCyclicCallback( void *UserDataPtr )
 							pData->holdSwitch = 1;
 						}
 						break;
-					case PP_Spline_RUN:
-						PP_Spline_UpdateCbTargetTheta(CB_targetTheta, pData, actualTheta, &PP_Spline_cnt);
-						if(PP_Spline_cnt == pData->PP_Spline_motionTimeFrame) 
+					case PP_RUN:
+						PP_UpdateCbTargetTheta(CB_targetTheta, pData, actualTheta, &PP_cnt);
+						if(PP_cnt == pData->PP_motionTimeFrame) 
 						{
-							pData->PP_Spline_singleMovementCompleteFlag = 1;
-							pData->PP_Spline_currPointCnt++;
+							pData->PP_singleMovementCompleteFlag = 1;
+							pData->PP_currPointCnt++;
 							pData->resetCntFlag = 1;
 							pData->firstTimeHoldFlag = 0;
 							pData->holdSwitch = 1;
@@ -1525,25 +1525,25 @@ void HOMING_UpdateCbTargetTheta(F64_T *CB_targetTheta, USER_DAT *pData, F64_T *a
 	(*HOMING_cnt)++;
 
 }
-void PP_Spline_UpdateCbTargetTheta(F64_T *CB_targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *PP_Spline_cnt)
+void PP_UpdateCbTargetTheta(F64_T *CB_targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *PP_cnt)
 {
 	int i;
 
-	if((*PP_Spline_cnt) == 0)
+	if((*PP_cnt) == 0)
 	{
 		for(i=0; i<TOTAL_AXIS; i++)
 		{
-			pData->PP_Spline_initialTheta[i] = actualTheta[i];
+			pData->PP_initialTheta[i] = actualTheta[i];
 		}
 	}
 	else
 	{
 		for(i=0; i<TOTAL_AXIS; i++)
 		{
-			CB_targetTheta[i] = pData->PP_Spline_initialTheta[i] + (pData->PP_Spline_targetTheta[i] - pData->PP_Spline_initialTheta[i]) * pData->PP_Spline_splineVec[(*PP_Spline_cnt)];
+			CB_targetTheta[i] = pData->PP_initialTheta[i] + (pData->PP_targetTheta[i] - pData->PP_initialTheta[i]) * pData->PP_splineVec[(*PP_cnt)];
 		}
 	}
-	(*PP_Spline_cnt)++;
+	(*PP_cnt)++;
 
 }
 void CSP_UpdateCbTargetTheta(F64_T *CB_targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *CSP_cnt)

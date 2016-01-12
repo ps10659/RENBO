@@ -84,9 +84,9 @@
 #define	HOMING_CHECK_IK_LIMIT 22
 #define HOMING_RUN 23
 
-#define PP_Spline_MODE 31
-#define PP_Spline_CHECK_IK_LIMIT 32
-#define PP_Spline_RUN 33
+#define PP_MODE 31
+#define PP_CHECK_IK_LIMIT 32
+#define PP_RUN 33
 
 #define CSP_MODE 41
 #define CSP_CHECK_IK_LIMIT 42
@@ -143,16 +143,16 @@ typedef struct
 	BOOL_T		HOMING_allHomeSensorReachFlag;
 	
 
-	// PP_Spline related variables
-	BOOL_T		PP_Spline_singleMovementCompleteFlag;
-	F64_T		PP_Spline_initialTheta[TOTAL_AXIS];
-	F64_T		PP_Spline_targetTheta[TOTAL_AXIS];
-	F64_T		PP_Spline_splineVec[MAX_MOTION_TIME_FRAME];
-	I32_T		PP_Spline_motionTimeFrame;
-	I32_T		PP_Spline_currPointCnt;
-	I32_T		PP_Spline_motionType;
-	F64_T		PP_Spline_motionTimePeriod;
-	I32_T		PP_Spline_totalPointCnt[TOTAL_MOTION_NUMBER];
+	// PP related variables
+	BOOL_T		PP_singleMovementCompleteFlag;
+	F64_T		PP_initialTheta[TOTAL_AXIS];
+	F64_T		PP_targetTheta[TOTAL_AXIS];
+	F64_T		PP_splineVec[MAX_MOTION_TIME_FRAME];
+	I32_T		PP_motionTimeFrame;
+	I32_T		PP_currPointCnt;
+	I32_T		PP_motionType;
+	F64_T		PP_motionTimePeriod;
+	I32_T		PP_totalPointCnt[TOTAL_MOTION_NUMBER];
 
 	// motor status
 	F64_T		actualTheta[TOTAL_AXIS];
@@ -179,9 +179,9 @@ LPCSTR EVN_NAME[EVN_NUM] =
 	"HOMING_CHECK_IK_LIMIT",
 	"HOMING_RUN",
 
-	"PP_Spline_MODE",
-	"PP_Spline_CHECK_IK_LIMIT",
-	"PP_Spline_RUN",
+	"PP_MODE",
+	"PP_CHECK_IK_LIMIT",
+	"PP_RUN",
 
 	"CSP_MODE",
 	"CSP_CHECK_IK_LIMIT",
@@ -210,7 +210,7 @@ RTN_ERR MotorType_3890(CANAxis_T Axis);
 void HomingMethod35(USER_DAT *pData);
 
 void HOMING_UpdateCbTargetTheta(F64_T *CB_targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *homeSensorValue, I32_T *HOMING_cnt);
-void PP_Spline_UpdateCbTargetTheta(F64_T *CB_targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *CSP_cnt);
+void PP_UpdateCbTargetTheta(F64_T *CB_targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *CSP_cnt);
 void CSP_UpdateCbTargetTheta(F64_T *CB_targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *CSP_cnt);
 
 I16_T TargetTorqueTrimming(F64_T tempTorque);
