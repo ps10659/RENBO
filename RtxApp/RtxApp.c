@@ -74,10 +74,7 @@ main(
 
 	while(1)
 	{
-
-		ret = RtWaitForSingleObject( oBhandle[START_MASTER_AND_SLAVES], 5 );
-		//oBhandle:要等待的觸發事件
-		//>0: milisecond, -1:waiting forever
+		ret = RtWaitForSingleObject( oBhandle[START_MASTER_AND_SLAVES], 5 );	//oBhandle:要等待的觸發事; >0: milisecond, -1:waiting forever
 		if( ret == 0 )
 		{
 			RtPrintf("START_MASTER_AND_SLAVES...\n");
@@ -95,7 +92,7 @@ main(
 			RtPrintf("done\n\n");
 		}
 
-		ret = RtWaitForSingleObject( oBhandle[SERVO_ON_AND_SET_CURR_POS_AS_HOME], 5 ); //?????????????????????????????????????????????????
+		ret = RtWaitForSingleObject( oBhandle[SERVO_ON_AND_SET_CURR_POS_AS_HOME], 5 );
 		if( ret == 0 )
 		{
 			RtPrintf( "SERVO_ON_AND_SET_CURR_POS_AS_HOME...\n" );

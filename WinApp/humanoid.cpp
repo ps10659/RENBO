@@ -117,6 +117,31 @@ int _tmain(int argc)
 				//printf("%d\n", (I32_T)((pWinData->InputProcessDataPtr[784]*256*256*256 + pWinData->InputProcessDataPtr[783]*256*256 + pWinData->InputProcessDataPtr[782]*256 + pWinData->InputProcessDataPtr[781]) / axis_theta_to_motor_resolution[24] * 180.0/PI));
 				//printf("%u %u\n", pWinData->InPDSizeInByte, pWinData->OutPDSizeInByte);
 			}
+			else if(key == 'g')
+			{
+				printf("\nContinue(1)\n");
+				printf("Update walking trajectory(2)\n");
+				while(1)
+				{
+					if (_kbhit())
+					{
+						int key = _getch();
+						if(key == '1') break;
+						else if(key == '2')
+						{
+							printf("\n   Updating...");
+							UpdateWalkingTrajectories(pWinData);
+							break;
+						}
+					}
+				}
+
+					pWinData->resetCntFlag = 1;
+					pWinData->holdSwitch = 0;
+
+					pWinData->currentState = CSP_RUN;
+
+			}
 			else
 			{
 				breakWhile = TriggerEvent(key, pWinData);
@@ -752,7 +777,6 @@ bool goto_CSP_MODE(WIN32_DAT *pWinData)
 	printf("               HOLD(h)\n");
 
 	pWinData->currentState = CSP_MODE;
-	RtSetEvent(oBhandle[CSP_MODE]);
 	return 0;
 }
 bool goto_CSP_CHECK_IK_LIMIT(WIN32_DAT *pWinData)
@@ -762,7 +786,6 @@ bool goto_CSP_CHECK_IK_LIMIT(WIN32_DAT *pWinData)
 	printf("               HOLD(h)\n");
 	
 	pWinData->currentState = CSP_CHECK_IK_LIMIT;
-	RtSetEvent(oBhandle[CSP_CHECK_IK_LIMIT]);
 	return 0;
 }
 bool goto_CSP_RUN(WIN32_DAT *pWinData)
@@ -775,7 +798,6 @@ bool goto_CSP_RUN(WIN32_DAT *pWinData)
 	pWinData->holdSwitch = 0;
 
 	pWinData->currentState = CSP_RUN;
-	RtSetEvent(oBhandle[CSP_RUN]);
 	return 0;
 }
 
@@ -894,7 +916,7 @@ void PrintAllActualTheta(WIN32_DAT *pWinData)
 		if(i%3 == 2) printf("\n");
 	}
 	printf("\n");
-}\
+}
 void PrintUserDefinedTheta()
 {
 	int i;
