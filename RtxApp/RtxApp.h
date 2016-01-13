@@ -71,7 +71,7 @@
 #define BEGINNING 0
 #define START_MASTER_AND_SLAVES 1
 #define SET_MOTOR_PARAMETERS 2
-#define SERVO_ON_AND_SET_CURR_POS_AS_HOME 3
+#define SET_CURR_POS_HOME 3
 #define HOMING 4
 #define GO_HOME 5
 #define STOP_AND_HOLD 6
@@ -120,10 +120,14 @@ typedef struct
 	BOOL_T		setServoOffFlag;
 	BOOL_T		holdSwitch;
 	BOOL_T		setTargetTorqueSwitch;	// 1/0: torque on/off
-	BOOL_T		firstTimeHoldFlag;
+	BOOL_T		Flag_HoldPosSaved;
 	BOOL_T		home35CompleteFlag;
 	BOOL_T		updateAllActualThetaFlag;
 	BOOL_T		resetCntFlag;
+
+	BOOL_T		Flag_StartMasterDone;
+	BOOL_T		Flag_SetMotorParameterDone;
+	BOOL_T		Flag_SetCurrPosHomeDone;
 
 
 
@@ -166,7 +170,7 @@ LPCSTR EVN_NAME[EVN_NUM] =
 	"BEGINNING",
 	"START_MASTER_AND_SLAVES",
 	"SET_MOTOR_PARAMETERS",
-	"SERVO_ON_AND_SET_CURR_POS_AS_HOME",
+	"SET_CURR_POS_HOME",
 	"HOLD"
 	"HOMING",
 	"GO_HOME",

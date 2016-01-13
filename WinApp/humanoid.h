@@ -43,10 +43,16 @@ typedef struct
 	BOOL_T		setServoOffFlag;
 	BOOL_T		holdSwitch;
 	BOOL_T		setTargetTorqueSwitch;	// 1/0: torque on/off
-	BOOL_T		firstTimeHoldFlag;
+	BOOL_T		Flag_HoldPosSaved;
 	BOOL_T		home35CompleteFlag;
 	BOOL_T		updateAllActualThetaFlag;
 	BOOL_T		resetCntFlag;
+
+	BOOL_T		Flag_StartMasterDone;
+	BOOL_T		Flag_SetMotorParameterDone;
+	BOOL_T		Flag_SetCurrPosHomeDone;
+
+
 
 
 
@@ -123,7 +129,7 @@ bool TriggerEvent(int key, WIN32_DAT *pWinData);
 
 bool goto_START_MASTER_AND_SLAVES(WIN32_DAT *pWinData);
 bool goto_SET_MOTOR_PARAMETERS(WIN32_DAT *pWinData);
-bool goto_SERVO_ON_AND_SET_CURR_POS_AS_HOME(WIN32_DAT *pWinData);
+bool goto_SET_CURR_POS_HOME(WIN32_DAT *pWinData);
 bool goto_HOMING(WIN32_DAT *pWinData);
 bool goto_GO_HOME(WIN32_DAT *pWinData);
 bool goto_STOP_AND_HOLD(WIN32_DAT *pWinData);
@@ -149,7 +155,6 @@ bool goto_WRITE_FILE(WIN32_DAT *pWinData);
 
 void UpdateSplineVector(WIN32_DAT *pWinData, int splineType, F64_T motionTimePeriod);
 void UpdataAllActualTheta(WIN32_DAT *pWinData);
-//void UpdataPP_initialTheta(WIN32_DAT *pWinData);
 void PrintAllActualTheta(WIN32_DAT *pWinData);
 void PrintUserDefinedTheta();
 void UpdateAllKp(WIN32_DAT *pWinData);
@@ -171,3 +176,11 @@ void ImportParameterTxt(WIN32_DAT *pWinData);
 void PrintImportParameterTxt(WIN32_DAT *pWinData);
 void WritePose(WIN32_DAT *pWinData);
 void UpdateReadPoseTxtTheta(WIN32_DAT *pWinData);
+
+
+
+void InitPwindata(WIN32_DAT *pWinData);
+void StartMaster(WIN32_DAT *pWinData);
+void SetMotorParam(WIN32_DAT *pWinData);
+void SetCurrPosHome(WIN32_DAT *pWinData);
+void HoldPos(WIN32_DAT *pWinData);
