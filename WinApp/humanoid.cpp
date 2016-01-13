@@ -58,6 +58,8 @@ int _tmain(int argc)
 	}
 
 	// initital WinData
+	InitPwindata(pWinData);
+
 	pWinData->PP_totalPointCnt[0] = UserDefineTotalPoint; 
 	pWinData->PP_totalPointCnt[1] = GoHomeTotalPoint; 
 	pWinData->PP_totalPointCnt[2] = SquatTotalPoint; 
@@ -73,11 +75,28 @@ int _tmain(int argc)
 	printf("WIN32_READY\n");
 	printf("=======================\n\n");
 
-	printf("current state: BEGINNING\n");
-	printf("next state   : START_MASTER_AND_SLAVES(1)\n\n");
+
+
+
+
+	StartMaster(pWinData);
+	SetMotorParam(pWinData);
+	SetCurrPosHome(pWinData);
+	HoldPos(pWinData);
+
+
+
+
+	cout << "@@" << endl;
+	system("pause");
+
+
+
+
+
 
 	// keyboard input loop
-	while(1)
+	while(0)
 	{
 		while(pWinData->stateTransitionFlag){} // 這個應該沒用= =之後再修正
 
@@ -201,7 +220,7 @@ bool TriggerEvent(int key, WIN32_DAT *pWinData)
 			switch (key)
 			{
 				case '1':
-					return goto_SERVO_ON_AND_SET_CURR_POS_AS_HOME(pWinData);
+					return goto_SET_CURR_POS_HOME(pWinData);
 				case ESC_KEY:
 					return goto_CLOSE_MASTER(pWinData);
 				default:
@@ -209,13 +228,13 @@ bool TriggerEvent(int key, WIN32_DAT *pWinData)
 					return 0;
 			}
 
-		case SERVO_ON_AND_SET_CURR_POS_AS_HOME:
+		case SET_CURR_POS_HOME:
 			switch (key)
 			{
 				case '1':
 					return goto_HOLD(pWinData);
 				case '2':
-					return goto_SERVO_ON_AND_SET_CURR_POS_AS_HOME(pWinData);
+					return goto_SET_CURR_POS_HOME(pWinData);
 				case ESC_KEY:
 					return goto_CLOSE_MASTER(pWinData);
 				default:
@@ -245,7 +264,7 @@ bool TriggerEvent(int key, WIN32_DAT *pWinData)
 			switch (key)
 			{
 				case '1':
-					return goto_SERVO_ON_AND_SET_CURR_POS_AS_HOME(pWinData);
+					return goto_SET_CURR_POS_HOME(pWinData);
 				case ESC_KEY:
 					return goto_CLOSE_MASTER(pWinData);
 				default:
@@ -257,7 +276,7 @@ bool TriggerEvent(int key, WIN32_DAT *pWinData)
 			switch (key)
 			{
 				case '1':
-					return goto_SERVO_ON_AND_SET_CURR_POS_AS_HOME(pWinData);
+					return goto_SET_CURR_POS_HOME(pWinData);
 				case 'h':
 					return goto_STOP_AND_HOLD(pWinData);
 				case 's':
@@ -301,7 +320,7 @@ bool TriggerEvent(int key, WIN32_DAT *pWinData)
 				case '1':
 					return goto_HOLD(pWinData);
 				case '2':
-					return goto_SERVO_ON_AND_SET_CURR_POS_AS_HOME(pWinData);
+					return goto_SET_CURR_POS_HOME(pWinData);
 				case '3':
 					return goto_WRITE_FILE(pWinData);
 				case ESC_KEY:
@@ -441,7 +460,7 @@ bool TriggerEvent(int key, WIN32_DAT *pWinData)
 			switch (key)
 			{
 				case '1':
-					return goto_SERVO_ON_AND_SET_CURR_POS_AS_HOME(pWinData);
+					return goto_SET_CURR_POS_HOME(pWinData);
 				case ESC_KEY:
 					return goto_CLOSE_MASTER(pWinData);
 				default:
@@ -464,30 +483,30 @@ bool goto_START_MASTER_AND_SLAVES(WIN32_DAT *pWinData)
 bool goto_SET_MOTOR_PARAMETERS(WIN32_DAT *pWinData)
 {
 	printf("\ncurrent state: SET_MOTOR_PARAMETERS\n");
-	printf("next state   : SERVO_ON_AND_SET_CURR_POS_AS_HOME(1)\n");
+	printf("next state   : SET_CURR_POS_HOME(1)\n");
 			
 	pWinData->currentState = SET_MOTOR_PARAMETERS;
 	RtSetEvent(oBhandle[SET_MOTOR_PARAMETERS]);
 	return 0;
 }
-bool goto_SERVO_ON_AND_SET_CURR_POS_AS_HOME(WIN32_DAT *pWinData)
+bool goto_SET_CURR_POS_HOME(WIN32_DAT *pWinData)
 {
-	printf("\ncurrent state: SERVO_ON_AND_SET_CURR_POS_AS_HOME\n");
+	printf("\ncurrent state: SET_CURR_POS_HOME\n");
 	printf("next state   : HOLD(1)\n");
-	printf("               SERVO_ON_AND_SET_CURR_POS_AS_HOME(2)\n");
+	printf("               SET_CURR_POS_HOME(2)\n");
 
 	//pWinData->home35CompleteFlag = 0;
 	//while(!pWinData->home35CompleteFlag){}		
 
 
-	pWinData->currentState = SERVO_ON_AND_SET_CURR_POS_AS_HOME;
-	RtSetEvent(oBhandle[SERVO_ON_AND_SET_CURR_POS_AS_HOME]);
+	pWinData->currentState = SET_CURR_POS_HOME;
+	RtSetEvent(oBhandle[SET_CURR_POS_HOME]);
 	return 0;
 }
 bool goto_HOMING(WIN32_DAT *pWinData)
 {
 	printf("\ncurrent state: HOMING\n");
-	printf("next state   : SERVO_ON_AND_SET_CURR_POS_AS_HOME(1)\n");		
+	printf("next state   : SET_CURR_POS_HOME(1)\n");		
 	
 
 	
@@ -498,7 +517,7 @@ bool goto_HOMING(WIN32_DAT *pWinData)
 bool goto_GO_HOME(WIN32_DAT *pWinData)
 {
 	printf("\ncurrent state: GO_HOME\n");
-	printf("next state   : SERVO_ON_AND_SET_CURR_POS_AS_HOME(1)\n");
+	printf("next state   : SET_CURR_POS_HOME(1)\n");
 	printf("               STOP_AND_HOLD(h)\n");
 	printf("               STOP_BUT_SOFT(s)\n");
 	
@@ -513,7 +532,7 @@ bool goto_STOP_AND_HOLD(WIN32_DAT *pWinData)
 	printf("               GO_HOME(0)\n");
 			
 	pWinData->currentState = STOP_AND_HOLD;
-	pWinData->firstTimeHoldFlag = 0;
+	pWinData->Flag_HoldPosSaved = 0;
 	pWinData->holdSwitch = 1;
 	RtSetEvent(oBhandle[STOP_AND_HOLD]);
 	return 0;
@@ -532,7 +551,7 @@ bool goto_SERVO_OFF(WIN32_DAT *pWinData)
 {
 	printf("\ncurrent state: SERVO_OFF\n");
 	printf("next state   : Servo On and Hold(1)\n");
-	printf("               SERVO_ON_AND_SET_CURR_POS_AS_HOME(2)\n");
+	printf("               SET_CURR_POS_HOME(2)\n");
 	printf("               WRITE_FILE(3)\n");
 	printf("               CLOSE_MASTER(esc)\n");
 
@@ -560,7 +579,7 @@ bool goto_HOLD(WIN32_DAT *pWinData)
 	printf("               CSP_MODE(2)\n");
 	printf("               STOP_BUT_SOFT(s)\n");
 		
-	pWinData->firstTimeHoldFlag = 0;
+	pWinData->Flag_HoldPosSaved = 0;
 	pWinData->holdSwitch = 1;
 	pWinData->setServoOnFlag = 1;
 	pWinData->setTargetTorqueSwitch = 1;
@@ -632,7 +651,7 @@ bool goto_HOMING_RUN(WIN32_DAT *pWinData)
 			key = _getch();
 			if(key == '1')
 			{
-				RtSetEvent(oBhandle[SERVO_ON_AND_SET_CURR_POS_AS_HOME]);
+				RtSetEvent(oBhandle[SET_CURR_POS_HOME]);
 				break;
 			}
 			else if(key == 'h' || key == 's')
@@ -804,7 +823,7 @@ bool goto_CSP_RUN(WIN32_DAT *pWinData)
 bool goto_WRITE_FILE(WIN32_DAT *pWinData)
 {
 	printf("\ncurrent state: WRITE_FILE\n");
-	printf("next state   : SERVO_ON_AND_SET_CURR_POS_AS_HOME(1)\n");
+	printf("next state   : SET_CURR_POS_HOME(1)\n");
 	printf("               CLOSE_MASTER(esc)\n");
 
 	pWinData->currentState = WRITE_FILE;
@@ -898,14 +917,6 @@ void UpdataAllActualTheta(WIN32_DAT *pWinData)
 	pWinData->updateAllActualThetaFlag = 1;
 	while(pWinData->updateAllActualThetaFlag){}
 }
-//void UpdataPP_initialTheta(WIN32_DAT *pWinData)
-//{
-//	int i;
-//	for(i=0; i<TOTAL_AXIS; i++) 
-//	{
-//		pWinData->PP_initialTheta[i] = pWinData->actualTheta[i];
-//	}
-//}
 void PrintAllActualTheta(WIN32_DAT *pWinData)
 {
 	int i;
@@ -1243,4 +1254,36 @@ void UpdateReadPoseTxtTheta(WIN32_DAT *pWinData)
 		}
 	}
 	fin.close();
+}
+
+void InitPwindata(WIN32_DAT *pWinData)
+{
+	pWinData->Flag_StartMasterDone = 0;
+	pWinData->Flag_SetMotorParameterDone = 0;
+	pWinData->Flag_SetCurrPosHomeDone = 0;
+}
+void StartMaster(WIN32_DAT *pWinData)
+{
+	RtSetEvent(oBhandle[START_MASTER_AND_SLAVES]);
+	while(!pWinData->Flag_StartMasterDone){}
+	pWinData->Flag_StartMasterDone = 0;
+}
+void SetMotorParam(WIN32_DAT *pWinData)
+{
+	RtSetEvent(oBhandle[SET_MOTOR_PARAMETERS]);
+	while(!pWinData->Flag_SetMotorParameterDone){}
+	pWinData->Flag_SetMotorParameterDone = 0;
+}
+void SetCurrPosHome(WIN32_DAT *pWinData)
+{
+	RtSetEvent(oBhandle[SET_CURR_POS_HOME]);
+	while(!pWinData->Flag_SetCurrPosHomeDone){}
+	pWinData->Flag_SetCurrPosHomeDone = 0;
+}
+void HoldPos(WIN32_DAT *pWinData)
+{
+	pWinData->Flag_HoldPosSaved = 0;
+	pWinData->holdSwitch = 1;
+	pWinData->setServoOnFlag = 1;
+	pWinData->setTargetTorqueSwitch = 1;
 }
