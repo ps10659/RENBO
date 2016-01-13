@@ -17,26 +17,16 @@ main(
 
 
 	sHhandle = RtCreateSharedMemory ((DWORD) PAGE_READWRITE , (DWORD) 0 , (DWORD) sizeof(USER_DAT) , SHM_NAME , &location);
-	//PAGE_READWRITE:Gives read-write access to the committed region of pages.
-	//0:不需要開MaximumSizeHigh
-	//sizeof(smemory):MaximumSizeLow的大小
-	//SHM_NAME:那塊sharememory的名稱
-	//&location:那塊Sharememory的位址
 	if( sHhandle == NULL )
 	{
 		RtPrintf("Create RtCreateSharedMemory fail\n");
 		ExitProcess(0);
 	}
-	pData = (USER_DAT *) (location);//將location強制轉型成char,由pData取代
+	pData = (USER_DAT *) (location);
 	
-
 	for(i=0; i<EVN_NUM; i++)
 	{
 		oBhandle[i] = RtCreateEvent( NULL, 0, FALSE, EVN_NAME[i] );
-		//NULL:忽略
-		//0: auto-reset event
-		//FALSE:The initial state of the event object. If TRUE, the initial state is signaled; otherwise, it is non-signaled.
-		//EVN_NAME:SHM_NAME:那塊sharememory的名稱
 		if( oBhandle == NULL )
 		{
 			RtPrintf("Create RtCreateEvent %s fail\n", EVN_NAME[i]);
@@ -52,7 +42,6 @@ main(
 
 	// init USER_DAT
 	pData->cycleTime = cycleTime;
-	pData->currentState = BEGINNING;
 	pData->stateTransitionFlag = 0;
 	pData->setServoOnFlag = 0;
 	pData->setServoOffFlag = 0;
@@ -216,14 +205,17 @@ void __RtCyclicCallback( void *UserDataPtr )
 			pData->resetCntFlag = 0;
 		}
 
-
-		// [IMPORTANT FLAG] decide whether give the target torque or zero torque
-		if( pData->setTargetTorqueSwitch )
+		switch(pData->MotorState)
 		{
+			case MotorState_NoTq:
+				for(k=0; k<TOTAL_AXIS; k++)
+				{
+					errorThetaSum[k] = 0;
+					NEC_CoE402SetTargetTorque( pData->axis[k], 0 );
+				}
+				break;
 
-			// hold mode, set CB_targetTheta = actualTheta
-			if( pData->holdSwitch )
-			{
+			case MotorState_Hold:
 				if(pData->Flag_HoldPosSaved == 0)
 				{	
 					for(k=0; k<TOTAL_AXIS; k++) 
@@ -234,80 +226,126 @@ void __RtCyclicCallback( void *UserDataPtr )
 
 					pData->Flag_HoldPosSaved = 1;
 				}
-			}
-			else
-			{
-				//op mode, set CB_targetTheta depend on operation mode
-				switch(pData->currentState)
+
+
+				for(k=0; k<TOTAL_AXIS; k++)
 				{
-					case HOMING_RUN:
-						HOMING_UpdateCbTargetTheta(CB_targetTheta, pData, actualTheta, homeSensorValue, &HOMING_cnt);
-						if(pData->HOMING_allHomeSensorReachFlag == 1)
-						{
-							pData->resetCntFlag = 1;
-							pData->Flag_HoldPosSaved = 0;
-							pData->holdSwitch = 1;
-						}
-						break;
-					case PP_RUN:
-						PP_UpdateCbTargetTheta(CB_targetTheta, pData, actualTheta, &PP_cnt);
-						if(PP_cnt == pData->PP_motionTimeFrame) 
-						{
-							pData->PP_singleMovementCompleteFlag = 1;
-							pData->PP_currPointCnt++;
-							pData->resetCntFlag = 1;
-							pData->Flag_HoldPosSaved = 0;
-							pData->holdSwitch = 1;
-						}
-						break;
-					case CSP_RUN:
-						CSP_UpdateCbTargetTheta(CB_targetTheta, pData, actualTheta, &CSP_cnt);
-						if(CSP_cnt >= pData->walkingTimeframe / pData->walkingSpeed) 
-						{
-							pData->resetCntFlag = 1;
-							pData->Flag_HoldPosSaved = 0;
-							pData->holdSwitch = 1;
-						}
-						break;
+					errorTheta[k] = CB_targetTheta[k] - actualTheta[k];
+					if(errorThetaSum[k] < maxErrorThetaSum)
+						errorThetaSum[k] = errorThetaSum[k] + errorTheta[k];
+					errorThetaDot[k] = (errorTheta[k] - preErrorTheta[k]) / (((F64_T)pData->cycleTime) * MILISECOND_TO_SECOND);
+					preErrorTheta[k] = errorTheta[k];
+					targetTorque[k] = (pData->Kp[k] * errorTheta[k] + pData->Ki[k] * errorThetaSum[k] + pData->Kd[k]  * errorThetaDot[k]) * motor_direction[k];
+					
+					if(pData->motorTorqueSwitch[k] == 0) targetTorque[k] = 0;
+					trimmedTargetTorque[k] = TargetTorqueTrimming( targetTorque[k] );
+
+					// !!
+					NEC_CoE402SetTargetTorque( pData->axis[k], trimmedTargetTorque[k] );
+					// !!
 				}
+				break;
 
-				// TODO
-				// safty guard
-				// if CB_targetTheta > limit, hold, errorThetaSum=0
-				// if CB_targetTheta - actualTheta > threshold, hold, errorThetaSum=0
+			case MotorState_Homing:
+				break;
 
-			}
+			case MotorState_PP:
+				break;
 
-			// compute and output targetTorque here
-			for(k=0; k<TOTAL_AXIS; k++)
-			{
-				errorTheta[k] = CB_targetTheta[k] - actualTheta[k];
-				if(errorThetaSum[k] < maxErrorThetaSum)
-					errorThetaSum[k] = errorThetaSum[k] + errorTheta[k];
-				errorThetaDot[k] = (errorTheta[k] - preErrorTheta[k]) / (((F64_T)pData->cycleTime) * MILISECOND_TO_SECOND);
-				preErrorTheta[k] = errorTheta[k];
-				targetTorque[k] = (pData->Kp[k] * errorTheta[k] + pData->Ki[k] * errorThetaSum[k] + pData->Kd[k]  * errorThetaDot[k]) * motor_direction[k];
-				
-				if(pData->motorTorqueSwitch[k] == 0) targetTorque[k] = 0;
-				trimmedTargetTorque[k] = TargetTorqueTrimming( targetTorque[k] );
-
-				// !!
-				NEC_CoE402SetTargetTorque( pData->axis[k], trimmedTargetTorque[k] );
-				// !!
-				
-			}
+			case MotorState_CSP:
+				break;
 		}
-		else
-		{
-			for(k=0; k<TOTAL_AXIS; k++)
-			{
-				errorThetaSum[k] = 0;
+		// [IMPORTANT FLAG] decide whether give the target torque or zero torque
+		//if( pData->setTargetTorqueSwitch )
+		//{
 
-				// !!
-				NEC_CoE402SetTargetTorque( pData->axis[k], 0 );
-				// !!
-			}
-		}
+		//	// hold mode, set CB_targetTheta = actualTheta
+		//	if( pData->holdSwitch )
+		//	{
+		//		if(pData->Flag_HoldPosSaved == 0)
+		//		{	
+		//			for(k=0; k<TOTAL_AXIS; k++) 
+		//			{	
+		//				errorThetaSum[k] = 0;
+		//				CB_targetTheta[k] = actualTheta[k];
+		//			}
+
+		//			pData->Flag_HoldPosSaved = 1;
+		//		}
+		//	}
+		//	else
+		//	{
+		//		//op mode, set CB_targetTheta depend on operation mode
+		//		switch(pData->MotorState)
+		//		{
+		//			case HOMING_RUN:
+		//				HOMING_UpdateCbTargetTheta(CB_targetTheta, pData, actualTheta, homeSensorValue, &HOMING_cnt);
+		//				if(pData->HOMING_allHomeSensorReachFlag == 1)
+		//				{
+		//					pData->resetCntFlag = 1;
+		//					pData->Flag_HoldPosSaved = 0;
+		//					pData->holdSwitch = 1;
+		//				}
+		//				break;
+		//			case PP_RUN:
+		//				PP_UpdateCbTargetTheta(CB_targetTheta, pData, actualTheta, &PP_cnt);
+		//				if(PP_cnt == pData->PP_motionTimeFrame) 
+		//				{
+		//					pData->PP_singleMovementCompleteFlag = 1;
+		//					pData->PP_currPointCnt++;
+		//					pData->resetCntFlag = 1;
+		//					pData->Flag_HoldPosSaved = 0;
+		//					pData->holdSwitch = 1;
+		//				}
+		//				break;
+		//			case CSP_RUN:
+		//				CSP_UpdateCbTargetTheta(CB_targetTheta, pData, actualTheta, &CSP_cnt);
+		//				if(CSP_cnt >= pData->walkingTimeframe / pData->walkingSpeed) 
+		//				{
+		//					pData->resetCntFlag = 1;
+		//					pData->Flag_HoldPosSaved = 0;
+		//					pData->holdSwitch = 1;
+		//				}
+		//				break;
+		//		}
+
+		//		// TODO
+		//		// safty guard
+		//		// if CB_targetTheta > limit, hold, errorThetaSum=0
+		//		// if CB_targetTheta - actualTheta > threshold, hold, errorThetaSum=0
+
+		//	}
+
+		//	// compute and output targetTorque here
+		//	for(k=0; k<TOTAL_AXIS; k++)
+		//	{
+		//		errorTheta[k] = CB_targetTheta[k] - actualTheta[k];
+		//		if(errorThetaSum[k] < maxErrorThetaSum)
+		//			errorThetaSum[k] = errorThetaSum[k] + errorTheta[k];
+		//		errorThetaDot[k] = (errorTheta[k] - preErrorTheta[k]) / (((F64_T)pData->cycleTime) * MILISECOND_TO_SECOND);
+		//		preErrorTheta[k] = errorTheta[k];
+		//		targetTorque[k] = (pData->Kp[k] * errorTheta[k] + pData->Ki[k] * errorThetaSum[k] + pData->Kd[k]  * errorThetaDot[k]) * motor_direction[k];
+		//		
+		//		if(pData->motorTorqueSwitch[k] == 0) targetTorque[k] = 0;
+		//		trimmedTargetTorque[k] = TargetTorqueTrimming( targetTorque[k] );
+
+		//		// !!
+		//		NEC_CoE402SetTargetTorque( pData->axis[k], trimmedTargetTorque[k] );
+		//		// !!
+		//		
+		//	}
+		//}
+		//else
+		//{
+		//	for(k=0; k<TOTAL_AXIS; k++)
+		//	{
+		//		errorThetaSum[k] = 0;
+
+		//		// !!
+		//		NEC_CoE402SetTargetTorque( pData->axis[k], 0 );
+		//		// !!
+		//	}
+		//}
 		cnt++;
 
 		
@@ -1451,7 +1489,7 @@ void HomingMethod35(USER_DAT *pData)
 		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret );}
 	}
 	
-
+	pData->Flag_SetCurrPosHomeDone = 1;
 	
 }
 

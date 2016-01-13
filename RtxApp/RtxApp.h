@@ -23,10 +23,9 @@
 #define TOTAL_MOTION_NUMBER 6
 #define MAX_MOTION_TIME_FRAME 5000 // --> max motion time period = MAX_MOTION_TIME_FRAME * cycletime
 #define SHM_NAME "Share Memory"
-#define EVN_NUM 21
+#define EVN_NUM 4
 
 // constant
-#define FSM_STATE int
 #define PI 3.14159265359
 #define MILISECOND_TO_SECOND 0.000001
 #define SECOND_TO_MILISECOND 1000000
@@ -67,32 +66,27 @@
 //#define R_ANKLE_ROLL 32
 
 
-// CONTROL_STATE
-#define BEGINNING 0
-#define START_MASTER_AND_SLAVES 1
-#define SET_MOTOR_PARAMETERS 2
-#define SET_CURR_POS_HOME 3
-#define HOMING 4
-#define GO_HOME 5
-#define STOP_AND_HOLD 6
-#define STOP_BUT_SOFT 7
-#define HOLD 8
-#define SERVO_OFF 9
-#define CLOSE_MASTER 10
+// MotorState
+#define MotorState_NoTq 0
+#define MotorState_Hold 1
+#define MotorState_Homing 2
+#define MotorState_PP 3
+#define MotorState_CSP 4
 
-#define HOMING_MODE 21
-#define	HOMING_CHECK_IK_LIMIT 22
-#define HOMING_RUN 23
 
-#define PP_MODE 31
-#define PP_CHECK_IK_LIMIT 32
-#define PP_RUN 33
+// event 
+#define START_MASTER_AND_SLAVES 0
+#define SET_MOTOR_PARAMETERS 1
+#define SET_CURR_POS_HOME 2
+#define CLOSE_MASTER 3
 
-#define CSP_MODE 41
-#define CSP_CHECK_IK_LIMIT 42
-#define CSP_RUN 43
-
-#define WRITE_FILE 99
+LPCSTR EVN_NAME[EVN_NUM] = 
+{
+	"START_MASTER_AND_SLAVES",
+	"SET_MOTOR_PARAMETERS",
+	"SET_CURR_POS_HOME",
+	"CLOSE_MASTER",
+};
 
 
 
@@ -114,7 +108,6 @@ typedef struct
 	I32_T		walkingTimeframe;
 
 	// state, flags and switches
-	FSM_STATE	currentState;
 	BOOL_T		stateTransitionFlag;	// 1/0: transitioning/arrived new state
 	BOOL_T		setServoOnFlag;
 	BOOL_T		setServoOffFlag;
@@ -124,6 +117,9 @@ typedef struct
 	BOOL_T		home35CompleteFlag;
 	BOOL_T		updateAllActualThetaFlag;
 	BOOL_T		resetCntFlag;
+
+
+	I32_T		MotorState;
 
 	BOOL_T		Flag_StartMasterDone;
 	BOOL_T		Flag_SetMotorParameterDone;
@@ -162,39 +158,6 @@ typedef struct
 	F64_T		actualTheta[TOTAL_AXIS];
 
 }USER_DAT;
-
-
-// event
-LPCSTR EVN_NAME[EVN_NUM] = 
-{
-	"BEGINNING",
-	"START_MASTER_AND_SLAVES",
-	"SET_MOTOR_PARAMETERS",
-	"SET_CURR_POS_HOME",
-	"HOLD"
-	"HOMING",
-	"GO_HOME",
-	"STOP_AND_HOLD",
-	"STOP_BUT_SOFT",
-	"SERVO_OFF",
-	"CLOSE_MASTER",
-
-	"HOMING_MODE",
-	"HOMING_CHECK_IK_LIMIT",
-	"HOMING_RUN",
-
-	"PP_MODE",
-	"PP_CHECK_IK_LIMIT",
-	"PP_RUN",
-
-	"CSP_MODE",
-	"CSP_CHECK_IK_LIMIT",
-	"CSP_RUN",
-
-	"WRITE_FILE"
-};
-
-
 
 
 //  Add Function prototypes Here

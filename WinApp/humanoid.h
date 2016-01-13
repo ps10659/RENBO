@@ -37,7 +37,6 @@ typedef struct
 	I32_T		walkingTimeframe;
 
 	// state, flags and switches
-	FSM_STATE	currentState;
 	BOOL_T		stateTransitionFlag;	// 1/0: transitioning/arrived new state
 	BOOL_T		setServoOnFlag;
 	BOOL_T		setServoOffFlag;
@@ -47,6 +46,9 @@ typedef struct
 	BOOL_T		home35CompleteFlag;
 	BOOL_T		updateAllActualThetaFlag;
 	BOOL_T		resetCntFlag;
+
+
+	I32_T		MotorState;
 
 	BOOL_T		Flag_StartMasterDone;
 	BOOL_T		Flag_SetMotorParameterDone;

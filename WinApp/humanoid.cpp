@@ -158,12 +158,12 @@ int _tmain(int argc)
 					pWinData->resetCntFlag = 1;
 					pWinData->holdSwitch = 0;
 
-					pWinData->currentState = CSP_RUN;
+					//pWinData->MotorState = CSP_RUN;
 
 			}
 			else
 			{
-				breakWhile = TriggerEvent(key, pWinData);
+				//breakWhile = TriggerEvent(key, pWinData);
 			}
 			if(breakWhile) break;
 		}
@@ -185,651 +185,652 @@ int _tmain(int argc)
 
 
 
-bool TriggerEvent(int key, WIN32_DAT *pWinData)
-{
+//bool TriggerEvent(int key, WIN32_DAT *pWinData)
+//{
+//
+//	switch (pWinData->MotorState)
+//	{
+//		case BEGINNING:
+//			switch (key)
+//			{
+//				case '1':
+//					return goto_START_MASTER_AND_SLAVES(pWinData);
+//				case ESC_KEY:
+//					return goto_CLOSE_MASTER(pWinData);
+//				default:
+//					printf("%c is not a valid input.\n", key);
+//					return 0;
+//			}
+//
+//		case START_MASTER_AND_SLAVES:
+//			switch (key)
+//			{
+//				case '1':
+//					return goto_SET_MOTOR_PARAMETERS(pWinData);
+//				case '2':
+//					return goto_START_MASTER_AND_SLAVES(pWinData);
+//				case ESC_KEY:
+//					return goto_CLOSE_MASTER(pWinData);
+//				default:
+//					printf("%c is not a valid input.\n", key);
+//					return 0;
+//			}
+//
+//		case SET_MOTOR_PARAMETERS:
+//			switch (key)
+//			{
+//				case '1':
+//					return goto_SET_CURR_POS_HOME(pWinData);
+//				case ESC_KEY:
+//					return goto_CLOSE_MASTER(pWinData);
+//				default:
+//					printf("%c is not a valid input.\n", key);
+//					return 0;
+//			}
+//
+//		case SET_CURR_POS_HOME:
+//			switch (key)
+//			{
+//				case '1':
+//					return goto_HOLD(pWinData);
+//				case '2':
+//					return goto_SET_CURR_POS_HOME(pWinData);
+//				case ESC_KEY:
+//					return goto_CLOSE_MASTER(pWinData);
+//				default:
+//					printf("%c is not a valid input.\n", key);
+//					return 0;
+//			}
+//			
+//		case HOLD:
+//			switch (key)
+//			{
+//				case '0':
+//					return goto_HOMING_MODE(pWinData);
+//				case '1':
+//					return goto_PP_MODE(pWinData);
+//				case '2':
+//					return goto_CSP_MODE(pWinData);
+//				case 's':
+//					return goto_STOP_BUT_SOFT(pWinData);
+//				case ESC_KEY:
+//					return goto_CLOSE_MASTER(pWinData);
+//				default:
+//					printf("%c is not a valid input.\n", key);
+//					return 0;
+//			}
+//
+//		case HOMING:
+//			switch (key)
+//			{
+//				case '1':
+//					return goto_SET_CURR_POS_HOME(pWinData);
+//				case ESC_KEY:
+//					return goto_CLOSE_MASTER(pWinData);
+//				default:
+//					printf("%c is not a valid input.\n", key);
+//					return 0;
+//			}
+//
+//		case GO_HOME:
+//			switch (key)
+//			{
+//				case '1':
+//					return goto_SET_CURR_POS_HOME(pWinData);
+//				case 'h':
+//					return goto_STOP_AND_HOLD(pWinData);
+//				case 's':
+//					return goto_STOP_BUT_SOFT(pWinData);
+//				case ESC_KEY:
+//					return goto_CLOSE_MASTER(pWinData);
+//				default:
+//					printf("%c is not a valid input.\n", key);
+//					return 0;
+//			}
+//
+//		case STOP_AND_HOLD:
+//			switch (key)
+//			{
+//				case 's':
+//					return goto_STOP_BUT_SOFT(pWinData);
+//				case '0':
+//					return goto_GO_HOME(pWinData);
+//				case ESC_KEY:
+//					return goto_CLOSE_MASTER(pWinData);
+//				default:
+//					printf("%c is not a valid input.\n", key);
+//					return 0;
+//			}
+//
+//		case STOP_BUT_SOFT:
+//			switch (key)
+//			{
+//				case 'q':
+//					return goto_SERVO_OFF(pWinData);
+//				case ESC_KEY:
+//					return goto_CLOSE_MASTER(pWinData);
+//				default:
+//					printf("%c is not a valid input.\n", key);
+//					return 0;
+//			}
+//
+//		case SERVO_OFF:
+//			switch (key)
+//			{
+//				case '1':
+//					return goto_HOLD(pWinData);
+//				case '2':
+//					return goto_SET_CURR_POS_HOME(pWinData);
+//				case '3':
+//					return goto_WRITE_FILE(pWinData);
+//				case ESC_KEY:
+//					return goto_CLOSE_MASTER(pWinData);
+//				default:
+//					printf("%c is not a valid input.\n", key);
+//					return 0;
+//			}
+//
+//		case CLOSE_MASTER:
+//			switch (key)
+//			{
+//				case ESC_KEY:
+//					return goto_CLOSE_MASTER(pWinData);
+//				default:
+//					printf("%c is not a valid input.\n", key);
+//					return 0;
+//			}
+//
+//
+//		case HOMING_MODE:
+//			switch (key)
+//			{
+//				case '1':
+//					return goto_HOMING_RUN(pWinData);
+//				case 'h':
+//					return goto_HOLD(pWinData);
+//				case ESC_KEY:
+//					return goto_CLOSE_MASTER(pWinData);
+//				default:
+//					printf("%c is not a valid input.\n", key);
+//					return 0;
+//			}
+//
+//		case HOMING_RUN:
+//			switch (key)
+//			{
+//				/*case '1':
+//					return goto_HOMING_MODE(pWinData);*/
+//				case 'h':
+//					return goto_HOLD(pWinData);
+//				case 's':
+//					return goto_STOP_BUT_SOFT(pWinData);
+//				case ESC_KEY:
+//					return goto_CLOSE_MASTER(pWinData);
+//				default:
+//					printf("%c is not a valid input.\n", key);
+//					return 0;
+//			}
+//		case PP_MODE:
+//			switch (key)
+//			{
+//				case '1':
+//					return goto_PP_CHECK_IK_LIMIT(pWinData);
+//				case 'h':
+//					return goto_HOLD(pWinData);
+//				case ESC_KEY:
+//					return goto_CLOSE_MASTER(pWinData);
+//				default:
+//					printf("%c is not a valid input.\n", key);
+//					return 0;
+//			}
+//
+//		case PP_CHECK_IK_LIMIT:
+//			switch (key)
+//			{
+//				case '1':
+//					return goto_PP_RUN(pWinData);
+//				case '2':
+//					return goto_PP_MODE(pWinData);
+//				case 'h':
+//					return goto_HOLD(pWinData);
+//				case ESC_KEY:
+//					return goto_CLOSE_MASTER(pWinData);
+//				default:
+//					printf("%c is not a valid input.\n", key);
+//					return 0;
+//			}
+//
+//		case PP_RUN:
+//			switch (key)
+//			{
+//				case 'h':
+//					return goto_HOLD(pWinData);
+//				case 's':
+//					return goto_STOP_BUT_SOFT(pWinData);
+//				case ESC_KEY:
+//					return goto_CLOSE_MASTER(pWinData);
+//				default:
+//					printf("%c is not a valid input.\n", key);
+//					return 0;
+//			}
+//
+//		case CSP_MODE:
+//			switch (key)
+//			{
+//				case '1':
+//					return goto_CSP_CHECK_IK_LIMIT(pWinData);
+//				case 'h':
+//					return goto_HOLD(pWinData);
+//				case ESC_KEY:
+//					return goto_CLOSE_MASTER(pWinData);
+//				default:
+//					printf("%c is not a valid input.\n", key);
+//					return 0;
+//			}
+//
+//		case CSP_CHECK_IK_LIMIT:
+//			switch (key)
+//			{
+//				case '1':
+//					return goto_CSP_RUN(pWinData);
+//				case 'h':
+//					return goto_HOLD(pWinData);
+//				case ESC_KEY:
+//					return goto_CLOSE_MASTER(pWinData);
+//				default:
+//					printf("%c is not a valid input.\n", key);
+//					return 0;
+//			}
+//
+//		case CSP_RUN:
+//			switch (key)
+//			{
+//				case 'h':
+//					return goto_HOLD(pWinData);
+//				case 's':
+//					return goto_STOP_BUT_SOFT(pWinData);
+//				case ESC_KEY:
+//					return goto_CLOSE_MASTER(pWinData);
+//				default:
+//					printf("%c is not a valid input.\n", key);
+//					return 0;
+//			}
+//
+//		case WRITE_FILE:
+//			switch (key)
+//			{
+//				case '1':
+//					return goto_SET_CURR_POS_HOME(pWinData);
+//				case ESC_KEY:
+//					return goto_CLOSE_MASTER(pWinData);
+//				default:
+//					printf("%c is not a valid input ???.\n", key);
+//					return 0;
+//			}
+//	}
+//}
+//
+//bool goto_START_MASTER_AND_SLAVES(WIN32_DAT *pWinData)
+//{			
+//	printf("\ncurrent state: START_MASTER_AND_SLAVES\n");
+//	printf("next state   : SET_MOTOR_PARAMETERS(1)\n");
+//	printf("               START_MASTER_AND_SLAVES(2)\n");
+//
+//	pWinData->MotorState = START_MASTER_AND_SLAVES;
+//	RtSetEvent(oBhandle[START_MASTER_AND_SLAVES]);
+//	return 0;
+//}
+//bool goto_SET_MOTOR_PARAMETERS(WIN32_DAT *pWinData)
+//{
+//	printf("\ncurrent state: SET_MOTOR_PARAMETERS\n");
+//	printf("next state   : SET_CURR_POS_HOME(1)\n");
+//			
+//	pWinData->MotorState = SET_MOTOR_PARAMETERS;
+//	RtSetEvent(oBhandle[SET_MOTOR_PARAMETERS]);
+//	return 0;
+//}
+//bool goto_SET_CURR_POS_HOME(WIN32_DAT *pWinData)
+//{
+//	printf("\ncurrent state: SET_CURR_POS_HOME\n");
+//	printf("next state   : HOLD(1)\n");
+//	printf("               SET_CURR_POS_HOME(2)\n");
+//
+//	//pWinData->home35CompleteFlag = 0;
+//	//while(!pWinData->home35CompleteFlag){}		
+//
+//
+//	pWinData->MotorState = SET_CURR_POS_HOME;
+//	RtSetEvent(oBhandle[SET_CURR_POS_HOME]);
+//	return 0;
+//}
+//bool goto_HOMING(WIN32_DAT *pWinData)
+//{
+//	printf("\ncurrent state: HOMING\n");
+//	printf("next state   : SET_CURR_POS_HOME(1)\n");		
+//	
+//
+//	
+//	pWinData->MotorState = HOMING;
+//	RtSetEvent(oBhandle[HOMING]);
+//	return 0;
+//}
+//bool goto_GO_HOME(WIN32_DAT *pWinData)
+//{
+//	printf("\ncurrent state: GO_HOME\n");
+//	printf("next state   : SET_CURR_POS_HOME(1)\n");
+//	printf("               STOP_AND_HOLD(h)\n");
+//	printf("               STOP_BUT_SOFT(s)\n");
+//	
+//	pWinData->MotorState = GO_HOME;
+//	RtSetEvent(oBhandle[GO_HOME]);
+//	return 0;
+//}
+//bool goto_STOP_AND_HOLD(WIN32_DAT *pWinData)
+//{
+//	printf("\ncurrent state: STOP_AND_HOLD\n");
+//	printf("next state   : STOP_BUT_SOFT(s)\n");
+//	printf("               GO_HOME(0)\n");
+//			
+//	pWinData->MotorState = STOP_AND_HOLD;
+//	pWinData->Flag_HoldPosSaved = 0;
+//	pWinData->holdSwitch = 1;
+//	RtSetEvent(oBhandle[STOP_AND_HOLD]);
+//	return 0;
+//}
+//bool goto_STOP_BUT_SOFT(WIN32_DAT *pWinData)
+//{
+//	printf("\ncurrent state: STOP_BUT_SOFT\n");
+//	printf("next state   : SERVO_OFF(q)\n");
+//			
+//	pWinData->MotorState = STOP_BUT_SOFT;
+//	pWinData->setTargetTorqueSwitch = 0;
+//	RtSetEvent(oBhandle[STOP_BUT_SOFT]);
+//	return 0;
+//}
+//bool goto_SERVO_OFF(WIN32_DAT *pWinData)
+//{
+//	printf("\ncurrent state: SERVO_OFF\n");
+//	printf("next state   : Servo On and Hold(1)\n");
+//	printf("               SET_CURR_POS_HOME(2)\n");
+//	printf("               WRITE_FILE(3)\n");
+//	printf("               CLOSE_MASTER(esc)\n");
+//
+//	pWinData->setServoOffFlag = 1;
+//	pWinData->setTargetTorqueSwitch = 0;
+//	pWinData->MotorState = SERVO_OFF;
+//	RtSetEvent(oBhandle[SERVO_OFF]);
+//	return 0;
+//}
+//bool goto_CLOSE_MASTER(WIN32_DAT *pWinData)
+//{
+//	printf("\ncurrent state: CLOSE_MASTER\n");
+//
+//	pWinData->MotorState = CLOSE_MASTER;
+//	RtSetEvent(oBhandle[CLOSE_MASTER]);
+//	return 1;
+//}
+//
+//////////////////////////////////////////////////////////
+//bool goto_HOLD(WIN32_DAT *pWinData)
+//{
+//	printf("\ncurrent state: HOLD\n");
+//	printf("next state   : HOMING_MODE(0)\n");
+//	printf("               PP_MODE(1)n");
+//	printf("               CSP_MODE(2)\n");
+//	printf("               STOP_BUT_SOFT(s)\n");
+//		
+//	pWinData->Flag_HoldPosSaved = 0;
+//	pWinData->holdSwitch = 1;
+//	pWinData->setServoOnFlag = 1;
+//	pWinData->setTargetTorqueSwitch = 1;
+//
+//	pWinData->MotorState = HOLD;
+//	RtSetEvent(oBhandle[HOLD]);
+//	return 0;
+//}
+//
+//////////////////////////////////////////////////////////
+//bool goto_HOMING_MODE(WIN32_DAT *pWinData)
+//{
+//	printf("\ncurrent state: HOMING_MODE\n");
+//	printf("next state   : HOMING_RUN(1)\n");
+//	printf("               HOLD(h)\n");
+//
+//	printf("\nCheck if the humanoid pose is close to home pose!!\n");
+//
+//	pWinData->MotorState = HOMING_MODE;
+//	RtSetEvent(oBhandle[HOMING_MODE]);
+//	return 0;
+//}
+//bool goto_HOMING_RUN(WIN32_DAT *pWinData)
+//{
+//	printf("\ncurrent state: HOMING_RUN\n");
+//	printf("next state   : Set Current Position As Home(1)\n");
+//	printf("             : HOLD(h)\n");
+//	printf("               STOP_BUT_SOFT(s)\n");
+//	
+//
+//	pWinData->MotorState = HOMING_RUN;
+//	RtSetEvent(oBhandle[HOMING_RUN]);
+//
+//	pWinData->HOMING_allHomeSensorReachFlag = 0;
+//	pWinData->resetCntFlag = 1;
+//	pWinData->holdSwitch = 0;
+//
+//
+//	int key;
+//	int splineType = 3;
+//	double goHomeTimePeriod = 3;
+//	int motionCnt = 0;
+//
+//	while(1)
+//	{
+//		if( pWinData->HOMING_allHomeSensorReachFlag == 1 && motionCnt==0)
+//		{
+//			WritePose(pWinData);
+//			for(int i=0; i<TOTAL_AXIS; i++)
+//			{
+//				pWinData->PP_targetTheta[i] = pWinData->HOMING_homeSensorTheta[i] + pWinData->HOMING_homePositionOffset[i];
+//				//腳伸直->腳三點共線的角度差
+//				if(i==23 || i==29) pWinData->PP_targetTheta[i] += -15.65 * PI / 180.0;	//hip pitch
+//				else if(i==24 || i==30) pWinData->PP_targetTheta[i] += 34.08 * PI / 180.0;	//knee
+//				else if(i==25 || i==31) pWinData->PP_targetTheta[i] += -18.43 * PI / 180.0;	//ankld pitch
+//			}
+//
+//			UpdateSplineVector(pWinData, splineType, goHomeTimePeriod);
+//
+//			pWinData->MotorState = PP_RUN;
+//			pWinData->PP_singleMovementCompleteFlag = 0;
+//			pWinData->resetCntFlag = 1;
+//			pWinData->holdSwitch = 0;
+//			motionCnt += 1;
+//		}
+//
+//		if(_kbhit())
+//		{
+//			key = _getch();
+//			if(key == '1')
+//			{
+//				RtSetEvent(oBhandle[SET_CURR_POS_HOME]);
+//				break;
+//			}
+//			else if(key == 'h' || key == 's')
+//			{
+//				return goto_HOLD(pWinData);
+//				break;
+//			}
+//		}
+//	}
+//
+//	
+//
+//	return 0;
+//}
+//
+//////////////////////////////////////////////////////////
+//bool goto_PP_MODE(WIN32_DAT *pWinData)
+//{
+//
+//	printf("\nChoose \"Motion\" and \"Time Period(s)\": \n");
+//	printf("         User Input(0)\n");
+//	printf("         Go Home(1)\n");
+//	printf("         Squat(2)\n");
+//	printf("         Walking Initial(3)\n");
+//	printf("         XXXXXWalking Initial ReverseSquat(4)\n");
+//	printf("         ReadPoseTxt(5)\n");
+//	//printf("               Shake Hand(4)\n");
+//	cin >> pWinData->PP_motionType >> pWinData->PP_motionTimePeriod;
+//	pWinData->PP_currPointCnt = 0;
+//
+//	if(pWinData->PP_motionType == 0) 
+//	{
+//		UpdataUserDefineData();
+//	}
+//	else if(pWinData->PP_motionType == 3) 
+//	{
+//		printf("\nContinue(1)\n");
+//		printf("Update walking trajectory(2)\n");
+//
+//		while(1)
+//		{
+//			if (_kbhit())
+//			{
+//				int key = _getch();
+//				if(key == '1') break;
+//				else if(key == '2')
+//				{
+//					printf("\n   Updating...");
+//					UpdateWalkingTrajectories(pWinData);
+//					break;
+//				}
+//			}
+//		}
+//	}
+//	else if(pWinData->PP_motionType == 5) 
+//	{
+//		UpdateReadPoseTxtTheta(pWinData);
+//	}
+//
+//	printf("\ncurrent state: PP_MODE\n");
+//	printf("next state   : PP_CHECK_IK_LIMIT(1)\n");
+//	printf("               HOLD(h)\n");
+//
+//	pWinData->MotorState = PP_MODE;
+//	RtSetEvent(oBhandle[PP_MODE]);
+//	return 0;
+//}
+//bool goto_PP_CHECK_IK_LIMIT(WIN32_DAT *pWinData)
+//{
+//	printf("\ncurrent state: PP_CHECK_IK_LIMIT\n");
+//	printf("next state   : PP_RUN(1)\n");
+//	printf("               PP_MODE(2)\n");
+//	printf("               HOLD(h)\n");
+//	
+//	pWinData->MotorState = PP_CHECK_IK_LIMIT;
+//	RtSetEvent(oBhandle[PP_CHECK_IK_LIMIT]);
+//	return 0;
+//}
+//bool goto_PP_RUN(WIN32_DAT *pWinData)
+//{
+//	int key;
+//	int splineType = 3;
+//
+//	printf("\ncurrent state: PP_RUN\n");
+//	printf("next state: Hold(h)\n");
+//	printf("   \n");
+//
+//	pWinData->MotorState = PP_RUN;
+//	RtSetEvent(oBhandle[PP_RUN]);
+//
+//	pWinData->PP_singleMovementCompleteFlag = 1; // initialize
+//
+//	while(pWinData->PP_currPointCnt < pWinData->PP_totalPointCnt[pWinData->PP_motionType])
+//	{
+//		if(pWinData->PP_singleMovementCompleteFlag == 1)
+//		{
+//			SetPP_targetTheta(pWinData, pWinData->PP_motionType, pWinData->PP_currPointCnt);
+//			UpdateSplineVector(pWinData, splineType, pWinData->PP_motionTimePeriod);
+//
+//			pWinData->PP_singleMovementCompleteFlag = 0;
+//			pWinData->resetCntFlag = 1;
+//			pWinData->holdSwitch = 0;
+//		}
+//
+//		if(_kbhit())
+//		{
+//			key = _getch();
+//			if(key == 'h' || key == 's')
+//			{
+//				return goto_HOLD(pWinData);
+//				break;
+//			}
+//		}
+//	}
+//
+//	
+//	return 0;
+//}
+//
+//////////////////////////////////////////////////////////
+//bool goto_CSP_MODE(WIN32_DAT *pWinData)
+//{
+//	printf("\nContinue(1)\n");
+//	printf("Update walking trajectory(2)\n");
+//	while(1)
+//	{
+//		if (_kbhit())
+//		{
+//			int key = _getch();
+//			if(key == '1') break;
+//			else if(key == '2')
+//			{
+//				printf("\n   Updating...");
+//				UpdateWalkingTrajectories(pWinData);
+//				break;
+//			}
+//		}
+//	}
+//
+//	printf("\ncurrent state: CSP_MODE\n");
+//	printf("next state   : CSP_CHECK_IK_LIMIT(1)\n");
+//	printf("               HOLD(h)\n");
+//
+//	pWinData->MotorState = CSP_MODE;
+//	return 0;
+//}
+//bool goto_CSP_CHECK_IK_LIMIT(WIN32_DAT *pWinData)
+//{
+//	printf("\ncurrent state: CSP_CHECK_IK_LIMIT\n");
+//	printf("next state   : CSP_RUN(1)\n");
+//	printf("               HOLD(h)\n");
+//	
+//	pWinData->MotorState = CSP_CHECK_IK_LIMIT;
+//	return 0;
+//}
+//bool goto_CSP_RUN(WIN32_DAT *pWinData)
+//{
+//	printf("\ncurrent state: CSP_RUN\n");
+//	printf("next state   : STOP_AND_HOLD(h)\n");
+//	printf("n              STOP_BUT_SOFT(s)\n");
+//	
+//	pWinData->resetCntFlag = 1;
+//	pWinData->holdSwitch = 0;
+//
+//	pWinData->MotorState = CSP_RUN;
+//	return 0;
+//}
+//
+//bool goto_WRITE_FILE(WIN32_DAT *pWinData)
+//{
+//	printf("\ncurrent state: WRITE_FILE\n");
+//	printf("next state   : SET_CURR_POS_HOME(1)\n");
+//	printf("               CLOSE_MASTER(esc)\n");
+//
+//	pWinData->MotorState = WRITE_FILE;
+//	RtSetEvent(oBhandle[WRITE_FILE]);
+//	return 0;
+//}
 
-	switch (pWinData->currentState)
-	{
-		case BEGINNING:
-			switch (key)
-			{
-				case '1':
-					return goto_START_MASTER_AND_SLAVES(pWinData);
-				case ESC_KEY:
-					return goto_CLOSE_MASTER(pWinData);
-				default:
-					printf("%c is not a valid input.\n", key);
-					return 0;
-			}
-
-		case START_MASTER_AND_SLAVES:
-			switch (key)
-			{
-				case '1':
-					return goto_SET_MOTOR_PARAMETERS(pWinData);
-				case '2':
-					return goto_START_MASTER_AND_SLAVES(pWinData);
-				case ESC_KEY:
-					return goto_CLOSE_MASTER(pWinData);
-				default:
-					printf("%c is not a valid input.\n", key);
-					return 0;
-			}
-
-		case SET_MOTOR_PARAMETERS:
-			switch (key)
-			{
-				case '1':
-					return goto_SET_CURR_POS_HOME(pWinData);
-				case ESC_KEY:
-					return goto_CLOSE_MASTER(pWinData);
-				default:
-					printf("%c is not a valid input.\n", key);
-					return 0;
-			}
-
-		case SET_CURR_POS_HOME:
-			switch (key)
-			{
-				case '1':
-					return goto_HOLD(pWinData);
-				case '2':
-					return goto_SET_CURR_POS_HOME(pWinData);
-				case ESC_KEY:
-					return goto_CLOSE_MASTER(pWinData);
-				default:
-					printf("%c is not a valid input.\n", key);
-					return 0;
-			}
-			
-		case HOLD:
-			switch (key)
-			{
-				case '0':
-					return goto_HOMING_MODE(pWinData);
-				case '1':
-					return goto_PP_MODE(pWinData);
-				case '2':
-					return goto_CSP_MODE(pWinData);
-				case 's':
-					return goto_STOP_BUT_SOFT(pWinData);
-				case ESC_KEY:
-					return goto_CLOSE_MASTER(pWinData);
-				default:
-					printf("%c is not a valid input.\n", key);
-					return 0;
-			}
-
-		case HOMING:
-			switch (key)
-			{
-				case '1':
-					return goto_SET_CURR_POS_HOME(pWinData);
-				case ESC_KEY:
-					return goto_CLOSE_MASTER(pWinData);
-				default:
-					printf("%c is not a valid input.\n", key);
-					return 0;
-			}
-
-		case GO_HOME:
-			switch (key)
-			{
-				case '1':
-					return goto_SET_CURR_POS_HOME(pWinData);
-				case 'h':
-					return goto_STOP_AND_HOLD(pWinData);
-				case 's':
-					return goto_STOP_BUT_SOFT(pWinData);
-				case ESC_KEY:
-					return goto_CLOSE_MASTER(pWinData);
-				default:
-					printf("%c is not a valid input.\n", key);
-					return 0;
-			}
-
-		case STOP_AND_HOLD:
-			switch (key)
-			{
-				case 's':
-					return goto_STOP_BUT_SOFT(pWinData);
-				case '0':
-					return goto_GO_HOME(pWinData);
-				case ESC_KEY:
-					return goto_CLOSE_MASTER(pWinData);
-				default:
-					printf("%c is not a valid input.\n", key);
-					return 0;
-			}
-
-		case STOP_BUT_SOFT:
-			switch (key)
-			{
-				case 'q':
-					return goto_SERVO_OFF(pWinData);
-				case ESC_KEY:
-					return goto_CLOSE_MASTER(pWinData);
-				default:
-					printf("%c is not a valid input.\n", key);
-					return 0;
-			}
-
-		case SERVO_OFF:
-			switch (key)
-			{
-				case '1':
-					return goto_HOLD(pWinData);
-				case '2':
-					return goto_SET_CURR_POS_HOME(pWinData);
-				case '3':
-					return goto_WRITE_FILE(pWinData);
-				case ESC_KEY:
-					return goto_CLOSE_MASTER(pWinData);
-				default:
-					printf("%c is not a valid input.\n", key);
-					return 0;
-			}
-
-		case CLOSE_MASTER:
-			switch (key)
-			{
-				case ESC_KEY:
-					return goto_CLOSE_MASTER(pWinData);
-				default:
-					printf("%c is not a valid input.\n", key);
-					return 0;
-			}
-
-
-		case HOMING_MODE:
-			switch (key)
-			{
-				case '1':
-					return goto_HOMING_RUN(pWinData);
-				case 'h':
-					return goto_HOLD(pWinData);
-				case ESC_KEY:
-					return goto_CLOSE_MASTER(pWinData);
-				default:
-					printf("%c is not a valid input.\n", key);
-					return 0;
-			}
-
-		case HOMING_RUN:
-			switch (key)
-			{
-				/*case '1':
-					return goto_HOMING_MODE(pWinData);*/
-				case 'h':
-					return goto_HOLD(pWinData);
-				case 's':
-					return goto_STOP_BUT_SOFT(pWinData);
-				case ESC_KEY:
-					return goto_CLOSE_MASTER(pWinData);
-				default:
-					printf("%c is not a valid input.\n", key);
-					return 0;
-			}
-		case PP_MODE:
-			switch (key)
-			{
-				case '1':
-					return goto_PP_CHECK_IK_LIMIT(pWinData);
-				case 'h':
-					return goto_HOLD(pWinData);
-				case ESC_KEY:
-					return goto_CLOSE_MASTER(pWinData);
-				default:
-					printf("%c is not a valid input.\n", key);
-					return 0;
-			}
-
-		case PP_CHECK_IK_LIMIT:
-			switch (key)
-			{
-				case '1':
-					return goto_PP_RUN(pWinData);
-				case '2':
-					return goto_PP_MODE(pWinData);
-				case 'h':
-					return goto_HOLD(pWinData);
-				case ESC_KEY:
-					return goto_CLOSE_MASTER(pWinData);
-				default:
-					printf("%c is not a valid input.\n", key);
-					return 0;
-			}
-
-		case PP_RUN:
-			switch (key)
-			{
-				case 'h':
-					return goto_HOLD(pWinData);
-				case 's':
-					return goto_STOP_BUT_SOFT(pWinData);
-				case ESC_KEY:
-					return goto_CLOSE_MASTER(pWinData);
-				default:
-					printf("%c is not a valid input.\n", key);
-					return 0;
-			}
-
-		case CSP_MODE:
-			switch (key)
-			{
-				case '1':
-					return goto_CSP_CHECK_IK_LIMIT(pWinData);
-				case 'h':
-					return goto_HOLD(pWinData);
-				case ESC_KEY:
-					return goto_CLOSE_MASTER(pWinData);
-				default:
-					printf("%c is not a valid input.\n", key);
-					return 0;
-			}
-
-		case CSP_CHECK_IK_LIMIT:
-			switch (key)
-			{
-				case '1':
-					return goto_CSP_RUN(pWinData);
-				case 'h':
-					return goto_HOLD(pWinData);
-				case ESC_KEY:
-					return goto_CLOSE_MASTER(pWinData);
-				default:
-					printf("%c is not a valid input.\n", key);
-					return 0;
-			}
-
-		case CSP_RUN:
-			switch (key)
-			{
-				case 'h':
-					return goto_HOLD(pWinData);
-				case 's':
-					return goto_STOP_BUT_SOFT(pWinData);
-				case ESC_KEY:
-					return goto_CLOSE_MASTER(pWinData);
-				default:
-					printf("%c is not a valid input.\n", key);
-					return 0;
-			}
-
-		case WRITE_FILE:
-			switch (key)
-			{
-				case '1':
-					return goto_SET_CURR_POS_HOME(pWinData);
-				case ESC_KEY:
-					return goto_CLOSE_MASTER(pWinData);
-				default:
-					printf("%c is not a valid input ???.\n", key);
-					return 0;
-			}
-	}
-}
-
-bool goto_START_MASTER_AND_SLAVES(WIN32_DAT *pWinData)
-{			
-	printf("\ncurrent state: START_MASTER_AND_SLAVES\n");
-	printf("next state   : SET_MOTOR_PARAMETERS(1)\n");
-	printf("               START_MASTER_AND_SLAVES(2)\n");
-
-	pWinData->currentState = START_MASTER_AND_SLAVES;
-	RtSetEvent(oBhandle[START_MASTER_AND_SLAVES]);
-	return 0;
-}
-bool goto_SET_MOTOR_PARAMETERS(WIN32_DAT *pWinData)
-{
-	printf("\ncurrent state: SET_MOTOR_PARAMETERS\n");
-	printf("next state   : SET_CURR_POS_HOME(1)\n");
-			
-	pWinData->currentState = SET_MOTOR_PARAMETERS;
-	RtSetEvent(oBhandle[SET_MOTOR_PARAMETERS]);
-	return 0;
-}
-bool goto_SET_CURR_POS_HOME(WIN32_DAT *pWinData)
-{
-	printf("\ncurrent state: SET_CURR_POS_HOME\n");
-	printf("next state   : HOLD(1)\n");
-	printf("               SET_CURR_POS_HOME(2)\n");
-
-	//pWinData->home35CompleteFlag = 0;
-	//while(!pWinData->home35CompleteFlag){}		
-
-
-	pWinData->currentState = SET_CURR_POS_HOME;
-	RtSetEvent(oBhandle[SET_CURR_POS_HOME]);
-	return 0;
-}
-bool goto_HOMING(WIN32_DAT *pWinData)
-{
-	printf("\ncurrent state: HOMING\n");
-	printf("next state   : SET_CURR_POS_HOME(1)\n");		
-	
-
-	
-	pWinData->currentState = HOMING;
-	RtSetEvent(oBhandle[HOMING]);
-	return 0;
-}
-bool goto_GO_HOME(WIN32_DAT *pWinData)
-{
-	printf("\ncurrent state: GO_HOME\n");
-	printf("next state   : SET_CURR_POS_HOME(1)\n");
-	printf("               STOP_AND_HOLD(h)\n");
-	printf("               STOP_BUT_SOFT(s)\n");
-	
-	pWinData->currentState = GO_HOME;
-	RtSetEvent(oBhandle[GO_HOME]);
-	return 0;
-}
-bool goto_STOP_AND_HOLD(WIN32_DAT *pWinData)
-{
-	printf("\ncurrent state: STOP_AND_HOLD\n");
-	printf("next state   : STOP_BUT_SOFT(s)\n");
-	printf("               GO_HOME(0)\n");
-			
-	pWinData->currentState = STOP_AND_HOLD;
-	pWinData->Flag_HoldPosSaved = 0;
-	pWinData->holdSwitch = 1;
-	RtSetEvent(oBhandle[STOP_AND_HOLD]);
-	return 0;
-}
-bool goto_STOP_BUT_SOFT(WIN32_DAT *pWinData)
-{
-	printf("\ncurrent state: STOP_BUT_SOFT\n");
-	printf("next state   : SERVO_OFF(q)\n");
-			
-	pWinData->currentState = STOP_BUT_SOFT;
-	pWinData->setTargetTorqueSwitch = 0;
-	RtSetEvent(oBhandle[STOP_BUT_SOFT]);
-	return 0;
-}
-bool goto_SERVO_OFF(WIN32_DAT *pWinData)
-{
-	printf("\ncurrent state: SERVO_OFF\n");
-	printf("next state   : Servo On and Hold(1)\n");
-	printf("               SET_CURR_POS_HOME(2)\n");
-	printf("               WRITE_FILE(3)\n");
-	printf("               CLOSE_MASTER(esc)\n");
-
-	pWinData->setServoOffFlag = 1;
-	pWinData->setTargetTorqueSwitch = 0;
-	pWinData->currentState = SERVO_OFF;
-	RtSetEvent(oBhandle[SERVO_OFF]);
-	return 0;
-}
-bool goto_CLOSE_MASTER(WIN32_DAT *pWinData)
-{
-	printf("\ncurrent state: CLOSE_MASTER\n");
-
-	pWinData->currentState = CLOSE_MASTER;
-	RtSetEvent(oBhandle[CLOSE_MASTER]);
-	return 1;
-}
-
-////////////////////////////////////////////////////////
-bool goto_HOLD(WIN32_DAT *pWinData)
-{
-	printf("\ncurrent state: HOLD\n");
-	printf("next state   : HOMING_MODE(0)\n");
-	printf("               PP_MODE(1)\n");
-	printf("               CSP_MODE(2)\n");
-	printf("               STOP_BUT_SOFT(s)\n");
-		
-	pWinData->Flag_HoldPosSaved = 0;
-	pWinData->holdSwitch = 1;
-	pWinData->setServoOnFlag = 1;
-	pWinData->setTargetTorqueSwitch = 1;
-
-	pWinData->currentState = HOLD;
-	RtSetEvent(oBhandle[HOLD]);
-	return 0;
-}
-
-////////////////////////////////////////////////////////
-bool goto_HOMING_MODE(WIN32_DAT *pWinData)
-{
-	printf("\ncurrent state: HOMING_MODE\n");
-	printf("next state   : HOMING_RUN(1)\n");
-	printf("               HOLD(h)\n");
-
-	printf("\nCheck if the humanoid pose is close to home pose!!\n");
-
-	pWinData->currentState = HOMING_MODE;
-	RtSetEvent(oBhandle[HOMING_MODE]);
-	return 0;
-}
-bool goto_HOMING_RUN(WIN32_DAT *pWinData)
-{
-	printf("\ncurrent state: HOMING_RUN\n");
-	printf("next state   : Set Current Position As Home(1)\n");
-	printf("             : HOLD(h)\n");
-	printf("               STOP_BUT_SOFT(s)\n");
-	
-
-	pWinData->currentState = HOMING_RUN;
-	RtSetEvent(oBhandle[HOMING_RUN]);
-
-	pWinData->HOMING_allHomeSensorReachFlag = 0;
-	pWinData->resetCntFlag = 1;
-	pWinData->holdSwitch = 0;
-
-
-	int key;
-	int splineType = 3;
-	double goHomeTimePeriod = 3;
-	int motionCnt = 0;
-
-	while(1)
-	{
-		if( pWinData->HOMING_allHomeSensorReachFlag == 1 && motionCnt==0)
-		{
-			WritePose(pWinData);
-			for(int i=0; i<TOTAL_AXIS; i++)
-			{
-				pWinData->PP_targetTheta[i] = pWinData->HOMING_homeSensorTheta[i] + pWinData->HOMING_homePositionOffset[i];
-				//腳伸直->腳三點共線的角度差
-				if(i==23 || i==29) pWinData->PP_targetTheta[i] += -15.65 * PI / 180.0;	//hip pitch
-				else if(i==24 || i==30) pWinData->PP_targetTheta[i] += 34.08 * PI / 180.0;	//knee
-				else if(i==25 || i==31) pWinData->PP_targetTheta[i] += -18.43 * PI / 180.0;	//ankld pitch
-			}
-
-			UpdateSplineVector(pWinData, splineType, goHomeTimePeriod);
-
-			pWinData->currentState = PP_RUN;
-			pWinData->PP_singleMovementCompleteFlag = 0;
-			pWinData->resetCntFlag = 1;
-			pWinData->holdSwitch = 0;
-			motionCnt += 1;
-		}
-
-		if(_kbhit())
-		{
-			key = _getch();
-			if(key == '1')
-			{
-				RtSetEvent(oBhandle[SET_CURR_POS_HOME]);
-				break;
-			}
-			else if(key == 'h' || key == 's')
-			{
-				return goto_HOLD(pWinData);
-				break;
-			}
-		}
-	}
-
-	
-
-	return 0;
-}
-
-////////////////////////////////////////////////////////
-bool goto_PP_MODE(WIN32_DAT *pWinData)
-{
-
-	printf("\nChoose \"Motion\" and \"Time Period(s)\": \n");
-	printf("         User Input(0)\n");
-	printf("         Go Home(1)\n");
-	printf("         Squat(2)\n");
-	printf("         Walking Initial(3)\n");
-	printf("         XXXXXWalking Initial ReverseSquat(4)\n");
-	printf("         ReadPoseTxt(5)\n");
-	//printf("               Shake Hand(4)\n");
-	cin >> pWinData->PP_motionType >> pWinData->PP_motionTimePeriod;
-	pWinData->PP_currPointCnt = 0;
-
-	if(pWinData->PP_motionType == 0) 
-	{
-		UpdataUserDefineData();
-	}
-	else if(pWinData->PP_motionType == 3) 
-	{
-		printf("\nContinue(1)\n");
-		printf("Update walking trajectory(2)\n");
-
-		while(1)
-		{
-			if (_kbhit())
-			{
-				int key = _getch();
-				if(key == '1') break;
-				else if(key == '2')
-				{
-					printf("\n   Updating...");
-					UpdateWalkingTrajectories(pWinData);
-					break;
-				}
-			}
-		}
-	}
-	else if(pWinData->PP_motionType == 5) 
-	{
-		UpdateReadPoseTxtTheta(pWinData);
-	}
-
-	printf("\ncurrent state: PP_MODE\n");
-	printf("next state   : PP_CHECK_IK_LIMIT(1)\n");
-	printf("               HOLD(h)\n");
-
-	pWinData->currentState = PP_MODE;
-	RtSetEvent(oBhandle[PP_MODE]);
-	return 0;
-}
-bool goto_PP_CHECK_IK_LIMIT(WIN32_DAT *pWinData)
-{
-	printf("\ncurrent state: PP_CHECK_IK_LIMIT\n");
-	printf("next state   : PP_RUN(1)\n");
-	printf("               PP_MODE(2)\n");
-	printf("               HOLD(h)\n");
-	
-	pWinData->currentState = PP_CHECK_IK_LIMIT;
-	RtSetEvent(oBhandle[PP_CHECK_IK_LIMIT]);
-	return 0;
-}
-bool goto_PP_RUN(WIN32_DAT *pWinData)
-{
-	int key;
-	int splineType = 3;
-
-	printf("\ncurrent state: PP_RUN\n");
-	printf("next state: Hold(h)\n");
-	printf("   \n");
-
-	pWinData->currentState = PP_RUN;
-	RtSetEvent(oBhandle[PP_RUN]);
-
-	pWinData->PP_singleMovementCompleteFlag = 1; // initialize
-
-	while(pWinData->PP_currPointCnt < pWinData->PP_totalPointCnt[pWinData->PP_motionType])
-	{
-		if(pWinData->PP_singleMovementCompleteFlag == 1)
-		{
-			SetPP_targetTheta(pWinData, pWinData->PP_motionType, pWinData->PP_currPointCnt);
-			UpdateSplineVector(pWinData, splineType, pWinData->PP_motionTimePeriod);
-
-			pWinData->PP_singleMovementCompleteFlag = 0;
-			pWinData->resetCntFlag = 1;
-			pWinData->holdSwitch = 0;
-		}
-
-		if(_kbhit())
-		{
-			key = _getch();
-			if(key == 'h' || key == 's')
-			{
-				return goto_HOLD(pWinData);
-				break;
-			}
-		}
-	}
-
-	
-	return 0;
-}
-
-////////////////////////////////////////////////////////
-bool goto_CSP_MODE(WIN32_DAT *pWinData)
-{
-	printf("\nContinue(1)\n");
-	printf("Update walking trajectory(2)\n");
-	while(1)
-	{
-		if (_kbhit())
-		{
-			int key = _getch();
-			if(key == '1') break;
-			else if(key == '2')
-			{
-				printf("\n   Updating...");
-				UpdateWalkingTrajectories(pWinData);
-				break;
-			}
-		}
-	}
-
-	printf("\ncurrent state: CSP_MODE\n");
-	printf("next state   : CSP_CHECK_IK_LIMIT(1)\n");
-	printf("               HOLD(h)\n");
-
-	pWinData->currentState = CSP_MODE;
-	return 0;
-}
-bool goto_CSP_CHECK_IK_LIMIT(WIN32_DAT *pWinData)
-{
-	printf("\ncurrent state: CSP_CHECK_IK_LIMIT\n");
-	printf("next state   : CSP_RUN(1)\n");
-	printf("               HOLD(h)\n");
-	
-	pWinData->currentState = CSP_CHECK_IK_LIMIT;
-	return 0;
-}
-bool goto_CSP_RUN(WIN32_DAT *pWinData)
-{
-	printf("\ncurrent state: CSP_RUN\n");
-	printf("next state   : STOP_AND_HOLD(h)\n");
-	printf("n              STOP_BUT_SOFT(s)\n");
-	
-	pWinData->resetCntFlag = 1;
-	pWinData->holdSwitch = 0;
-
-	pWinData->currentState = CSP_RUN;
-	return 0;
-}
-
-bool goto_WRITE_FILE(WIN32_DAT *pWinData)
-{
-	printf("\ncurrent state: WRITE_FILE\n");
-	printf("next state   : SET_CURR_POS_HOME(1)\n");
-	printf("               CLOSE_MASTER(esc)\n");
-
-	pWinData->currentState = WRITE_FILE;
-	RtSetEvent(oBhandle[WRITE_FILE]);
-	return 0;
-}
 
 
 void UpdateSplineVector(WIN32_DAT *pWinData, int splineType, F64_T motionTimePeriod)
@@ -1258,6 +1259,7 @@ void UpdateReadPoseTxtTheta(WIN32_DAT *pWinData)
 
 void InitPwindata(WIN32_DAT *pWinData)
 {
+	pWinData->MotorState = MotorState_NoTq;
 	pWinData->Flag_StartMasterDone = 0;
 	pWinData->Flag_SetMotorParameterDone = 0;
 	pWinData->Flag_SetCurrPosHomeDone = 0;
@@ -1283,7 +1285,6 @@ void SetCurrPosHome(WIN32_DAT *pWinData)
 void HoldPos(WIN32_DAT *pWinData)
 {
 	pWinData->Flag_HoldPosSaved = 0;
-	pWinData->holdSwitch = 1;
+	pWinData->MotorState = MotorState_Hold;
 	pWinData->setServoOnFlag = 1;
-	pWinData->setTargetTorqueSwitch = 1;
 }
