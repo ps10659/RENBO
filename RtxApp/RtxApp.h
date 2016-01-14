@@ -21,6 +21,7 @@
 #define TOTAL_AXIS 33
 #define	MAX_WALKING_TIMEFRAME 50000
 #define MAX_MOTION_TIME_FRAME 10000
+#define PP_QUEUE_SIZE 100
 #define TOTAL_MOTION_NUMBER 6
 #define SHM_NAME "Share Memory"
 #define EVN_NUM 4
@@ -88,12 +89,6 @@ LPCSTR EVN_NAME[EVN_NUM] =
 	"CLOSE_MASTER",
 };
 
-// queue object used in MotorState_PP
-struct PP
-{
-	double timePeriod;
-	double theta[TOTAL_AXIS];
-};
 
 // shared memory
 typedef struct
@@ -129,6 +124,7 @@ typedef struct
 	BOOL_T		Flag_ServoOff;
 	BOOL_T		Flag_HoldPosSaved;
 	BOOL_T		Flag_UpdateActualTheta;
+	BOOL_T		Flag_ReachPpTarget;
 
 
 
@@ -150,16 +146,17 @@ typedef struct
 
 	// PP related variables
 	BOOL_T		PP_singleMovementCompleteFlag;
-	F64_T		PP_initialTheta[TOTAL_AXIS];
-	F64_T		PP_targetTheta[TOTAL_AXIS];
 	F64_T		PP_splineVec[MAX_MOTION_TIME_FRAME];
 	I32_T		PP_motionTimeFrame;
 	I32_T		PP_currPointCnt;
 	I32_T		PP_motionType;
-	F64_T		PP_motionTimePeriod;
 	I32_T		PP_totalPointCnt[TOTAL_MOTION_NUMBER];
 
-	
+	F64_T		PP_Queue_TargetTheta[PP_QUEUE_SIZE][TOTAL_AXIS];
+	F64_T		PP_Queue_TimePeriod[PP_QUEUE_SIZE];
+	I32_T		PP_Queue_Rear;
+	I32_T		PP_Queue_Front;
+
 
 	// motor status
 	F64_T		actualTheta[TOTAL_AXIS];
@@ -182,16 +179,18 @@ RTN_ERR MotorType_3863(CANAxis_T Axis);
 RTN_ERR MotorType_3890(CANAxis_T Axis);
 
 void HOMING_UpdateCbTargetTheta(F64_T *targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *homeSensorValue, I32_T *HOMING_cnt);
-void PP_UpdateCbTargetTheta(F64_T *targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *CSP_cnt);
+//void PP_UpdateCbTargetTheta(F64_T *targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *CSP_cnt);
 void CSP_UpdateCbTargetTheta(F64_T *targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *CSP_cnt);
 
 void StartMaster(USER_DAT *pData);
 void CloseMaster(USER_DAT *pData);
 void HomingMethod35(USER_DAT *pData);
-void SaveHoldPos(F64_T *targetTheta, F64_T *actualTheta);
+void SaveHoldPos(F64_T *CB_targetTheta, F64_T *CB_actualTheta);
+void PP_UpdateCbTargetTheta(F64_T *targetTheta, F64_T *CB_actualTheta, I32_T *CSP_cnt);
+
 I16_T TargetTorqueTrimming(F64_T tempTorque);
 
-void MotorPosPidControl(F64_T *targetTheta, F64_T *actualTheta, USER_DAT *pData);
+void MotorPosPidControl(F64_T *CB_targetTheta, F64_T *CB_actualTheta, USER_DAT *pData);
 
 // global variables
 static PVOID	location;

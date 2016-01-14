@@ -2,9 +2,10 @@
 HANDLE sMhandle ;
 HANDLE oBhandle[EVN_NUM] ;
 
+WIN32_DAT *pWinData;
+
 int _tmain(int argc)
 {
-	WIN32_DAT *pWinData;
 	RTN_ERR     ret;
 	bool breakWhile = 0;
 	int i = 0;
@@ -79,6 +80,12 @@ int _tmain(int argc)
 	SetCurrPosHome(pWinData);
 	HoldPos(pWinData);
 
+
+
+	double Pos_home[TOTAL_AXIS] = {0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0};
+	double Pos_test[TOTAL_AXIS] = {0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 20,0,0};
+
+
 	while(1)
 	{
 		if(_kbhit())
@@ -87,11 +94,17 @@ int _tmain(int argc)
 		
 			switch(key)
 			{
-			case '0':
+			case 's':
 				NoTorque(pWinData);
 				break;
-			case '1':
+			case 'h':
 				HoldPos(pWinData);
+				break;
+			case 'o':
+				PP_Move_deg(10.0, Pos_home);
+				break;
+			case 'p':
+				PP_Move_deg(10.0, Pos_test);
 				break;
 			case '.':
 				cout << "@@" << endl;
@@ -351,49 +364,49 @@ void PrintAllKd(WIN32_DAT *pWinData)
 	printf("\n");
 }
 
-void SetPP_targetTheta(WIN32_DAT *pWinData, int motionType, int currPointCnt)
-{
-	int i;
-	switch(motionType)
-	{
-		case 0:
-			for(i=0; i<TOTAL_AXIS; i++)
-			{
-				pWinData->PP_targetTheta[i] = UserDefineTheta[currPointCnt][i]*PI/180.0;
-			}
-			break;
-		case 1:
-			for(i=0; i<TOTAL_AXIS; i++)
-			{
-				pWinData->PP_targetTheta[i] = HomeTheta[currPointCnt][i]*PI/180.0;
-			}
-			break;
-		case 2:
-			for(i=0; i<TOTAL_AXIS; i++)
-			{
-				pWinData->PP_targetTheta[i] = SquatTheta[currPointCnt][i]*PI/180.0;
-			}
-			break;
-		case 3:
-			for(i=0; i<TOTAL_AXIS; i++)
-			{
-				pWinData->PP_targetTheta[i] = WalkingInitialTheta[currPointCnt][i]*PI/180.0;
-			}
-			break;
-		case 4:
-			for(i=0; i<TOTAL_AXIS; i++)
-			{
-				pWinData->PP_targetTheta[i] = WalkingInitialReverseTheta[currPointCnt][i]*PI/180.0;
-			}
-			break;
-		case 5:
-			for(i=0; i<TOTAL_AXIS; i++)
-			{
-				pWinData->PP_targetTheta[i] = ReadPoseTxtTheta[currPointCnt][i]*PI/180.0;
-			}
-			break;
-	}
-}
+//void SetPP_targetTheta(WIN32_DAT *pWinData, int motionType, int currPointCnt)
+//{
+//	int i;
+//	switch(motionType)
+//	{
+//		case 0:
+//			for(i=0; i<TOTAL_AXIS; i++)
+//			{
+//				pWinData->PP_targetTheta[i] = UserDefineTheta[currPointCnt][i]*PI/180.0;
+//			}
+//			break;
+//		case 1:
+//			for(i=0; i<TOTAL_AXIS; i++)
+//			{
+//				pWinData->PP_targetTheta[i] = HomeTheta[currPointCnt][i]*PI/180.0;
+//			}
+//			break;
+//		case 2:
+//			for(i=0; i<TOTAL_AXIS; i++)
+//			{
+//				pWinData->PP_targetTheta[i] = SquatTheta[currPointCnt][i]*PI/180.0;
+//			}
+//			break;
+//		case 3:
+//			for(i=0; i<TOTAL_AXIS; i++)
+//			{
+//				pWinData->PP_targetTheta[i] = WalkingInitialTheta[currPointCnt][i]*PI/180.0;
+//			}
+//			break;
+//		case 4:
+//			for(i=0; i<TOTAL_AXIS; i++)
+//			{
+//				pWinData->PP_targetTheta[i] = WalkingInitialReverseTheta[currPointCnt][i]*PI/180.0;
+//			}
+//			break;
+//		case 5:
+//			for(i=0; i<TOTAL_AXIS; i++)
+//			{
+//				pWinData->PP_targetTheta[i] = ReadPoseTxtTheta[currPointCnt][i]*PI/180.0;
+//			}
+//			break;
+//	}
+//}
 void UpdataUserDefineData()
 {
 	int index;
@@ -636,6 +649,9 @@ void InitPwindata(WIN32_DAT *pWinData)
 	pWinData->Flag_HoldPosSaved = 0;
 	pWinData->Flag_UpdateActualTheta = 0;
 
+	pWinData->PP_Queue_Rear = 0;
+	pWinData->PP_Queue_Front = 0;
+	pWinData->Flag_ReachPpTarget = 1;
 
 	GenerateCubicPolyVec(pWinData);
 
@@ -687,20 +703,61 @@ void SetCurrPosHome(WIN32_DAT *pWinData)
 	while(!pWinData->Flag_SetCurrPosHomeDone){}
 	pWinData->Flag_SetCurrPosHomeDone = 0;
 }
+
 void NoTorque(WIN32_DAT *pWinData)
 {
 	pWinData->MotorState = MotorState_NoTq;
 }
 void HoldPos(WIN32_DAT *pWinData)
 {
-	pWinData->Flag_HoldPosSaved = 0;
+	// reset
+	pWinData->Flag_ReachPpTarget = 1;
 	pWinData->Flag_ResetError = 1;
+
+	pWinData->Flag_HoldPosSaved = 0;
 	pWinData->MotorState = MotorState_Hold;
 	pWinData->Flag_ServoOn = 1;
 }
+void PP_Move_rad(double timePeriod, double *PP_targetTheta)
+{
+	if((pWinData->PP_Queue_Front - pWinData->PP_Queue_Rear) % PP_QUEUE_SIZE == 1) // PP_Queue is full
+	{
+		cout << "PP_Queue is full" << endl;
+		return;
+	}
+	else // push object into PP_Queue
+	{
+		pWinData->PP_Queue_Rear = (pWinData->PP_Queue_Rear + 1) % PP_QUEUE_SIZE;
+		pWinData->PP_Queue_TimePeriod[pWinData->PP_Queue_Rear] = timePeriod;
+		for(int i=0; i<TOTAL_AXIS; i++)
+		{
+			pWinData->PP_Queue_TargetTheta[pWinData->PP_Queue_Rear][i] = PP_targetTheta[i];
+		}
+	}
 
+	pWinData->MotorState = MotorState_PP;
 
+}
+void PP_Move_deg(double timePeriod, double *PP_targetDeg)
+{
+	if((pWinData->PP_Queue_Front - pWinData->PP_Queue_Rear) % PP_QUEUE_SIZE == 1) // PP_Queue is full
+	{
+		cout << "PP_Queue is full" << endl;
+		return;
+	}
+	else // push object into PP_Queue
+	{
+		pWinData->PP_Queue_Rear = (pWinData->PP_Queue_Rear + 1) % PP_QUEUE_SIZE;
+		pWinData->PP_Queue_TimePeriod[pWinData->PP_Queue_Rear] = timePeriod;
+		for(int i=0; i<TOTAL_AXIS; i++)
+		{
+			pWinData->PP_Queue_TargetTheta[pWinData->PP_Queue_Rear][i] = PP_targetDeg[i] * PI / 180.0;
+		}
+	}
 
+	pWinData->MotorState = MotorState_PP;
+
+}
 
 //bool TriggerEvent(int key, WIN32_DAT *pWinData)
 //{

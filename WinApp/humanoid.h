@@ -52,7 +52,7 @@ typedef struct
 	BOOL_T		Flag_ServoOff;
 	BOOL_T		Flag_HoldPosSaved;
 	BOOL_T		Flag_UpdateActualTheta;
-
+	BOOL_T		Flag_ReachPpTarget;
 
 
 
@@ -75,14 +75,17 @@ typedef struct
 
 	// PP related variables
 	BOOL_T		PP_singleMovementCompleteFlag;
-	F64_T		PP_initialTheta[TOTAL_AXIS];
-	F64_T		PP_targetTheta[TOTAL_AXIS];
 	F64_T		PP_splineVec[MAX_MOTION_TIME_FRAME];
 	I32_T		PP_motionTimeFrame;
 	I32_T		PP_currPointCnt;
 	I32_T		PP_motionType;
-	F64_T		PP_motionTimePeriod;
 	I32_T		PP_totalPointCnt[TOTAL_MOTION_NUMBER];
+
+	F64_T		PP_Queue_TargetTheta[PP_QUEUE_SIZE][TOTAL_AXIS];
+	F64_T		PP_Queue_TimePeriod[PP_QUEUE_SIZE];
+	I32_T		PP_Queue_Rear;
+	I32_T		PP_Queue_Front;
+
 
 	// motor status
 	F64_T		actualTheta[TOTAL_AXIS];
@@ -152,16 +155,20 @@ void UpdateReadPoseTxtTheta(WIN32_DAT *pWinData);
 
 
 
-
+// initialization
 void InitPwindata(WIN32_DAT *pWinData);
 void GenerateCubicPolyVec(WIN32_DAT *pWinData);
 
+// 
 void StartMaster(WIN32_DAT *pWinData);
 void SetMotorParam(WIN32_DAT *pWinData);
 void SetCurrPosHome(WIN32_DAT *pWinData);
+
+// control function
 void NoTorque(WIN32_DAT *pWinData);
 void HoldPos(WIN32_DAT *pWinData);
-
+void PP_Move_rad(double timePeriod, double *PP_targetTheta);
+void PP_Move_deg(double timePeriod, double *PP_targetTheta);
 
 
 

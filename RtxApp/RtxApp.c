@@ -1,5 +1,6 @@
 #include "RtxApp.h"
 
+USER_DAT	*pData;
 
 
 void 
@@ -10,7 +11,6 @@ main(
        char **envp
     )
 {
-	USER_DAT	*pData;
 	HANDLE		sHhandle;
 	HANDLE		oBhandle[EVN_NUM];
 	int			i;
@@ -123,9 +123,9 @@ void __RtCyclicCallback( void *UserDataPtr )
 	static I32_T	CSP_cnt = 0;
 
 	// state
-	static F64_T	targetTheta[TOTAL_AXIS];
+	static F64_T	CB_targetTheta[TOTAL_AXIS];
+	F64_T			CB_actualTheta[TOTAL_AXIS];
 	I32_T			actualEncoderPos[TOTAL_AXIS];
-	F64_T			actualTheta[TOTAL_AXIS];
 
 
 	// homing related
@@ -144,7 +144,7 @@ void __RtCyclicCallback( void *UserDataPtr )
 		for(k=0; k<TOTAL_AXIS; k++) 
 		{
 			NEC_CoE402GetActualPosition( pData->axis[k], &actualEncoderPos[k]);
-			actualTheta[k] = ((F64_T)actualEncoderPos[k]) / axis_theta_to_motor_resolution[k];	
+			CB_actualTheta[k] = ((F64_T)actualEncoderPos[k]) / axis_theta_to_motor_resolution[k];	
 		}
 
 		// flags
@@ -168,7 +168,7 @@ void __RtCyclicCallback( void *UserDataPtr )
 		{
 			for(k=0; k<TOTAL_AXIS; k++) 
 			{
-				pData->actualTheta[k] = actualTheta[k];
+				pData->actualTheta[k] = CB_actualTheta[k];
 			}
 			pData->Flag_UpdateActualTheta = 0;
 		}
@@ -182,31 +182,45 @@ void __RtCyclicCallback( void *UserDataPtr )
 
 		switch(pData->MotorState)
 		{
-			case MotorState_NoTq:
-				for(k=0; k<TOTAL_AXIS; k++)
-				{
-					NEC_CoE402SetTargetTorque( pData->axis[k], 0 );
-				}
-				break;
+		case MotorState_NoTq:
+			for(k=0; k<TOTAL_AXIS; k++)
+			{
+				NEC_CoE402SetTargetTorque( pData->axis[k], 0 );
+			}
+			break;
 
-			case MotorState_Hold:
-				if(pData->Flag_HoldPosSaved == 0)
-				{	
-					SaveHoldPos(targetTheta, actualTheta);
-					pData->Flag_HoldPosSaved = 1;
-				}
+		case MotorState_Hold:
+			if(pData->Flag_HoldPosSaved == 0)
+			{	
+				SaveHoldPos(CB_targetTheta, CB_actualTheta);
+				pData->Flag_HoldPosSaved = 1;
+			}
 
-				MotorPosPidControl(targetTheta, actualTheta, pData);
-				break;
+			MotorPosPidControl(CB_targetTheta, CB_actualTheta, pData);
+			break;
 
-			case MotorState_Homing:
-				break;
+		case MotorState_Homing:
+			break;
 
-			case MotorState_PP:
-				break;
+		case MotorState_PP:
+			if((pData->Flag_ReachPpTarget == 1) && (pData->PP_Queue_Front != pData->PP_Queue_Rear)) // reach target and PP_Queue is not empty
+			{
+				pData->Flag_ResetCnt = 1;
+				pData->Flag_ReachPpTarget = 0;
+				RtPrintf("1\n");
+				pData->PP_Queue_Front = (pData->PP_Queue_Front + 1) % PP_QUEUE_SIZE;	// pop PP_Queue
+				RtPrintf("2\n");
+			}
+			else
+			{
+				PP_UpdateCbTargetTheta(CB_targetTheta, CB_actualTheta, &PP_cnt);
+			}
+			MotorPosPidControl(CB_targetTheta, CB_actualTheta, pData);
+			break;
 
-			case MotorState_CSP:
-				break;
+		case MotorState_CSP:
+			break;
+
 		}
 		// [IMPORTANT FLAG] decide whether give the target torque or zero torque
 		//if( pData->setTargetTorqueSwitch )
@@ -1417,27 +1431,27 @@ void HOMING_UpdateCbTargetTheta(F64_T *targetTheta, USER_DAT *pData, F64_T *actu
 	(*HOMING_cnt)++;
 
 }
-void PP_UpdateCbTargetTheta(F64_T *targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *PP_cnt)
-{
-	int i;
-
-	if((*PP_cnt) == 0)
-	{
-		for(i=0; i<TOTAL_AXIS; i++)
-		{
-			pData->PP_initialTheta[i] = actualTheta[i];
-		}
-	}
-	else
-	{
-		for(i=0; i<TOTAL_AXIS; i++)
-		{
-			targetTheta[i] = pData->PP_initialTheta[i] + (pData->PP_targetTheta[i] - pData->PP_initialTheta[i]) * pData->PP_splineVec[(*PP_cnt)];
-		}
-	}
-	(*PP_cnt)++;
-
-}
+//void PP_UpdateCbTargetTheta(F64_T *targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *PP_cnt)
+//{
+//	int i;
+//
+//	if((*PP_cnt) == 0)
+//	{
+//		for(i=0; i<TOTAL_AXIS; i++)
+//		{
+//			pData->PP_initialTheta[i] = actualTheta[i];
+//		}
+//	}
+//	else
+//	{
+//		for(i=0; i<TOTAL_AXIS; i++)
+//		{
+//			targetTheta[i] = pData->PP_initialTheta[i] + (pData->PP_targetTheta[i] - pData->PP_initialTheta[i]) * pData->PP_splineVec[(*PP_cnt)];
+//		}
+//	}
+//	(*PP_cnt)++;
+//
+//}
 void CSP_UpdateCbTargetTheta(F64_T *targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *CSP_cnt)
 {
 	int i;
@@ -1552,14 +1566,38 @@ void HomingMethod35(USER_DAT *pData)
 	pData->Flag_SetCurrPosHomeDone = 1;
 	
 }
-void SaveHoldPos(F64_T *targetTheta, F64_T *actualTheta)
+void SaveHoldPos(F64_T *CB_targetTheta, F64_T *CB_actualTheta)
 {
 	int k;
 	for(k=0; k<TOTAL_AXIS; k++) 
 	{	
-		targetTheta[k] = actualTheta[k];
+		CB_targetTheta[k] = CB_actualTheta[k];
 	}
 }
+void PP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T *PP_cnt)
+{
+	int i;
+	static F64_T PP_initialTheta[TOTAL_AXIS];
+
+	if((*PP_cnt) == 0)
+	{
+		for(i=0; i<TOTAL_AXIS; i++)
+		{
+			PP_initialTheta[i] = CB_actualTheta[i];
+		}
+		RtPrintf("3\n");
+	}
+	else
+	{
+		for(i=0; i<TOTAL_AXIS; i++)
+		{
+			CB_targetTheta[i] = PP_initialTheta[i] + 
+								(pData->PP_Queue_TargetTheta[pData->PP_Queue_Front][i] - PP_initialTheta[i]) * pData->CubicPolyVec[(int)floor((*PP_cnt) * MAX_MOTION_TIME_FRAME * pData->cycleTime / pData->PP_Queue_TimePeriod[pData->PP_Queue_Front])];
+		}
+	}
+	(*PP_cnt)++;
+}
+
 I16_T TargetTorqueTrimming(F64_T tempTorque)
 {
 	if(tempTorque>=1000.0) return (I16_T)1000;
@@ -1567,7 +1605,7 @@ I16_T TargetTorqueTrimming(F64_T tempTorque)
 	else return (I16_T)tempTorque;
 }
 
-void MotorPosPidControl(F64_T *targetTheta, F64_T *actualTheta, USER_DAT *pData)
+void MotorPosPidControl(F64_T *CB_targetTheta, F64_T *CB_actualTheta, USER_DAT *pData)
 {
 	int k;
 	F64_T			errorTheta[TOTAL_AXIS];
@@ -1589,7 +1627,7 @@ void MotorPosPidControl(F64_T *targetTheta, F64_T *actualTheta, USER_DAT *pData)
 
 	for(k=0; k<TOTAL_AXIS; k++)
 	{
-		errorTheta[k] = targetTheta[k] - actualTheta[k];
+		errorTheta[k] = CB_targetTheta[k] - CB_actualTheta[k];
 		if(errorThetaSum[k] < maxErrorThetaSum)
 			errorThetaSum[k] = errorThetaSum[k] + errorTheta[k];
 		errorThetaDot[k] = (errorTheta[k] - preErrorTheta[k]) / (((F64_T)pData->cycleTime) * MILISECOND_TO_SECOND);
