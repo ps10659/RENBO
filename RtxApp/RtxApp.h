@@ -20,8 +20,8 @@
 // defines
 #define TOTAL_AXIS 33
 #define	MAX_WALKING_TIMEFRAME 50000
+#define MAX_MOTION_TIME_FRAME 10000
 #define TOTAL_MOTION_NUMBER 6
-#define MAX_MOTION_TIME_FRAME 5000 // --> max motion time period = MAX_MOTION_TIME_FRAME * cycletime
 #define SHM_NAME "Share Memory"
 #define EVN_NUM 4
 
@@ -88,7 +88,12 @@ LPCSTR EVN_NAME[EVN_NUM] =
 	"CLOSE_MASTER",
 };
 
-
+// queue object used in MotorState_PP
+struct PP
+{
+	double timePeriod;
+	double theta[TOTAL_AXIS];
+};
 
 // shared memory
 typedef struct
@@ -106,24 +111,24 @@ typedef struct
 	F64_T		WalkingTrajectories[MAX_WALKING_TIMEFRAME][TOTAL_AXIS];
 	F64_T		ActualWalkingTrajectories[MAX_WALKING_TIMEFRAME][TOTAL_AXIS];
 	I32_T		walkingTimeframe;
+	F64_T		CubicPolyVec[MAX_MOTION_TIME_FRAME];
 
-	// state, flags and switches
-	BOOL_T		stateTransitionFlag;	// 1/0: transitioning/arrived new state
-	BOOL_T		setServoOnFlag;
-	BOOL_T		setServoOffFlag;
-	BOOL_T		holdSwitch;
-	BOOL_T		setTargetTorqueSwitch;	// 1/0: torque on/off
-	BOOL_T		Flag_HoldPosSaved;
-	BOOL_T		home35CompleteFlag;
-	BOOL_T		updateAllActualThetaFlag;
-	BOOL_T		resetCntFlag;
 
 
 	I32_T		MotorState;
 
+	// used by event waiting
 	BOOL_T		Flag_StartMasterDone;
 	BOOL_T		Flag_SetMotorParameterDone;
 	BOOL_T		Flag_SetCurrPosHomeDone;
+
+	// used in cyclic callback funciton
+	BOOL_T		Flag_ResetCnt;
+	BOOL_T		Flag_ResetError;
+	BOOL_T		Flag_ServoOn;
+	BOOL_T		Flag_ServoOff;
+	BOOL_T		Flag_HoldPosSaved;
+	BOOL_T		Flag_UpdateActualTheta;
 
 
 
@@ -154,6 +159,8 @@ typedef struct
 	F64_T		PP_motionTimePeriod;
 	I32_T		PP_totalPointCnt[TOTAL_MOTION_NUMBER];
 
+	
+
 	// motor status
 	F64_T		actualTheta[TOTAL_AXIS];
 
@@ -165,8 +172,7 @@ void __RtCyclicCallback( void *UserDataPtr );
 void __RtEventCallback( void *UserDataPtr, U32_T EventCode ); 
 void __RtErrorCallback( void *UserDataPtr, I32_T ErrorCode );
 
-void	StartMaster(USER_DAT *pData);
-void	CloseMaster(USER_DAT *pData);
+
 RTN_ERR SetMotorParameters(USER_DAT *pData);
 RTN_ERR MotorType_2342(CANAxis_T Axis);
 RTN_ERR MotorType_2619(CANAxis_T Axis);
@@ -174,16 +180,18 @@ RTN_ERR MotorType_2642(CANAxis_T Axis);
 RTN_ERR MotorType_3257(CANAxis_T Axis);
 RTN_ERR MotorType_3863(CANAxis_T Axis);
 RTN_ERR MotorType_3890(CANAxis_T Axis);
+
+void HOMING_UpdateCbTargetTheta(F64_T *targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *homeSensorValue, I32_T *HOMING_cnt);
+void PP_UpdateCbTargetTheta(F64_T *targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *CSP_cnt);
+void CSP_UpdateCbTargetTheta(F64_T *targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *CSP_cnt);
+
+void StartMaster(USER_DAT *pData);
+void CloseMaster(USER_DAT *pData);
 void HomingMethod35(USER_DAT *pData);
-
-void HOMING_UpdateCbTargetTheta(F64_T *CB_targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *homeSensorValue, I32_T *HOMING_cnt);
-void PP_UpdateCbTargetTheta(F64_T *CB_targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *CSP_cnt);
-void CSP_UpdateCbTargetTheta(F64_T *CB_targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *CSP_cnt);
-
+void SaveHoldPos(F64_T *targetTheta, F64_T *actualTheta);
 I16_T TargetTorqueTrimming(F64_T tempTorque);
 
-
-
+void MotorPosPidControl(F64_T *targetTheta, F64_T *actualTheta, USER_DAT *pData);
 
 // global variables
 static PVOID	location;

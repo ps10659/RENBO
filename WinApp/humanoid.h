@@ -35,24 +35,23 @@ typedef struct
 	F64_T		WalkingTrajectories[MAX_WALKING_TIMEFRAME][TOTAL_AXIS];
 	F64_T		ActualWalkingTrajectories[MAX_WALKING_TIMEFRAME][TOTAL_AXIS];
 	I32_T		walkingTimeframe;
-
-	// state, flags and switches
-	BOOL_T		stateTransitionFlag;	// 1/0: transitioning/arrived new state
-	BOOL_T		setServoOnFlag;
-	BOOL_T		setServoOffFlag;
-	BOOL_T		holdSwitch;
-	BOOL_T		setTargetTorqueSwitch;	// 1/0: torque on/off
-	BOOL_T		Flag_HoldPosSaved;
-	BOOL_T		home35CompleteFlag;
-	BOOL_T		updateAllActualThetaFlag;
-	BOOL_T		resetCntFlag;
+	F64_T		CubicPolyVec[MAX_MOTION_TIME_FRAME];
 
 
 	I32_T		MotorState;
 
+	// used by event waiting
 	BOOL_T		Flag_StartMasterDone;
 	BOOL_T		Flag_SetMotorParameterDone;
 	BOOL_T		Flag_SetCurrPosHomeDone;
+
+	// used in cyclic callback funciton
+	BOOL_T		Flag_ResetCnt;
+	BOOL_T		Flag_ResetError;
+	BOOL_T		Flag_ServoOn;
+	BOOL_T		Flag_ServoOff;
+	BOOL_T		Flag_HoldPosSaved;
+	BOOL_T		Flag_UpdateActualTheta;
 
 
 
@@ -127,34 +126,6 @@ F64_T ReadPoseTxtTheta[ReadPoseTxtPoint][TOTAL_AXIS] =
 
 
 // functions
-bool TriggerEvent(int key, WIN32_DAT *pWinData);
-
-bool goto_START_MASTER_AND_SLAVES(WIN32_DAT *pWinData);
-bool goto_SET_MOTOR_PARAMETERS(WIN32_DAT *pWinData);
-bool goto_SET_CURR_POS_HOME(WIN32_DAT *pWinData);
-bool goto_HOMING(WIN32_DAT *pWinData);
-bool goto_GO_HOME(WIN32_DAT *pWinData);
-bool goto_STOP_AND_HOLD(WIN32_DAT *pWinData);
-bool goto_STOP_BUT_SOFT(WIN32_DAT *pWinData);
-bool goto_SERVO_OFF(WIN32_DAT *pWinData);
-bool goto_CLOSE_MASTER(WIN32_DAT *pWinData);
-bool goto_HOLD(WIN32_DAT *pWinData);
-
-bool goto_HOMING_MODE(WIN32_DAT *pWinData);
-bool goto_HOMING_RUN(WIN32_DAT *pWinData);
-
-bool goto_PP_MODE(WIN32_DAT *pWinData);
-bool goto_PP_CHECK_IK_LIMIT(WIN32_DAT *pWinData);
-bool goto_PP_RUN(WIN32_DAT *pWinData);
-
-bool goto_CSP_MODE(WIN32_DAT *pWinData);
-bool goto_CSP_CHECK_IK_LIMIT(WIN32_DAT *pWinData);
-bool goto_CSP_RUN(WIN32_DAT *pWinData);
-
-bool goto_WRITE_FILE(WIN32_DAT *pWinData);
-
-
-
 void UpdateSplineVector(WIN32_DAT *pWinData, int splineType, F64_T motionTimePeriod);
 void UpdataAllActualTheta(WIN32_DAT *pWinData);
 void PrintAllActualTheta(WIN32_DAT *pWinData);
@@ -181,8 +152,46 @@ void UpdateReadPoseTxtTheta(WIN32_DAT *pWinData);
 
 
 
+
 void InitPwindata(WIN32_DAT *pWinData);
+void GenerateCubicPolyVec(WIN32_DAT *pWinData);
+
 void StartMaster(WIN32_DAT *pWinData);
 void SetMotorParam(WIN32_DAT *pWinData);
 void SetCurrPosHome(WIN32_DAT *pWinData);
+void NoTorque(WIN32_DAT *pWinData);
 void HoldPos(WIN32_DAT *pWinData);
+
+
+
+
+
+
+
+
+
+//bool TriggerEvent(int key, WIN32_DAT *pWinData);
+//
+//bool goto_START_MASTER_AND_SLAVES(WIN32_DAT *pWinData);
+//bool goto_SET_MOTOR_PARAMETERS(WIN32_DAT *pWinData);
+//bool goto_SET_CURR_POS_HOME(WIN32_DAT *pWinData);
+//bool goto_HOMING(WIN32_DAT *pWinData);
+//bool goto_GO_HOME(WIN32_DAT *pWinData);
+//bool goto_STOP_AND_HOLD(WIN32_DAT *pWinData);
+//bool goto_STOP_BUT_SOFT(WIN32_DAT *pWinData);
+//bool goto_SERVO_OFF(WIN32_DAT *pWinData);
+//bool goto_CLOSE_MASTER(WIN32_DAT *pWinData);
+//bool goto_HOLD(WIN32_DAT *pWinData);
+//
+//bool goto_HOMING_MODE(WIN32_DAT *pWinData);
+//bool goto_HOMING_RUN(WIN32_DAT *pWinData);
+//
+//bool goto_PP_MODE(WIN32_DAT *pWinData);
+//bool goto_PP_CHECK_IK_LIMIT(WIN32_DAT *pWinData);
+//bool goto_PP_RUN(WIN32_DAT *pWinData);
+//
+//bool goto_CSP_MODE(WIN32_DAT *pWinData);
+//bool goto_CSP_CHECK_IK_LIMIT(WIN32_DAT *pWinData);
+//bool goto_CSP_RUN(WIN32_DAT *pWinData);
+//
+//bool goto_WRITE_FILE(WIN32_DAT *pWinData);
