@@ -205,13 +205,13 @@ void __RtCyclicCallback( void *UserDataPtr )
 			break;
 
 		case MotorState_PP:
-			if((pData->Flag_ReachPpTarget == 1) && (pData->PP_Queue_Front != pData->PP_Queue_Rear)) // reach target and PP_Queue is not empty
+			if((pData->Flag_PpReachTarget == 1) && (pData->PP_Queue_Front != pData->PP_Queue_Rear)) // reach target and PP_Queue is not empty
 			{
 				pData->Flag_ResetCnt = 1;
-				pData->Flag_ReachPpTarget = 0;
+				pData->Flag_PpReachTarget = 0;
 				pData->PP_Queue_Front = (pData->PP_Queue_Front + 1) % PP_QUEUE_SIZE;	// pop PP_Queue
 			}
-			else if(pData->Flag_ReachPpTarget == 0)
+			else if(pData->Flag_PpReachTarget == 0)
 			{
 				PP_UpdateCbTargetTheta(CB_targetTheta, CB_actualTheta, &PP_cnt);
 			}
@@ -220,6 +220,11 @@ void __RtCyclicCallback( void *UserDataPtr )
 			break;
 
 		case MotorState_CSP:
+			if(!pData->Flag_CspFinished)
+			{
+				CSP_UpdateCbTargetTheta(CB_targetTheta, CB_actualTheta, &CSP_cnt);
+			}
+			MotorPosPidControl(CB_targetTheta, CB_actualTheta, pData);
 			break;
 
 		}
@@ -1453,20 +1458,20 @@ void HOMING_UpdateCbTargetTheta(F64_T *targetTheta, USER_DAT *pData, F64_T *actu
 //	(*PP_cnt)++;
 //
 //}
-void CSP_UpdateCbTargetTheta(F64_T *targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *CSP_cnt)
-{
-	int i;
-
-	for(i=0; i<TOTAL_AXIS; i++)
-	{
-		if(i==3 || i== 5 || i==8 || i==11 || i==19 || i==20 || i>=21)
-		{
-			targetTheta[i] = pData->WalkingTrajectories[(int)floor((*CSP_cnt) * pData->walkingSpeed)][i];
-			pData->ActualWalkingTrajectories[(*CSP_cnt)][i] = actualTheta[i];
-		}
-	}
-	(*CSP_cnt)++;
-}
+//void CSP_UpdateCbTargetTheta(F64_T *targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *CSP_cnt)
+//{
+//	int i;
+//
+//	for(i=0; i<TOTAL_AXIS; i++)
+//	{
+//		if(i==3 || i== 5 || i==8 || i==11 || i==19 || i==20 || i>=21)
+//		{
+//			targetTheta[i] = pData->WalkingTrajectories[(int)floor((*CSP_cnt) * pData->walkingSpeed)][i];
+//			pData->ActualWalkingTrajectories[(*CSP_cnt)][i] = actualTheta[i];
+//		}
+//	}
+//	(*CSP_cnt)++;
+//}
 
 void StartMaster(USER_DAT *pData)
 {
@@ -1586,9 +1591,9 @@ void PP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T 
 		{
 			PP_initialTheta[i] = CB_actualTheta[i];
 		}
-		(*PP_cnt)++;
 	}
-	else if((*PP_cnt) * (pData->cycleTime * MILISECOND_TO_SECOND) < pData->PP_Queue_TimePeriod[pData->PP_Queue_Front])
+
+	if((*PP_cnt) < pData->PP_Queue_TimePeriod[pData->PP_Queue_Front] / (pData->cycleTime * MILISECOND_TO_SECOND) - 1)
 	{
 		for(i=0; i<TOTAL_AXIS; i++)
 		{
@@ -1597,17 +1602,26 @@ void PP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T 
 									* pData->CubicPolyVec[(int)floor((*PP_cnt) * MAX_MOTION_TIME_FRAME * MILISECOND_TO_SECOND * pData->cycleTime / pData->PP_Queue_TimePeriod[pData->PP_Queue_Front])];
 		}
 
-		//if((*PP_cnt) % 250 == 0) RtPrintf("%d ", (int)CB_targetTheta[30] * 180 / PI);
-		//RtPrintf("%d ", (int)CB_targetTheta[30] * 180 / PI);
-		//RtPrintf("%d ", (int)floor((*PP_cnt) * MAX_MOTION_TIME_FRAME * pData->cycleTime * MILISECOND_TO_SECOND / pData->PP_Queue_TimePeriod[pData->PP_Queue_Front]));
-		//RtPrintf("%d %d %d \n", (*PP_cnt), MAX_MOTION_TIME_FRAME * MILISECOND_TO_SECOND * pData->cycleTime, (int)pData->PP_Queue_TimePeriod[pData->PP_Queue_Front]);
-
 		(*PP_cnt)++;
 	}
 	else
 	{
-		pData->Flag_ReachPpTarget = 1;
+		pData->Flag_PpReachTarget = 1;
 	}
+}
+void CSP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T *CSP_cnt)
+{
+	int i;
+	
+	for(i=0; i<TOTAL_AXIS; i++)
+	{
+		if(i==3 || i== 5 || i==8 || i==11 || i==19 || i==20 || i>=21)
+		{
+			CB_targetTheta[i] = pData->WalkingTrajectories[(int)floor((*CSP_cnt) * pData->walkingSpeed)][i];
+			pData->ActualWalkingTrajectories[(*CSP_cnt)][i] = CB_actualTheta[i];
+		}
+	}
+	(*CSP_cnt)++;
 }
 
 I16_T TargetTorqueTrimming(F64_T tempTorque)

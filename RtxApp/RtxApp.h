@@ -102,11 +102,6 @@ typedef struct
 	U8_T		*OutputProcessDataPtr; 
 	U32_T		OutPDSizeInByte;
 
-	// walking trajectory
-	F64_T		WalkingTrajectories[MAX_WALKING_TIMEFRAME][TOTAL_AXIS];
-	F64_T		ActualWalkingTrajectories[MAX_WALKING_TIMEFRAME][TOTAL_AXIS];
-	I32_T		walkingTimeframe;
-	F64_T		CubicPolyVec[MAX_MOTION_TIME_FRAME];
 
 
 
@@ -124,8 +119,8 @@ typedef struct
 	BOOL_T		Flag_ServoOff;
 	BOOL_T		Flag_HoldPosSaved;
 	BOOL_T		Flag_UpdateActualTheta;
-	BOOL_T		Flag_ReachPpTarget;
-
+	BOOL_T		Flag_PpReachTarget;
+	BOOL_T		Flag_CspFinished;
 
 
 	// motor parameters
@@ -152,10 +147,17 @@ typedef struct
 	I32_T		PP_motionType;
 	I32_T		PP_totalPointCnt[TOTAL_MOTION_NUMBER];
 
+	F64_T		CubicPolyVec[MAX_MOTION_TIME_FRAME];
 	F64_T		PP_Queue_TargetTheta[PP_QUEUE_SIZE][TOTAL_AXIS];
 	F64_T		PP_Queue_TimePeriod[PP_QUEUE_SIZE];
 	I32_T		PP_Queue_Rear;
 	I32_T		PP_Queue_Front;
+
+	//CSP related variables
+	F64_T		WalkingTrajectories[MAX_WALKING_TIMEFRAME][TOTAL_AXIS];
+	F64_T		ActualWalkingTrajectories[MAX_WALKING_TIMEFRAME][TOTAL_AXIS];
+	I32_T		walkingTimeframe;
+
 
 
 	// motor status
@@ -180,13 +182,14 @@ RTN_ERR MotorType_3890(CANAxis_T Axis);
 
 void HOMING_UpdateCbTargetTheta(F64_T *targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *homeSensorValue, I32_T *HOMING_cnt);
 //void PP_UpdateCbTargetTheta(F64_T *targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *CSP_cnt);
-void CSP_UpdateCbTargetTheta(F64_T *targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *CSP_cnt);
+//void CSP_UpdateCbTargetTheta(F64_T *targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *CSP_cnt);
 
 void StartMaster(USER_DAT *pData);
 void CloseMaster(USER_DAT *pData);
 void HomingMethod35(USER_DAT *pData);
 void SaveHoldPos(F64_T *CB_targetTheta, F64_T *CB_actualTheta);
-void PP_UpdateCbTargetTheta(F64_T *targetTheta, F64_T *CB_actualTheta, I32_T *CSP_cnt);
+void PP_UpdateCbTargetTheta(F64_T *targetTheta, F64_T *CB_actualTheta, I32_T *PP_cnt);
+void CSP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T *CPS_cnt);
 
 I16_T TargetTorqueTrimming(F64_T tempTorque);
 

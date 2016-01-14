@@ -101,12 +101,16 @@ int _tmain(int argc)
 				HoldPos(pWinData);
 				break;
 			case 'o':
-				cout << "go home" << endl;
+				cout << "pp: home" << endl;
 				PP_Move_deg(2.0, Pos_home);
 				break;
 			case 'p':
-				cout << "go 20" << endl;
+				cout << "pp: test" << endl;
 				PP_Move_deg(2.0, Pos_test);
+				break;
+			case 'r':
+				cout << "csp: walking" << endl;
+				CSP_Run();
 				break;
 			case '.':
 				cout << "@@" << endl;
@@ -195,7 +199,6 @@ int _tmain(int argc)
 
 _Byebye:
 
-	// close master
 	CloseMaster();
 
 	// close share memory
@@ -656,7 +659,8 @@ void InitPwindata(WIN32_DAT *pWinData)
 
 	pWinData->PP_Queue_Rear = 0;
 	pWinData->PP_Queue_Front = 0;
-	pWinData->Flag_ReachPpTarget = 1;
+	pWinData->Flag_PpReachTarget = 1;
+	pWinData->Flag_CspFinished = 0;
 
 	GenerateCubicPolyVec(pWinData);
 
@@ -689,9 +693,9 @@ void GenerateCubicPolyVec(WIN32_DAT *pWinData)
 		pWinData->CubicPolyVec[(int)i] = S(0) * pow(i,3) + S(1) * pow(i,2) + S(2) * i + S(3);
 	}
 
-	/*for(int i=0; i<MAX_MOTION_TIME_FRAME; i+=500){
+	for(int i=0; i<MAX_MOTION_TIME_FRAME; i+=500){
 		cout << pWinData->CubicPolyVec[i];
-	}*/
+	}
 
 }
 
@@ -725,7 +729,8 @@ void NoTorque(WIN32_DAT *pWinData)
 void HoldPos(WIN32_DAT *pWinData)
 {
 	// reset
-	pWinData->Flag_ReachPpTarget = 1;
+	pWinData->Flag_PpReachTarget = 1;
+	pWinData->Flag_CspFinished = 0;
 	pWinData->Flag_ResetError = 1;
 
 	pWinData->Flag_HoldPosSaved = 0;
@@ -742,6 +747,9 @@ void PP_Move_rad(double timePeriod, double *PP_targetTheta)
 	else // push object into PP_Queue
 	{
 		pWinData->PP_Queue_Rear = (pWinData->PP_Queue_Rear + 1) % PP_QUEUE_SIZE;
+
+		cout << pWinData->PP_Queue_Front << endl;
+		cout << pWinData->PP_Queue_Rear << endl;
 
 		pWinData->PP_Queue_TimePeriod[pWinData->PP_Queue_Rear] = timePeriod;
 		for(int i=0; i<TOTAL_AXIS; i++)
@@ -762,10 +770,6 @@ void PP_Move_deg(double timePeriod, double *PP_targetDeg)
 	}
 	else // push object into PP_Queue
 	{
-
-		cout << pWinData->PP_Queue_Front << endl;
-		cout << pWinData->PP_Queue_Rear << endl;
-
 		pWinData->PP_Queue_Rear = (pWinData->PP_Queue_Rear + 1) % PP_QUEUE_SIZE;
 		pWinData->PP_Queue_TimePeriod[pWinData->PP_Queue_Rear] = timePeriod;
 		for(int i=0; i<TOTAL_AXIS; i++)
@@ -777,6 +781,12 @@ void PP_Move_deg(double timePeriod, double *PP_targetDeg)
 	pWinData->MotorState = MotorState_PP;
 
 }
+void CSP_Run()
+{
+	pWinData->Flag_ResetCnt;
+	pWinData->MotorState = MotorState_CSP;
+}
+
 
 //bool TriggerEvent(int key, WIN32_DAT *pWinData)
 //{
