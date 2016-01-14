@@ -180,6 +180,8 @@ void __RtCyclicCallback( void *UserDataPtr )
 			pData->Flag_ResetCnt = 0;
 		}
 
+
+		// Motor State
 		switch(pData->MotorState)
 		{
 		case MotorState_NoTq:
@@ -207,14 +209,13 @@ void __RtCyclicCallback( void *UserDataPtr )
 			{
 				pData->Flag_ResetCnt = 1;
 				pData->Flag_ReachPpTarget = 0;
-				RtPrintf("1\n");
 				pData->PP_Queue_Front = (pData->PP_Queue_Front + 1) % PP_QUEUE_SIZE;	// pop PP_Queue
-				RtPrintf("2\n");
 			}
-			else
+			else if(pData->Flag_ReachPpTarget == 0)
 			{
 				PP_UpdateCbTargetTheta(CB_targetTheta, CB_actualTheta, &PP_cnt);
 			}
+
 			MotorPosPidControl(CB_targetTheta, CB_actualTheta, pData);
 			break;
 
@@ -1585,17 +1586,28 @@ void PP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T 
 		{
 			PP_initialTheta[i] = CB_actualTheta[i];
 		}
-		RtPrintf("3\n");
+		(*PP_cnt)++;
 	}
-	else
+	else if((*PP_cnt) * (pData->cycleTime * MILISECOND_TO_SECOND) < pData->PP_Queue_TimePeriod[pData->PP_Queue_Front])
 	{
 		for(i=0; i<TOTAL_AXIS; i++)
 		{
 			CB_targetTheta[i] = PP_initialTheta[i] + 
-								(pData->PP_Queue_TargetTheta[pData->PP_Queue_Front][i] - PP_initialTheta[i]) * pData->CubicPolyVec[(int)floor((*PP_cnt) * MAX_MOTION_TIME_FRAME * pData->cycleTime / pData->PP_Queue_TimePeriod[pData->PP_Queue_Front])];
+								(pData->PP_Queue_TargetTheta[pData->PP_Queue_Front][i] - PP_initialTheta[i]) 
+									* pData->CubicPolyVec[(int)floor((*PP_cnt) * MAX_MOTION_TIME_FRAME * MILISECOND_TO_SECOND * pData->cycleTime / pData->PP_Queue_TimePeriod[pData->PP_Queue_Front])];
 		}
+
+		//if((*PP_cnt) % 250 == 0) RtPrintf("%d ", (int)CB_targetTheta[30] * 180 / PI);
+		//RtPrintf("%d ", (int)CB_targetTheta[30] * 180 / PI);
+		//RtPrintf("%d ", (int)floor((*PP_cnt) * MAX_MOTION_TIME_FRAME * pData->cycleTime * MILISECOND_TO_SECOND / pData->PP_Queue_TimePeriod[pData->PP_Queue_Front]));
+		//RtPrintf("%d %d %d \n", (*PP_cnt), MAX_MOTION_TIME_FRAME * MILISECOND_TO_SECOND * pData->cycleTime, (int)pData->PP_Queue_TimePeriod[pData->PP_Queue_Front]);
+
+		(*PP_cnt)++;
 	}
-	(*PP_cnt)++;
+	else
+	{
+		pData->Flag_ReachPpTarget = 1;
+	}
 }
 
 I16_T TargetTorqueTrimming(F64_T tempTorque)

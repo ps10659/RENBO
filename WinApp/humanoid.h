@@ -154,7 +154,6 @@ void WritePose(WIN32_DAT *pWinData);
 void UpdateReadPoseTxtTheta(WIN32_DAT *pWinData);
 
 
-
 // initialization
 void InitPwindata(WIN32_DAT *pWinData);
 void GenerateCubicPolyVec(WIN32_DAT *pWinData);
@@ -163,6 +162,7 @@ void GenerateCubicPolyVec(WIN32_DAT *pWinData);
 void StartMaster(WIN32_DAT *pWinData);
 void SetMotorParam(WIN32_DAT *pWinData);
 void SetCurrPosHome(WIN32_DAT *pWinData);
+void CloseMaster();
 
 // control function
 void NoTorque(WIN32_DAT *pWinData);

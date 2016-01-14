@@ -101,10 +101,12 @@ int _tmain(int argc)
 				HoldPos(pWinData);
 				break;
 			case 'o':
-				PP_Move_deg(10.0, Pos_home);
+				cout << "go home" << endl;
+				PP_Move_deg(2.0, Pos_home);
 				break;
 			case 'p':
-				PP_Move_deg(10.0, Pos_test);
+				cout << "go 20" << endl;
+				PP_Move_deg(2.0, Pos_test);
 				break;
 			case '.':
 				cout << "@@" << endl;
@@ -192,6 +194,9 @@ int _tmain(int argc)
 
 
 _Byebye:
+
+	// close master
+	CloseMaster();
 
 	// close share memory
 	RtCloseHandle(sMhandle);
@@ -683,6 +688,11 @@ void GenerateCubicPolyVec(WIN32_DAT *pWinData)
 	for(double i=0; i<MAX_MOTION_TIME_FRAME; i++){
 		pWinData->CubicPolyVec[(int)i] = S(0) * pow(i,3) + S(1) * pow(i,2) + S(2) * i + S(3);
 	}
+
+	/*for(int i=0; i<MAX_MOTION_TIME_FRAME; i+=500){
+		cout << pWinData->CubicPolyVec[i];
+	}*/
+
 }
 
 void StartMaster(WIN32_DAT *pWinData)
@@ -702,6 +712,10 @@ void SetCurrPosHome(WIN32_DAT *pWinData)
 	RtSetEvent(oBhandle[SET_CURR_POS_HOME]);
 	while(!pWinData->Flag_SetCurrPosHomeDone){}
 	pWinData->Flag_SetCurrPosHomeDone = 0;
+}
+void CloseMaster()
+{
+	RtSetEvent(oBhandle[CLOSE_MASTER]);
 }
 
 void NoTorque(WIN32_DAT *pWinData)
@@ -728,6 +742,7 @@ void PP_Move_rad(double timePeriod, double *PP_targetTheta)
 	else // push object into PP_Queue
 	{
 		pWinData->PP_Queue_Rear = (pWinData->PP_Queue_Rear + 1) % PP_QUEUE_SIZE;
+
 		pWinData->PP_Queue_TimePeriod[pWinData->PP_Queue_Rear] = timePeriod;
 		for(int i=0; i<TOTAL_AXIS; i++)
 		{
@@ -747,6 +762,10 @@ void PP_Move_deg(double timePeriod, double *PP_targetDeg)
 	}
 	else // push object into PP_Queue
 	{
+
+		cout << pWinData->PP_Queue_Front << endl;
+		cout << pWinData->PP_Queue_Rear << endl;
+
 		pWinData->PP_Queue_Rear = (pWinData->PP_Queue_Rear + 1) % PP_QUEUE_SIZE;
 		pWinData->PP_Queue_TimePeriod[pWinData->PP_Queue_Rear] = timePeriod;
 		for(int i=0; i<TOTAL_AXIS; i++)
