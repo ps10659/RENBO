@@ -220,13 +220,13 @@ void __RtCyclicCallback( void *UserDataPtr )
 			break;
 
 		case MotorState_CSP:
-			if(!pData->Flag_CspFinished)
+			if(pData->Flag_CspFinished == 0)
 			{
 				CSP_UpdateCbTargetTheta(CB_targetTheta, CB_actualTheta, &CSP_cnt);
 			}
 			MotorPosPidControl(CB_targetTheta, CB_actualTheta, pData);
 			break;
-
+			 
 		}
 		// [IMPORTANT FLAG] decide whether give the target torque or zero torque
 		//if( pData->setTargetTorqueSwitch )
@@ -1612,16 +1612,29 @@ void PP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T 
 void CSP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T *CSP_cnt)
 {
 	int i;
-	
-	for(i=0; i<TOTAL_AXIS; i++)
+
+	if((*CSP_cnt) == 0)
 	{
-		if(i==3 || i== 5 || i==8 || i==11 || i==19 || i==20 || i>=21)
-		{
-			CB_targetTheta[i] = pData->WalkingTrajectories[(int)floor((*CSP_cnt) * pData->walkingSpeed)][i];
-			pData->ActualWalkingTrajectories[(*CSP_cnt)][i] = CB_actualTheta[i];
-		}
+		// check if CB_targetThet != walking initial pose
+		RtPrintf("1\n");
 	}
-	(*CSP_cnt)++;
+
+	if((*CSP_cnt) < pData->walkingTimeframe)
+	{
+		for(i=0; i<TOTAL_AXIS; i++)
+		{
+			if(i==3 || i== 5 || i==8 || i==11 || i==19 || i==20 || i>=21)
+			{
+				CB_targetTheta[i] = pData->WalkingTrajectories[(int)floor((*CSP_cnt) * pData->walkingSpeed)][i];
+				pData->ActualWalkingTrajectories[(*CSP_cnt)][i] = CB_actualTheta[i];
+			}
+		}
+		(*CSP_cnt)++;
+	}
+	else
+	{
+		pData->Flag_CspFinished = 1;
+	}
 }
 
 I16_T TargetTorqueTrimming(F64_T tempTorque)

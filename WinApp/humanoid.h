@@ -1,5 +1,3 @@
-#pragma once
-
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
@@ -12,6 +10,8 @@
 #include "Nexecm.h"
 #include "..\RtxApp\RtxApp.h"
 #include <Eigen/Dense>
+#include "util.h"
+
 using namespace std;
 
 
@@ -146,7 +146,8 @@ void PrintAllKd(WIN32_DAT *pWinData);
 void SetPP_targetTheta(WIN32_DAT *pWinData, int motionType, int currPointCnt);
 void UpdataUserDefineData();
 
-void UpdateWalkingTrajectories(WIN32_DAT *pWinData);
+void UpdateWalkTraj();
+void UpdateWalkTraj(int traj_num);
 void printWalkingTrajectories(WIN32_DAT *pWinData);
 void WriteWalkingTrajectories(WIN32_DAT *pWinData);
 
@@ -159,6 +160,8 @@ void UpdateReadPoseTxtTheta(WIN32_DAT *pWinData);
 // initialization
 void InitPwindata(WIN32_DAT *pWinData);
 void GenerateCubicPolyVec(WIN32_DAT *pWinData);
+
+
 
 // 
 void StartMaster(WIN32_DAT *pWinData);
@@ -176,7 +179,9 @@ void CSP_Run();
 
 
 
-
+string file_list[20];
+string walking_traj_dir = "C:..\\..\\WalkingTrajectories\\";
+LPCSTR walking_trajectory_file = "C:..\\..\\WalkingTrajectories\\*.txt";
 
 
 
@@ -205,3 +210,5 @@ void CSP_Run();
 //bool goto_CSP_RUN(WIN32_DAT *pWinData);
 //
 //bool goto_WRITE_FILE(WIN32_DAT *pWinData);
+
+

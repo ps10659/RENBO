@@ -10,8 +10,10 @@ int _tmain(int argc)
 	bool breakWhile = 0;
 	int i = 0;
 
-
 	printf("Wait...\n");
+
+	if(0)
+	{
 
 	ret = NEC_LoadRtxApp( "C:\\Program Files\\NEXCOM\\NexECMRtx\\Lib\\NexECMRtx\\x32\\NexECMRtx.rtss" );
 	if( ret != 0 ){ printf("NEC_LoadRtxApp NexECMRtx.rtss failed!");}
@@ -65,14 +67,11 @@ int _tmain(int argc)
 
 	// update parameter
 	ImportParameterTxt(pWinData);
-	//UpdateWalkingTrajectories(pWinData);
+	UpdateWalkTraj();
 
 	printf("=======================\n");
 	printf("WIN32_READY\n");
 	printf("=======================\n\n");
-
-
-
 
 
 	StartMaster(pWinData);
@@ -80,7 +79,7 @@ int _tmain(int argc)
 	SetCurrPosHome(pWinData);
 	HoldPos(pWinData);
 
-
+	}
 
 	double Pos_home[TOTAL_AXIS] = {0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0};
 	double Pos_test[TOTAL_AXIS] = {0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 20,0,0};
@@ -95,9 +94,11 @@ int _tmain(int argc)
 			switch(key)
 			{
 			case 's':
+				cout << "soft" << endl;
 				NoTorque(pWinData);
 				break;
 			case 'h':
+				cout << "hold" << endl;
 				HoldPos(pWinData);
 				break;
 			case 'o':
@@ -109,12 +110,25 @@ int _tmain(int argc)
 				PP_Move_deg(2.0, Pos_test);
 				break;
 			case 'r':
+			{
 				cout << "csp: walking" << endl;
-				CSP_Run();
+				ListFiles(walking_trajectory_file);
+				int traj_num;
+				cout << "choose trajectory: ";
+				cin >> traj_num;
+				UpdateWalkTraj(traj_num);
+				//CSP_Run();
 				break;
+			}
+			case 'l':
+				cout << "ls" << endl;
+				ListFiles(walking_trajectory_file);
+				break;
+
 			case '.':
 				cout << "@@" << endl;
 				break;
+
 			case ESC_KEY:
 				goto _Byebye;
 			}
@@ -180,7 +194,7 @@ int _tmain(int argc)
 	//					else if(key == '2')
 	//					{
 	//						printf("\n   Updating...");
-	//						UpdateWalkingTrajectories(pWinData);
+	//						UpdateWalkTraj();
 	//						break;
 	//					}
 	//				}
@@ -198,6 +212,8 @@ int _tmain(int argc)
 
 
 _Byebye:
+
+	HoldPos(pWinData);
 
 	CloseMaster();
 
@@ -433,7 +449,7 @@ void UpdataUserDefineData()
 	}
 }
 
-void UpdateWalkingTrajectories(WIN32_DAT *pWinData)
+void UpdateWalkTraj()
 {
 	int i=0, j=0, cnt=0;
 	ifstream fin;
@@ -492,6 +508,67 @@ void UpdateWalkingTrajectories(WIN32_DAT *pWinData)
 	fin.close();
 
 }
+void UpdateWalkTraj(int traj_num)
+{
+	int i=0, j=0, cnt=0;
+	ifstream fin;
+	string walking_traj_file = walking_traj_dir.append(file_list[traj_num]);
+    fin.open(walking_traj_file, ios::in);
+	cout << walking_traj_file << endl;
+	return;
+
+	fin>>pWinData->walkingTimeframe;
+	printf("Update walking trajectories (total timeframe = %d)\n", pWinData->walkingTimeframe);
+	if(pWinData->walkingTimeframe > MAX_WALKING_TIMEFRAME)
+	{
+		printf("walkingTimeframe > MAX_WALKING_TIMEFRAME\n");
+	}
+	for(i=0;i<TOTAL_AXIS;i++)
+	{
+		if(i==3 || i== 5 || i==8 || i==11 || i==19 || i==20 || i>=21)
+		{
+			for(j=0;j<pWinData->walkingTimeframe;j++)
+			{
+				if(!fin.eof())
+				{
+					fin>>(pWinData->WalkingTrajectories)[j][i];
+					cnt++;
+				}
+			}
+		}
+		else
+		{
+			for(j=0;j<pWinData->walkingTimeframe;j++)
+			{ 
+				pWinData->WalkingTrajectories[j][i] = 0;
+			}
+		}
+	}
+
+	// update walking initial theta
+	
+	for(i=0;i<TOTAL_AXIS;i++)
+	{
+		if(i<21)
+		{
+			WalkingInitialTheta[0][i] = 0;
+		}
+		else
+		{
+			WalkingInitialTheta[0][i] = (pWinData->WalkingTrajectories)[0][i] * 180 / PI;
+			WalkingInitialReverseTheta[0][i] = -1 * (pWinData->WalkingTrajectories)[0][i] * 180 / PI;
+		}
+	}
+
+	//for(i=21;i<TOTAL_AXIS;i++)
+	//{
+	//	printf("%f ", (pWinData->WalkingTrajectories)[0][i]);
+	//}
+	//printf("\n");
+
+	fin.close();
+}
+
 void printWalkingTrajectories(WIN32_DAT *pWinData)
 {
 	//int i;
@@ -693,11 +770,12 @@ void GenerateCubicPolyVec(WIN32_DAT *pWinData)
 		pWinData->CubicPolyVec[(int)i] = S(0) * pow(i,3) + S(1) * pow(i,2) + S(2) * i + S(3);
 	}
 
-	for(int i=0; i<MAX_MOTION_TIME_FRAME; i+=500){
-		cout << pWinData->CubicPolyVec[i];
-	}
+	//for(int i=0; i<MAX_MOTION_TIME_FRAME; i+=500){
+	//	cout << pWinData->CubicPolyVec[i];
+	//}
 
 }
+
 
 void StartMaster(WIN32_DAT *pWinData)
 {
@@ -783,6 +861,10 @@ void PP_Move_deg(double timePeriod, double *PP_targetDeg)
 }
 void CSP_Run()
 {
+	if(pWinData->Flag_CspFinished == 1)
+	{
+		pWinData->Flag_CspFinished = 0;
+	}
 	pWinData->Flag_ResetCnt;
 	pWinData->MotorState = MotorState_CSP;
 }
@@ -1303,7 +1385,7 @@ void CSP_Run()
 //				else if(key == '2')
 //				{
 //					printf("\n   Updating...");
-//					UpdateWalkingTrajectories(pWinData);
+//					UpdateWalkTraj();
 //					break;
 //				}
 //			}
@@ -1388,7 +1470,7 @@ void CSP_Run()
 //			else if(key == '2')
 //			{
 //				printf("\n   Updating...");
-//				UpdateWalkingTrajectories(pWinData);
+//				UpdateWalkTraj();
 //				break;
 //			}
 //		}
