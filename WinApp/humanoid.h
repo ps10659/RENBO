@@ -113,6 +113,7 @@ void InitPwindata(WIN32_DAT *pWinData);
 void GenerateCubicPolyVec(WIN32_DAT *pWinData);
 void UpdateWalkTraj();
 void UpdateWalkTraj(int traj_num);
+void UpdatePpPose();
 void UpdatePpPose(int pose_num);
 void ImportParameterTxt();
 void PrintImportParameterTxt();

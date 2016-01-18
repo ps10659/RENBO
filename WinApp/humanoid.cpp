@@ -29,7 +29,7 @@ if(1)
 	ret = NEC_ResetEcMaster( masterId );
 	if( ret != 0 ) { printf( "NEC_ResetEcMaster failed!" );}
 
-	cout << "loading ENI.xml ..." << endl;
+	cout << "loading ENI_33_Motor_hall.xml ..." << endl;
 	ret = NEC_LoadNetworkConfig( masterId, "c:..\\..\\ENI\\ENI_33_Motor_hall.xml", START_NETWORK_OPT_MASK_NIC_PORT);
 	if( ret != 0 ) { printf( "NEC_LoadNetworkConfig failed! (ENI_33_Motor.xml failed)" );}
 
@@ -94,13 +94,9 @@ if(1)
 				cout << "hold" << endl;
 				HoldPos();
 				break;
-			case '0':
+			case '9':
 			{
 				HOMING_MoveToHomeSensor();
-				break;
-			}
-			case '1':
-			{
 				for(int i=0; i<TOTAL_AXIS; i++)
 				{
 					Pos_temp[i] = pWinData->HOMING_homeSensorTheta[i] + pWinData->HOMING_homePositionOffset[i];
@@ -109,10 +105,6 @@ if(1)
 					if(i==25 || i== 31) Pos_temp[i] += -18.43 * PI / 180.0;
 				}
 				PP_Move_rad(Pos_temp, 3.0, true);
-				break;
-			}
-			case '2':
-			{
 				SetCurrPosHome();
 				break;
 			}
@@ -120,27 +112,22 @@ if(1)
 				cout << "pp: home" << endl;
 				PP_Move_deg(Pos_home, 2.0, false);
 				break;
+			case 'P':
+			{
+				cout << "pp: temp" << endl;
+				UpdatePpPose();
+				PP_Move_deg(Pos_temp, 2.0, false);
+				break;
+			}
 			case 'p':
 			{
-				cout << "pp: test" << endl;
+				cout << "pp: choose" << endl;
 				ListFiles(pose_file);
 				int pose_num;
 				cout << "choose pose: ";
 				cin >> pose_num;
 				UpdatePpPose(pose_num);
 				PP_Move_deg(Pos_temp, 2.0, false);
-				break;
-			}
-			case 'e':
-			{
-				cout << "pp: walking initial" << endl;
-				ListFiles(walking_trajectory_file);
-				int traj_num;
-				cout << "choose trajectory: ";
-				cin >> traj_num;
-				
-				UpdateWalkTraj(traj_num);
-				PP_Move_rad(Pos_walking_inital, 3.0, true);
 				break;
 			}
 			case 'r':
@@ -150,8 +137,8 @@ if(1)
 				int traj_num;
 				cout << "choose trajectory: ";
 				cin >> traj_num;
-				
 				UpdateWalkTraj(traj_num);
+				
 				PP_Move_rad(Pos_walking_inital, 3.0, true);
 				system("pause");
 				CSP_Run();
@@ -363,6 +350,7 @@ void UpdateWalkTraj(int traj_num)
 {
 	int i=0, j=0, cnt=0;
 	ifstream fin;
+	string temp = walking_traj_dir;
 	string walking_traj_file = walking_traj_dir.append(file_list[traj_num]);
     fin.open(walking_traj_file, ios::in);
 	cout << walking_traj_file << endl;
@@ -410,14 +398,27 @@ void UpdateWalkTraj(int traj_num)
 
 	fin.close();
 }
+void UpdatePpPose()
+{
+	int i=0;
+	ifstream fin;
+    fin.open("C:..\\..\\Poses\\temp.txt", ios::in);
+
+	for(i=0;i<TOTAL_AXIS;i++)
+	{
+		fin>>Pos_temp[i];
+	}
+
+	fin.close();
+}
 void UpdatePpPose(int pose_num)
 {
-	int i=0, j=0, cnt=0;
+	int i=0;
 	ifstream fin;
-	string pose_file = walking_traj_dir.append(file_list[pose_num]);
+	string temp = pose_dir;
+	string pose_file = temp.append(file_list[pose_num]);
     fin.open(pose_file, ios::in);
 	cout << pose_file << endl;
-	return;
 
 	for(i=0;i<TOTAL_AXIS;i++)
 	{
@@ -586,7 +587,7 @@ void PP_Move_rad(double *PP_targetTheta, double timePeriod, bool wait_until_reac
 
 	if(wait_until_reach)
 	{
-		while(!pWinData->Flag_PpReachTarget){cout << ".";}
+		while((pWinData->PP_Queue_Rear != pWinData->PP_Queue_Front) || !pWinData->Flag_PpReachTarget){}
 	}
 }
 void PP_Move_deg(double *PP_targetDeg, double timePeriod, bool wait_until_reach)
@@ -608,9 +609,9 @@ void PP_Move_deg(double *PP_targetDeg, double timePeriod, bool wait_until_reach)
 
 	pWinData->MotorState = MotorState_PP;
 	
-	if(wait_until_reach)
+	if(wait_until_reach == true)
 	{
-		while(!pWinData->Flag_PpReachTarget){}
+		while((pWinData->PP_Queue_Rear != pWinData->PP_Queue_Front) || !pWinData->Flag_PpReachTarget){}
 	}
 }
 void CSP_Run()
