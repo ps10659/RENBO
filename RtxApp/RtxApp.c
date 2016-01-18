@@ -41,16 +41,6 @@ main(
         axis_theta_to_motor_resolution[i] = motor_direction[i] * reduction_ratio[i] * resolution[i] / (2.0*PI);
 	}
 
-	// init USER_DAT
-	//pData->PP_allMovementCompleteFlag = 1;
-	//pData->PP_singleMovementCompleteFlag = 1;
-	pData->PP_currPointCnt = 0;
-
-	for(i=0; i<MAX_MOTION_TIME_FRAME; i++)
-	{
-		pData->PP_splineVec[i] = 0;
-	}
-
 
 	RtPrintf("===========================\n");
 	RtPrintf("RTX_READY\n");

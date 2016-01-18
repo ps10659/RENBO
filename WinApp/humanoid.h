@@ -69,13 +69,6 @@ typedef struct
 	
 
 	// PP related variables
-	BOOL_T		PP_singleMovementCompleteFlag;
-	F64_T		PP_splineVec[MAX_MOTION_TIME_FRAME];
-	I32_T		PP_motionTimeFrame;
-	I32_T		PP_currPointCnt;
-	I32_T		PP_motionType;
-	I32_T		PP_totalPointCnt[TOTAL_MOTION_NUMBER];
-
 	F64_T		CubicPolyVec[MAX_MOTION_TIME_FRAME];
 	F64_T		PP_Queue_TargetTheta[PP_QUEUE_SIZE][TOTAL_AXIS];
 	F64_T		PP_Queue_TimePeriod[PP_QUEUE_SIZE];
@@ -95,54 +88,25 @@ typedef struct
 }WIN32_DAT;
 
 
-#define UserDefineTotalPoint 1
-#define GoHomeTotalPoint 1
-#define SquatTotalPoint 5
-#define WalkingInitialPoint 1
-#define WalkingInitialReversePoint 1
-#define ReadPoseTxtPoint 100
 
 
 
-// Target Theta
-F64_T UserDefineTheta[UserDefineTotalPoint][TOTAL_AXIS] = 
-	{{0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0}};
-
-F64_T HomeTheta[GoHomeTotalPoint][TOTAL_AXIS] = 
-	{{0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0}};
 
 
-F64_T SquatTheta[SquatTotalPoint][TOTAL_AXIS] = 
-	{{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-		0, 0, -60, 120, -60, 0,  0, 0, -60, 120, -60, 0}};
-
-F64_T WalkingInitialTheta[WalkingInitialPoint][TOTAL_AXIS] =
-	{{0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0, 
-		0,0.0490,-22.3758,51.6053,-29.2296,-0.0490, 0,0.0490,-22.3758,51.6053,-29.2296,-0.0490
- }};
-
-F64_T WalkingInitialReverseTheta[WalkingInitialReversePoint][TOTAL_AXIS] =
-	{{0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,
-		0,-0.0490,22.3758,-51.6053,29.2296,0.0490, 0,-0.0490,   22.3758,-51.6053,29.2296,0.0490}};
-
-
-F64_T ReadPoseTxtTheta[ReadPoseTxtPoint][TOTAL_AXIS] = 
-	{{0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0}};
+double Pos_home[TOTAL_AXIS] = {0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0};
+double Pos_test[TOTAL_AXIS] = {0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 20,0,0};
+double Pos_walking_inital[TOTAL_AXIS];
 
 
 // functions
-void UpdateSplineVector(WIN32_DAT *pWinData, int splineType, F64_T motionTimePeriod);
 void UpdataAllActualTheta(WIN32_DAT *pWinData);
 void PrintAllActualTheta(WIN32_DAT *pWinData);
-void PrintUserDefinedTheta();
 void UpdateAllKp(WIN32_DAT *pWinData);
 void UpdateAllKd(WIN32_DAT *pWinData);
 void PrintAllKp(WIN32_DAT *pWinData);
 void PrintAllKd(WIN32_DAT *pWinData);
 
 
-//void PP_User_Input(WIN32_DAT *pWinData);
-//bool PP_setMotionType(WIN32_DAT *pWinData, F64_T targetTheta[][GoHomeTotalPoint], const int GoHomeTotalPoint);
 void SetPP_targetTheta(WIN32_DAT *pWinData, int motionType, int currPointCnt);
 void UpdataUserDefineData();
 
@@ -154,8 +118,6 @@ void WriteWalkingTrajectories(WIN32_DAT *pWinData);
 void ImportParameterTxt(WIN32_DAT *pWinData);
 void PrintImportParameterTxt(WIN32_DAT *pWinData);
 void WritePose(WIN32_DAT *pWinData);
-void UpdateReadPoseTxtTheta(WIN32_DAT *pWinData);
-
 
 // initialization
 void InitPwindata(WIN32_DAT *pWinData);
@@ -179,36 +141,40 @@ void CSP_Run();
 
 
 
-string file_list[20];
+string file_list[20]; //20 file buffer for the list
 string walking_traj_dir = "C:..\\..\\WalkingTrajectories\\";
 LPCSTR walking_trajectory_file = "C:..\\..\\WalkingTrajectories\\*.txt";
 
 
 
-//bool TriggerEvent(int key, WIN32_DAT *pWinData);
-//
-//bool goto_START_MASTER_AND_SLAVES(WIN32_DAT *pWinData);
-//bool goto_SET_MOTOR_PARAMETERS(WIN32_DAT *pWinData);
-//bool goto_SET_CURR_POS_HOME(WIN32_DAT *pWinData);
-//bool goto_HOMING(WIN32_DAT *pWinData);
-//bool goto_GO_HOME(WIN32_DAT *pWinData);
-//bool goto_STOP_AND_HOLD(WIN32_DAT *pWinData);
-//bool goto_STOP_BUT_SOFT(WIN32_DAT *pWinData);
-//bool goto_SERVO_OFF(WIN32_DAT *pWinData);
-//bool goto_CLOSE_MASTER(WIN32_DAT *pWinData);
-//bool goto_HOLD(WIN32_DAT *pWinData);
-//
-//bool goto_HOMING_MODE(WIN32_DAT *pWinData);
-//bool goto_HOMING_RUN(WIN32_DAT *pWinData);
-//
-//bool goto_PP_MODE(WIN32_DAT *pWinData);
-//bool goto_PP_CHECK_IK_LIMIT(WIN32_DAT *pWinData);
-//bool goto_PP_RUN(WIN32_DAT *pWinData);
-//
-//bool goto_CSP_MODE(WIN32_DAT *pWinData);
-//bool goto_CSP_CHECK_IK_LIMIT(WIN32_DAT *pWinData);
-//bool goto_CSP_RUN(WIN32_DAT *pWinData);
-//
-//bool goto_WRITE_FILE(WIN32_DAT *pWinData);
+//#define UserDefineTotalPoint 1
+//#define GoHomeTotalPoint 1
+//#define SquatTotalPoint 5
+//#define WalkingInitialPoint 1
+//#define WalkingInitialReversePoint 1
+//#define ReadPoseTxtPoint 100
 
-
+// Target Theta
+//F64_T UserDefineTheta[UserDefineTotalPoint][TOTAL_AXIS] = 
+//	{{0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0}};
+//
+//F64_T HomeTheta[GoHomeTotalPoint][TOTAL_AXIS] = 
+//	{{0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0}};
+//
+//
+//F64_T SquatTheta[SquatTotalPoint][TOTAL_AXIS] = 
+//	{{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+//		0, 0, -60, 120, -60, 0,  0, 0, -60, 120, -60, 0}};
+//
+//F64_T WalkingInitialTheta[WalkingInitialPoint][TOTAL_AXIS] =
+//	{{0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0, 
+//		0,0.0490,-22.3758,51.6053,-29.2296,-0.0490, 0,0.0490,-22.3758,51.6053,-29.2296,-0.0490
+// }};
+//
+//F64_T WalkingInitialReverseTheta[WalkingInitialReversePoint][TOTAL_AXIS] =
+//	{{0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,
+//		0,-0.0490,22.3758,-51.6053,29.2296,0.0490, 0,-0.0490,   22.3758,-51.6053,29.2296,0.0490}};
+//
+//
+//F64_T ReadPoseTxtTheta[ReadPoseTxtPoint][TOTAL_AXIS] = 
+//	{{0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0}};

@@ -140,13 +140,6 @@ typedef struct
 	
 
 	// PP related variables
-	BOOL_T		PP_singleMovementCompleteFlag;
-	F64_T		PP_splineVec[MAX_MOTION_TIME_FRAME];
-	I32_T		PP_motionTimeFrame;
-	I32_T		PP_currPointCnt;
-	I32_T		PP_motionType;
-	I32_T		PP_totalPointCnt[TOTAL_MOTION_NUMBER];
-
 	F64_T		CubicPolyVec[MAX_MOTION_TIME_FRAME];
 	F64_T		PP_Queue_TargetTheta[PP_QUEUE_SIZE][TOTAL_AXIS];
 	F64_T		PP_Queue_TimePeriod[PP_QUEUE_SIZE];
