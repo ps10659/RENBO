@@ -1,5 +1,6 @@
 #include "RtxApp.h"
 
+USER_DAT	*pData;
 
 
 void 
@@ -10,33 +11,23 @@ main(
        char **envp
     )
 {
-	USER_DAT	*pData;
 	HANDLE		sHhandle;
 	HANDLE		oBhandle[EVN_NUM];
 	int			i;
 
-
+	// create memory
 	sHhandle = RtCreateSharedMemory ((DWORD) PAGE_READWRITE , (DWORD) 0 , (DWORD) sizeof(USER_DAT) , SHM_NAME , &location);
-	//PAGE_READWRITE:Gives read-write access to the committed region of pages.
-	//0:不需要開MaximumSizeHigh
-	//sizeof(smemory):MaximumSizeLow的大小
-	//SHM_NAME:那塊sharememory的名稱
-	//&location:那塊Sharememory的位址
 	if( sHhandle == NULL )
 	{
 		RtPrintf("Create RtCreateSharedMemory fail\n");
 		ExitProcess(0);
 	}
-	pData = (USER_DAT *) (location);//將location強制轉型成char,由pData取代
+	pData = (USER_DAT *) (location);
 	
-
+	//create event
 	for(i=0; i<EVN_NUM; i++)
 	{
 		oBhandle[i] = RtCreateEvent( NULL, 0, FALSE, EVN_NAME[i] );
-		//NULL:忽略
-		//0: auto-reset event
-		//FALSE:The initial state of the event object. If TRUE, the initial state is signaled; otherwise, it is non-signaled.
-		//EVN_NAME:SHM_NAME:那塊sharememory的名稱
 		if( oBhandle == NULL )
 		{
 			RtPrintf("Create RtCreateEvent %s fail\n", EVN_NAME[i]);
@@ -50,23 +41,6 @@ main(
         axis_theta_to_motor_resolution[i] = motor_direction[i] * reduction_ratio[i] * resolution[i] / (2.0*PI);
 	}
 
-	// init USER_DAT
-	pData->cycleTime = cycleTime;
-	pData->currentState = BEGINNING;
-	pData->stateTransitionFlag = 0;
-	pData->setServoOnFlag = 0;
-	pData->setServoOffFlag = 0;
-	pData->setTargetTorqueSwitch = 0;
-	pData->firstTimeHoldFlag = 0;
-	//pData->PP_allMovementCompleteFlag = 1;
-	//pData->PP_singleMovementCompleteFlag = 1;
-	pData->PP_currPointCnt = 0;
-
-	for(i=0; i<MAX_MOTION_TIME_FRAME; i++)
-	{
-		pData->PP_splineVec[i] = 0;
-	}
-
 
 	RtPrintf("===========================\n");
 	RtPrintf("RTX_READY\n");
@@ -78,9 +52,7 @@ main(
 		if( ret == 0 )
 		{
 			RtPrintf("START_MASTER_AND_SLAVES...\n");
-			pData->stateTransitionFlag = 1;
 			StartMaster(pData);
-			pData->stateTransitionFlag = 0;
 			RtPrintf("done\n\n");
 		}
 
@@ -92,12 +64,11 @@ main(
 			RtPrintf("done\n\n");
 		}
 
-		ret = RtWaitForSingleObject( oBhandle[SERVO_ON_AND_SET_CURR_POS_AS_HOME], 5 );
+		ret = RtWaitForSingleObject( oBhandle[SET_CURR_POS_HOME], 5 );
 		if( ret == 0 )
 		{
-			RtPrintf( "SERVO_ON_AND_SET_CURR_POS_AS_HOME...\n" );
+			RtPrintf( "SET_CURR_POS_HOME...\n" );
 			HomingMethod35(pData);
-			//pData->home35CompleteFlag = 1;
 			RtPrintf("done\n\n");
 		}
 
@@ -137,38 +108,21 @@ void __RtCyclicCallback( void *UserDataPtr )
 
 	// counter
 	static I32_T	cnt = 0; // global counter
-	static I32_T	HOMING_cnt = 0;
 	static I32_T	PP_cnt = 0;
+	static I32_T	HOMING_cnt = 0;
 	static I32_T	CSP_cnt = 0;
 
 	// state
 	static F64_T	CB_targetTheta[TOTAL_AXIS];
+	F64_T			CB_actualTheta[TOTAL_AXIS];
 	I32_T			actualEncoderPos[TOTAL_AXIS];
-	F64_T			actualTheta[TOTAL_AXIS];
-	F64_T			errorTheta[TOTAL_AXIS];
-	F64_T			errorThetaDot[TOTAL_AXIS];
-	static F64_T	preErrorTheta[TOTAL_AXIS];
-	static F64_T	errorThetaSum[TOTAL_AXIS];
-	F64_T			targetTorque[TOTAL_AXIS];
-	I16_T			trimmedTargetTorque[TOTAL_AXIS];
+
 
 	// homing related
-	I32_T			homeSensorValue[TOTAL_AXIS];
+	I32_T			home_sensor_value[TOTAL_AXIS];
 
 
 
-	// initialization
-	if(cnt==0)
-	{
-		for(k=0; k<TOTAL_AXIS; k++){
-			actualEncoderPos[k] = 0;
-			CB_targetTheta[k] = 0;
-			//CB_targetPosition[k] = 0;
-			preErrorTheta[k] = 0;
-			errorThetaSum[k] = 0;
-			pData->PP_singleMovementCompleteFlag = 1;
-		}
-	}
 
 	NEC_RtGetMasterState( pData->masterId, &state );
 	switch( state )
@@ -180,148 +134,110 @@ void __RtCyclicCallback( void *UserDataPtr )
 		for(k=0; k<TOTAL_AXIS; k++) 
 		{
 			NEC_CoE402GetActualPosition( pData->axis[k], &actualEncoderPos[k]);
-			actualTheta[k] = ((F64_T)actualEncoderPos[k]) / axis_theta_to_motor_resolution[k];	
+			CB_actualTheta[k] = ((F64_T)actualEncoderPos[k]) / axis_theta_to_motor_resolution[k];	
 		}
 
 		// flags
-		if(pData->setServoOnFlag == 1)
+		if(pData->Flag_ServoOn == 1)
 		{
 			for(k=0; k<TOTAL_AXIS; k++) 
 			{
 				NEC_CoE402SetState( pData->axis[k], 3);
 			}
-			pData->setServoOnFlag = 0;
+			pData->Flag_ServoOn = 0;
 		}
-		if(pData->setServoOffFlag == 1)
+		if(pData->Flag_ServoOff == 1)
 		{
 			for(k=0; k<TOTAL_AXIS; k++) 
 			{
 				NEC_CoE402SetState( pData->axis[k], 0);
 			}
-			pData->setServoOffFlag = 0;
+			pData->Flag_ServoOff = 0;
 		}
-		if(pData->updateAllActualThetaFlag == 1)
+		if(pData->Flag_UpdateActualTheta == 1)
 		{
 			for(k=0; k<TOTAL_AXIS; k++) 
 			{
-				pData->actualTheta[k] = actualTheta[k];
+				pData->actualTheta[k] = CB_actualTheta[k];
 			}
-			pData->updateAllActualThetaFlag = 0;
+			pData->Flag_UpdateActualTheta = 0;
 		}
-		if(pData->resetCntFlag == 1)
+		if(pData->Flag_ResetCnt == 1)
 		{
 			HOMING_cnt = 0;
-			CSP_cnt = 0;
 			PP_cnt = 0;
-			pData->resetCntFlag = 0;
+			CSP_cnt = 0;
+			pData->Flag_ResetCnt = 0;
 		}
 
 
-		// [IMPORTANT FLAG] decide whether give the target torque or zero torque
-		if( pData->setTargetTorqueSwitch )
+		// Motor State
+		switch(pData->MotorState)
 		{
-
-			// hold mode, set CB_targetTheta = actualTheta
-			if( pData->holdSwitch )
-			{
-				if(pData->firstTimeHoldFlag == 0)
-				{	
-					for(k=0; k<TOTAL_AXIS; k++) 
-					{	
-						errorThetaSum[k] = 0;
-						CB_targetTheta[k] = actualTheta[k];
-					}
-
-					pData->firstTimeHoldFlag = 1;
-				}
-			}
-			else
-			{
-				//op mode, set CB_targetTheta depend on operation mode
-				switch(pData->currentState)
-				{
-					case HOMING_RUN:
-						HOMING_UpdateCbTargetTheta(CB_targetTheta, pData, actualTheta, homeSensorValue, &HOMING_cnt);
-						if(pData->HOMING_allHomeSensorReachFlag == 1)
-						{
-							pData->resetCntFlag = 1;
-							pData->firstTimeHoldFlag = 0;
-							pData->holdSwitch = 1;
-						}
-						break;
-					case PP_RUN:
-						PP_UpdateCbTargetTheta(CB_targetTheta, pData, actualTheta, &PP_cnt);
-						if(PP_cnt == pData->PP_motionTimeFrame) 
-						{
-							pData->PP_singleMovementCompleteFlag = 1;
-							pData->PP_currPointCnt++;
-							pData->resetCntFlag = 1;
-							pData->firstTimeHoldFlag = 0;
-							pData->holdSwitch = 1;
-						}
-						break;
-					case CSP_RUN:
-						CSP_UpdateCbTargetTheta(CB_targetTheta, pData, actualTheta, &CSP_cnt);
-						if(CSP_cnt >= pData->walkingTimeframe / pData->walkingSpeed) 
-						{
-							pData->resetCntFlag = 1;
-							pData->firstTimeHoldFlag = 0;
-							pData->holdSwitch = 1;
-						}
-						break;
-				}
-
-				// TODO
-				// safty guard
-				// if CB_targetTheta > limit, hold, errorThetaSum=0
-				// if CB_targetTheta - actualTheta > threshold, hold, errorThetaSum=0
-
-			}
-
-			// compute and output targetTorque here
+		case MotorState_NoTq:
 			for(k=0; k<TOTAL_AXIS; k++)
 			{
-				errorTheta[k] = CB_targetTheta[k] - actualTheta[k];
-				if(errorThetaSum[k] < maxErrorThetaSum)
-					errorThetaSum[k] = errorThetaSum[k] + errorTheta[k];
-				errorThetaDot[k] = (errorTheta[k] - preErrorTheta[k]) / (((F64_T)pData->cycleTime) * MILISECOND_TO_SECOND);
-				preErrorTheta[k] = errorTheta[k];
-				targetTorque[k] = (pData->Kp[k] * errorTheta[k] + pData->Ki[k] * errorThetaSum[k] + pData->Kd[k] * errorThetaDot[k]) * motor_direction[k];
-				
-				if(pData->motorTorqueSwitch[k] == 0) targetTorque[k] = 0;
-				trimmedTargetTorque[k] = TargetTorqueTrimming( targetTorque[k] );
-
-				// !!
-				NEC_CoE402SetTargetTorque( pData->axis[k], trimmedTargetTorque[k] );
-				// !!
-				
-			}
-		}
-		else
-		{
-			for(k=0; k<TOTAL_AXIS; k++)
-			{
-				errorThetaSum[k] = 0;
-
-				// !!
 				NEC_CoE402SetTargetTorque( pData->axis[k], 0 );
-				// !!
 			}
+			break;
+
+		case MotorState_Hold:
+			if(pData->Flag_HoldPosSaved == 0)
+			{	
+				SaveHoldPos(CB_targetTheta, CB_actualTheta);
+				pData->Flag_HoldPosSaved = 1;
+			}
+
+			MotorPosPidControl(CB_targetTheta, CB_actualTheta, pData);
+			break;
+
+		case MotorState_Homing:
+			if(pData->Flag_AllHomeSensorReached == 0)
+			{
+				HOMING_UpdateCbTargetTheta(CB_targetTheta, CB_actualTheta, home_sensor_value, &HOMING_cnt);
+			}
+			MotorPosPidControl(CB_targetTheta, CB_actualTheta, pData);
+			break;
+
+		case MotorState_PP:
+			if((pData->Flag_PpReachTarget == 1) && (pData->PP_Queue_Front != pData->PP_Queue_Rear)) // reach target and PP_Queue is not empty
+			{
+				pData->Flag_ResetCnt = 1;
+				pData->Flag_PpReachTarget = 0;
+				pData->PP_Queue_Front = (pData->PP_Queue_Front + 1) % PP_QUEUE_SIZE;	// pop PP_Queue
+			}
+			else if(pData->Flag_PpReachTarget == 0)
+			{
+				PP_UpdateCbTargetTheta(CB_targetTheta, CB_actualTheta, &PP_cnt);
+			}
+
+			MotorPosPidControl(CB_targetTheta, CB_actualTheta, pData);
+			break;
+
+		case MotorState_CSP:
+			if(pData->Flag_CspFinished == 0)
+			{
+				CSP_UpdateCbTargetTheta(CB_targetTheta, CB_actualTheta, &CSP_cnt);
+			}
+			MotorPosPidControl(CB_targetTheta, CB_actualTheta, pData);
+			break;
+			 
 		}
+
 		cnt++;
 
 		
 		//if( ( cnt % PRINT_COUNT ) == 0 )
 		//{
 		//	k=27;
-		//	//NEC_RtGetProcessDataInput(pData->masterId, 679, 4, (U8_T*)&homeSensorValue[k]);
-		//	NEC_RtGetSlaveProcessDataInput(pData->masterId, k, 10, (U8_T*)&homeSensorValue[k], 4);
+		//	//NEC_RtGetProcessDataInput(pData->masterId, 679, 4, (U8_T*)&home_sensor_value[k]);
+		//	NEC_RtGetSlaveProcessDataInput(pData->masterId, k, 10, (U8_T*)&home_sensor_value[k], 4);
 		//	RtPrintf("       %d, targetTheta %d, actualTheta %d, actualTorque %d, test: %d\n", 
 		//		k, 
-		//		(I32_T)(CB_targetTheta[k]*180.0/PI),
+		//		(I32_T)(targetTheta[k]*180.0/PI),
 		//		(I32_T)(actualTheta[k]*180.0/PI), 
 		//		trimmedTargetTorque[k], 
-		//		(I32_T)(homeSensorValue[k])
+		//		(I32_T)(home_sensor_value[k])
 		//		);
 		//}
 		break;
@@ -360,78 +276,7 @@ void __RtErrorCallback( void *UserDataPtr, I32_T ErrorCode )
 	}
 }
 
-void StartMaster(USER_DAT *pData)
-{
-	int i;
-	ret = NEC_RtInitMaster( pData->masterId );
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_RtInitMaster() error %d \n", ret ); return; }
-	
-	ret = NEC_CoE402Reset();
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402Reset() error %d \n", ret ); return; }
-	
-	
-	for( i = 0; i<TOTAL_AXIS; ++i )
-	{
-		ret = NEC_CoE402GetAxisId( pData->masterId, i, &pData->axis[i] ); 
-		if( ret != ECERR_SUCCESS ) { RtPrintf( "NEC_CoEGetAxisId() error %d \n", ret ); return; }
-	}
 
-	ret = NEC_RtSetParameter( pData->masterId, 0, cycleTime );  // Set master cycle time = 1 ms
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_RtSetParameter() error %d \n", ret ); return; }
-
-	//pData->masterId = masterId;
-	ret = NEC_RtGetProcessDataPtr(  pData->masterId , &pData->InputProcessDataPtr, &pData->InPDSizeInByte
-		, &pData->OutputProcessDataPtr, &pData->OutPDSizeInByte );
-	if( ret != ECERR_SUCCESS ) { RtPrintf( "NEC_RtGetProcessDataPtr() error %d \n", ret ); return; }
-
-	// Register client
-	clientParam.version         = NEC_RtRetVer();
-	clientParam.userDataPtr     = pData;
-	clientParam.cyclicCallback  = __RtCyclicCallback;
-	clientParam.eventCallback   = __RtEventCallback;
-	clientParam.errorCallback   = __RtErrorCallback;
-
-	ret = NEC_RtRegisterClient( pData->masterId, &clientParam );
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_RtRegisterClient() error %d \n", ret ); return; }
-
-	ret = NEC_RtStartMaster( pData->masterId );
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_RtStartMaster() error %d \n", ret ); return; }
-	
-	ret = NEC_RtSetMasterStateWait( pData->masterId, ECM_STA_SAFEOP, 15000  ); 
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_RtSetMasterStateWait() error %d \n", ret ); return; }
-	
-	for( i = 0; i<TOTAL_AXIS; i++ )
-	{
-		ret = NEC_CoE402UpdatePdoMapping( pData->axis[i] );
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402UpdatePdoMapping() error %d \n", ret ); return; }
-		
-		ret = NEC_CoE402FaultReset( pData->axis[i], 5000 );
-		//if( ret != 0 ) { RtPrintf("NEC_CoE402FaultReset failed! error %d \n", ret  );return; }
-	}
-
-
-	ret = NEC_RtChangeStateToOP( pData->masterId, 5000 );
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_RtChangeStateToOP() error %d \n", ret ); return; }
-}
-void CloseMaster(USER_DAT *pData)
-{
-	if( ret != ECERR_SUCCESS )
-		RtPrintf( " [Error] Master going to stop..." );
-
-	ret = NEC_RtStopMaster( pData->masterId );
-	if( ret != ECERR_SUCCESS ) { RtPrintf( "NEC_RtStopMaster() error %d \n", ret ); }
-
-	ret = NEC_RtUnregisterClient( pData->masterId, &clientParam );
-	if( ret != ECERR_SUCCESS ) { RtPrintf( "NEC_RtUnregisterClient() error %d \n", ret ); }
-
-	ret = NEC_CoE402Close();
-	if( ret != ECERR_SUCCESS ) { RtPrintf( "NEC_CoE402Close() error %d \n", ret ); }
-
-	ret = NEC_RtCloseMaster( pData->masterId ); 
-	if( ret != ECERR_SUCCESS ) { RtPrintf( "NEC_RtCloseMaster() error %d \n", ret ); }
-
-	RtPrintf( "done\n" );
-}
 RTN_ERR SetMotorParameters(USER_DAT *pData)
 {
 	int i;
@@ -470,6 +315,8 @@ RTN_ERR SetMotorParameters(USER_DAT *pData)
 		}
 	}
 	RtPrintf("\n");
+	pData->Flag_SetMotorParameterDone = 1;
+	
 	return ret;
 }
 RTN_ERR MotorType_2342(CANAxis_T Axis)
@@ -550,10 +397,10 @@ RTN_ERR MotorType_2342(CANAxis_T Axis)
 		ret = NEC_CoE402SetParameter(Axis,0x3224,0x03,2,200);//Dynamic current limit I*t - time
 		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 	
-		ret = NEC_CoE402SetParameter(Axis,0x3720,0x00,4,-2147483648);//Position limit - minimum
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3720,0x01,4,2147483647);//Position limit - maximum
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3720,0x00,4,-2147483648);//Position limit - minimum
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3720,0x01,4,2147483647);//Position limit - maximum
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 	
 		////////////////////////////////////////////////////////////////////////////////////////////////
 		ret = NEC_CoE402SetParameter(Axis,0x6060,0x00,2,4);//Modes of operation  //4: Torque profile mode (tq) //1: Profile position mode (pp) 
@@ -712,10 +559,10 @@ RTN_ERR MotorType_2619(CANAxis_T Axis)
 		ret = NEC_CoE402SetParameter(Axis,0x3224,0x03,2,200);//Dynamic current limit I*t - time
 		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 	
-		ret = NEC_CoE402SetParameter(Axis,0x3720,0x00,4,-2147483648);//Position limit - minimum
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3720,0x01,4,2147483647);//Position limit - maximum
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3720,0x00,4,-2147483648);//Position limit - minimum
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3720,0x01,4,2147483647);//Position limit - maximum
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 	
 		////////////////////////////////////////////////////////////////////////////////////////////////
 		ret = NEC_CoE402SetParameter(Axis,0x6060,0x00,2,4);//Modes of operation  //4: Torque profile mode (tq) //1: Profile position mode (pp) 
@@ -872,10 +719,10 @@ RTN_ERR MotorType_2642(CANAxis_T Axis)
 		ret = NEC_CoE402SetParameter(Axis,0x3224,0x03,2,200);//Dynamic current limit I*t - time
 		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 	
-		ret = NEC_CoE402SetParameter(Axis,0x3720,0x00,4,-2147483648);//Position limit - minimum
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3720,0x01,4,2147483647);//Position limit - maximum
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3720,0x00,4,-2147483648);//Position limit - minimum
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3720,0x01,4,2147483647);//Position limit - maximum
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 	
 		////////////////////////////////////////////////////////////////////////////////////////////////
 		ret = NEC_CoE402SetParameter(Axis,0x6060,0x00,2,4);//Modes of operation  //4: Torque profile mode (tq) //1: Profile position mode (pp) 
@@ -1031,10 +878,10 @@ RTN_ERR MotorType_3863(CANAxis_T Axis)
 		ret = NEC_CoE402SetParameter(Axis,0x3224,0x03,2,200);//Dynamic current limit I*t - time
 		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 	
-		ret = NEC_CoE402SetParameter(Axis,0x3720,0x00,4,-2147483648);//Position limit - minimum
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-		ret = NEC_CoE402SetParameter(Axis,0x3720,0x01,4,2147483647);//Position limit - maximum
-		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3720,0x00,4,-2147483648);//Position limit - minimum
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+		//ret = NEC_CoE402SetParameter(Axis,0x3720,0x01,4,2147483647);//Position limit - maximum
+		//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 	
 		////////////////////////////////////////////////////////////////////////////////////////////////
 		ret = NEC_CoE402SetParameter(Axis,0x6060,0x00,2,4);//Modes of operation  //4: Torque profile mode (tq) //1: Profile position mode (pp) 
@@ -1188,10 +1035,10 @@ RTN_ERR MotorType_3257(CANAxis_T Axis)
 	ret = NEC_CoE402SetParameter(Axis,0x3224,0x03,2,200);//Dynamic current limit I*t - time			????????????????????
 	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 	
-	ret = NEC_CoE402SetParameter(Axis,0x3720,0x00,4,-2147483648);//Position limit - minimum
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x3720,0x01,4,2147483647);//Position limit - maximum
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x3720,0x00,4,-2147483648);//Position limit - minimum
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x3720,0x01,4,2147483647);//Position limit - maximum
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	ret = NEC_CoE402SetParameter(Axis,0x6060,0x00,2,4);//Modes of operation
@@ -1349,10 +1196,10 @@ RTN_ERR MotorType_3890(CANAxis_T Axis)
 	ret = NEC_CoE402SetParameter(Axis,0x3224,0x03,2,500);//Dynamic current limit I*t - time		c	????????????????????
 	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 	
-	ret = NEC_CoE402SetParameter(Axis,0x3720,0x00,4,-2147483648);//Position limit - minimum c
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
-	ret = NEC_CoE402SetParameter(Axis,0x3720,0x01,4,2147483647);//Position limit - maximum c
-	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x3720,0x00,4,-2147483648);//Position limit - minimum c
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
+	//ret = NEC_CoE402SetParameter(Axis,0x3720,0x01,4,2147483647);//Position limit - maximum c
+	//if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret ); return 1; }
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	ret = NEC_CoE402SetParameter(Axis,0x6060,0x00,2,4);//Modes of operation c
@@ -1425,12 +1272,87 @@ RTN_ERR MotorType_3890(CANAxis_T Axis)
 
 	return 0;
 }
+
+
+void StartMaster(USER_DAT *pData)
+{
+	int i;
+	ret = NEC_RtInitMaster( pData->masterId );
+	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_RtInitMaster() error %d \n", ret ); return; }
+	
+	ret = NEC_CoE402Reset();
+	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402Reset() error %d \n", ret ); return; }
+	
+	
+	for( i = 0; i<TOTAL_AXIS; ++i )
+	{
+		ret = NEC_CoE402GetAxisId( pData->masterId, i, &pData->axis[i] ); 
+		if( ret != ECERR_SUCCESS ) { RtPrintf( "NEC_CoEGetAxisId() error %d \n", ret ); return; }
+	}
+
+	ret = NEC_RtSetParameter( pData->masterId, 0, cycleTime );  // Set master cycle time = 1 ms
+	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_RtSetParameter() error %d \n", ret ); return; }
+
+	//pData->masterId = masterId;
+	ret = NEC_RtGetProcessDataPtr(  pData->masterId , &pData->InputProcessDataPtr, &pData->InPDSizeInByte
+		, &pData->OutputProcessDataPtr, &pData->OutPDSizeInByte );
+	if( ret != ECERR_SUCCESS ) { RtPrintf( "NEC_RtGetProcessDataPtr() error %d \n", ret ); return; }
+
+	// Register client
+	clientParam.version         = NEC_RtRetVer();
+	clientParam.userDataPtr     = pData;
+	clientParam.cyclicCallback  = __RtCyclicCallback;
+	clientParam.eventCallback   = __RtEventCallback;
+	clientParam.errorCallback   = __RtErrorCallback;
+
+	ret = NEC_RtRegisterClient( pData->masterId, &clientParam );
+	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_RtRegisterClient() error %d \n", ret ); return; }
+
+	ret = NEC_RtStartMaster( pData->masterId );
+	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_RtStartMaster() error %d \n", ret ); return; }
+	
+	ret = NEC_RtSetMasterStateWait( pData->masterId, ECM_STA_SAFEOP, 15000  ); 
+	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_RtSetMasterStateWait() error %d \n", ret ); return; }
+	
+	for( i = 0; i<TOTAL_AXIS; i++ )
+	{
+		ret = NEC_CoE402UpdatePdoMapping( pData->axis[i] );
+		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402UpdatePdoMapping() error %d \n", ret ); return; }
+		
+		ret = NEC_CoE402FaultReset( pData->axis[i], 5000 );
+		//if( ret != 0 ) { RtPrintf("NEC_CoE402FaultReset failed! error %d \n", ret  );return; }
+	}
+
+	ret = NEC_RtChangeStateToOP( pData->masterId, 5000 );
+	if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_RtChangeStateToOP() error %d \n", ret ); return; }
+
+	pData->Flag_StartMasterDone = 1;
+}
+void CloseMaster(USER_DAT *pData)
+{
+	if( ret != ECERR_SUCCESS )
+		RtPrintf( " [Error] Master going to stop..." );
+
+	ret = NEC_RtStopMaster( pData->masterId );
+	if( ret != ECERR_SUCCESS ) { RtPrintf( "NEC_RtStopMaster() error %d \n", ret ); }
+
+	ret = NEC_RtUnregisterClient( pData->masterId, &clientParam );
+	if( ret != ECERR_SUCCESS ) { RtPrintf( "NEC_RtUnregisterClient() error %d \n", ret ); }
+
+	ret = NEC_CoE402Close();
+	if( ret != ECERR_SUCCESS ) { RtPrintf( "NEC_CoE402Close() error %d \n", ret ); }
+
+	ret = NEC_RtCloseMaster( pData->masterId ); 
+	if( ret != ECERR_SUCCESS ) { RtPrintf( "NEC_RtCloseMaster() error %d \n", ret ); }
+
+	RtPrintf( "done\n" );
+}
 void HomingMethod35(USER_DAT *pData)
 {
 	int i;
 	
 	//需要先servo on且 6060 home mode才能歸零
-	pData->setServoOnFlag = 1;
+	pData->Flag_ServoOn = 1;
 
 	for(i=0; i<TOTAL_AXIS; i++)
 	{
@@ -1441,80 +1363,85 @@ void HomingMethod35(USER_DAT *pData)
 		ret = NEC_CoE402HomeEx( pData->axis[i], OPT_IMV && OPT_IAC && OPT_IZV && OPT_IOF, 35, 0, 0, 0, 0 );
 		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402Home() error %d \n", ret );}
 		
-		pData->firstTimeHoldFlag = 0;
-		pData->holdSwitch = 1;
+		pData->Flag_HoldPosSaved = 0;
+		pData->MotorState = MotorState_Hold;
 
 		ret = NEC_CoE402SetParameter( pData->axis[i], 0x6060, 0x00, 2, 4 );//Modes of operation
 		if( ret != ECERR_SUCCESS ){ RtPrintf( "NEC_CoE402SetParameter() error %d \n", ret );}
 	}
-	//pData->setServoOffFlag = 1;
-
-		// TODO
-		// check if there is any parameters that could be modified by NEC_CoE402HomeEx() function...
+	
+	pData->Flag_SetCurrPosHomeDone = 1;
+	
 }
-
-void HOMING_UpdateCbTargetTheta(F64_T *CB_targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *homeSensorValue, I32_T *HOMING_cnt)
+void SaveHoldPos(F64_T *CB_targetTheta, F64_T *CB_actualTheta)
+{
+	int k;
+	for(k=0; k<TOTAL_AXIS; k++) 
+	{	
+		CB_targetTheta[k] = CB_actualTheta[k];
+	}
+}
+void HOMING_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T *home_sensor_value, I32_T *HOMING_cnt)
 {
 	int i;
 	static int homeSensorReachCnt = 0;
 	const int DinHallPdoLocalOffset = 10;
-
+	static F64_T HOMING_initialTheta[TOTAL_AXIS];
+	
 	if((*HOMING_cnt) == 0)
 	{
 		for(i=0; i<TOTAL_AXIS; i++)
 		{
-			pData->HOMING_initialTheta[i] = actualTheta[i];
-			pData->HOMING_homeSensorReachFlag[i] = 1;
+			HOMING_initialTheta[i] = CB_actualTheta[i];
+			pData->Flag_HomeSensorReached[i] = TRUE;
 		}
 
-
-		homeSensorReachCnt = 17;	// 17軸沒作homing, 當作已經reach home sensor了,下面16軸作homing而已
+		homeSensorReachCnt = 17;	// 17軸沒作homing, 當作已經reach home sensor, 只有下面16軸作homing而已
 
 		// trunk
-		pData->HOMING_homeSensorReachFlag[4]  = 0;	
-		pData->HOMING_homeSensorReachFlag[10] = 0;
-		pData->HOMING_homeSensorReachFlag[19] = 0;
+		pData->Flag_HomeSensorReached[4]  = FALSE;	
+		pData->Flag_HomeSensorReached[10] = FALSE;
+		pData->Flag_HomeSensorReached[19] = FALSE;
 		// waist
-		pData->HOMING_homeSensorReachFlag[20] = 0;	
+		pData->Flag_HomeSensorReached[20] = FALSE;	
 		// left leg
-		pData->HOMING_homeSensorReachFlag[21] = 0;	
-		pData->HOMING_homeSensorReachFlag[22] = 0;
-		pData->HOMING_homeSensorReachFlag[23] = 0;
-		pData->HOMING_homeSensorReachFlag[24] = 0;
-		pData->HOMING_homeSensorReachFlag[25] = 0;
-		pData->HOMING_homeSensorReachFlag[26] = 0;
+		pData->Flag_HomeSensorReached[21] = FALSE;	
+		pData->Flag_HomeSensorReached[22] = FALSE;
+		pData->Flag_HomeSensorReached[23] = FALSE;
+		pData->Flag_HomeSensorReached[24] = FALSE;
+		pData->Flag_HomeSensorReached[25] = FALSE;
+		pData->Flag_HomeSensorReached[26] = FALSE;
 		// right leg
-		pData->HOMING_homeSensorReachFlag[27] = 0;	
-		pData->HOMING_homeSensorReachFlag[28] = 0;
-		pData->HOMING_homeSensorReachFlag[29] = 0;
-		pData->HOMING_homeSensorReachFlag[30] = 0;
-		pData->HOMING_homeSensorReachFlag[31] = 0;
-		pData->HOMING_homeSensorReachFlag[32] = 0;
+		pData->Flag_HomeSensorReached[27] = FALSE;
+		pData->Flag_HomeSensorReached[28] = FALSE;
+		pData->Flag_HomeSensorReached[29] = FALSE;
+		pData->Flag_HomeSensorReached[30] = FALSE;
+		pData->Flag_HomeSensorReached[31] = FALSE;
+		pData->Flag_HomeSensorReached[32] = FALSE;
 	}
 	else
 	{
 		for(i=0; i<TOTAL_AXIS; i++)
 		{
-			if(pData->HOMING_homeSensorReachFlag[i] == 0)
+			if(pData->Flag_HomeSensorReached[i] == FALSE)
 			{
-				NEC_RtGetSlaveProcessDataInput(pData->masterId, i, DinHallPdoLocalOffset, (U8_T*)&homeSensorValue[i], 4);
-				if(homeSensorValue[i] == homeSensorReachValue[i])
+				NEC_RtGetSlaveProcessDataInput(pData->masterId, i, DinHallPdoLocalOffset, (U8_T*)&home_sensor_value[i], 4);
+				if(home_sensor_value[i] == homeSensorReachValue[i])
 				{
-					pData->HOMING_homeSensorTheta[i] = actualTheta[i];
-					RtPrintf("%d = %d\n", i, (I32_T)(pData->HOMING_homeSensorTheta[i]*180/PI) );
+					pData->HOMING_homeSensorTheta[i] = CB_actualTheta[i];
+					RtPrintf("%d = %d, ", i, (I32_T)(pData->HOMING_homeSensorTheta[i]*180/PI) );
 
-					pData->HOMING_homeSensorReachFlag[i] = 1;
+					pData->Flag_HomeSensorReached[i] = 1;
 					homeSensorReachCnt++;
 					if(homeSensorReachCnt == TOTAL_AXIS)
 					{
-						pData->HOMING_allHomeSensorReachFlag = 1;
+						pData->Flag_AllHomeSensorReached = 1;
 						break;
 					}
-
 				}
 				else
 				{
-					CB_targetTheta[i] = pData->HOMING_initialTheta[i] + HOMING_maxVelocity[i] * ((*HOMING_cnt) * pData->cycleTime * MILISECOND_TO_SECOND);
+					CB_targetTheta[i] = HOMING_initialTheta[i] + HOMING_maxVelocity[i] * ((*HOMING_cnt) * pData->cycleTime * MICROSECOND_TO_SECOND);
 				}
 			}
 		}
@@ -1522,40 +1449,60 @@ void HOMING_UpdateCbTargetTheta(F64_T *CB_targetTheta, USER_DAT *pData, F64_T *a
 	(*HOMING_cnt)++;
 
 }
-void PP_UpdateCbTargetTheta(F64_T *CB_targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *PP_cnt)
+void PP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T *PP_cnt)
 {
 	int i;
+	static F64_T PP_initialTheta[TOTAL_AXIS];
 
 	if((*PP_cnt) == 0)
 	{
 		for(i=0; i<TOTAL_AXIS; i++)
 		{
-			pData->PP_initialTheta[i] = actualTheta[i];
+			PP_initialTheta[i] = CB_actualTheta[i];
 		}
 	}
-	else
+
+	if((*PP_cnt) < pData->PP_Queue_TimePeriod[pData->PP_Queue_Front] / (pData->cycleTime * MICROSECOND_TO_SECOND) - 1)
 	{
 		for(i=0; i<TOTAL_AXIS; i++)
 		{
-			CB_targetTheta[i] = pData->PP_initialTheta[i] + (pData->PP_targetTheta[i] - pData->PP_initialTheta[i]) * pData->PP_splineVec[(*PP_cnt)];
+			CB_targetTheta[i] = PP_initialTheta[i] + 
+								(pData->PP_Queue_TargetTheta[pData->PP_Queue_Front][i] - PP_initialTheta[i]) 
+									* pData->CubicPolyVec[(int)floor((*PP_cnt) * MAX_MOTION_TIME_FRAME * MICROSECOND_TO_SECOND * pData->cycleTime / pData->PP_Queue_TimePeriod[pData->PP_Queue_Front])];
 		}
-	}
-	(*PP_cnt)++;
 
+		(*PP_cnt)++;
+	}
+	else
+	{
+		pData->Flag_PpReachTarget = 1;
+	}
 }
-void CSP_UpdateCbTargetTheta(F64_T *CB_targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *CSP_cnt)
+void CSP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T *CSP_cnt)
 {
 	int i;
 
-	for(i=0; i<TOTAL_AXIS; i++)
+	if((*CSP_cnt) == 0)
 	{
-		if(i==3 || i== 5 || i==8 || i==11 || i==19 || i==20 || i>=21)
-		{
-			CB_targetTheta[i] = pData->WalkingTrajectories[floor((*CSP_cnt) * pData->walkingSpeed)][i];
-			pData->ActualWalkingTrajectories[(*CSP_cnt)][i] = actualTheta[i];
-		}
+		// check if CB_targetThet != walking initial pose
 	}
-	(*CSP_cnt)++;
+
+	if((*CSP_cnt) < pData->walkingTimeframe)
+	{
+		for(i=0; i<TOTAL_AXIS; i++)
+		{
+			if(i==3 || i== 5 || i==8 || i==11 || i==19 || i==20 || i>=21)
+			{
+				CB_targetTheta[i] = pData->WalkingTrajectories[(int)floor((*CSP_cnt) * pData->walkingSpeed)][i];
+				pData->ActualWalkingTrajectories[(*CSP_cnt)][i] = CB_actualTheta[i];
+			}
+		}
+		(*CSP_cnt)++;
+	}
+	else
+	{
+		pData->Flag_CspFinished = 1;
+	}
 }
 
 I16_T TargetTorqueTrimming(F64_T tempTorque)
@@ -1563,4 +1510,42 @@ I16_T TargetTorqueTrimming(F64_T tempTorque)
 	if(tempTorque>=1000.0) return (I16_T)1000;
 	else if(tempTorque<=-1000.0) return (I16_T)-1000;
 	else return (I16_T)tempTorque;
+}
+
+void MotorPosPidControl(F64_T *CB_targetTheta, F64_T *CB_actualTheta, USER_DAT *pData)
+{
+	int k;
+	F64_T			errorTheta[TOTAL_AXIS];
+	F64_T			errorThetaDot[TOTAL_AXIS];
+	static F64_T	preErrorTheta[TOTAL_AXIS];
+	static F64_T	errorThetaSum[TOTAL_AXIS];
+	F64_T			targetTorque[TOTAL_AXIS];
+	I16_T			trimmedTargetTorque[TOTAL_AXIS];
+
+	if(pData->Flag_ResetCbErrorTheta == 1)
+	{
+		for(k=0; k<TOTAL_AXIS; k++)
+		{
+			preErrorTheta[k] = 0;
+			errorThetaSum[k] = 0;
+		}
+		pData->Flag_ResetCbErrorTheta = 0;
+	}
+
+	for(k=0; k<TOTAL_AXIS; k++)
+	{
+		errorTheta[k] = CB_targetTheta[k] - CB_actualTheta[k];
+		if(errorThetaSum[k] < maxErrorThetaSum)
+			errorThetaSum[k] = errorThetaSum[k] + errorTheta[k];
+		errorThetaDot[k] = (errorTheta[k] - preErrorTheta[k]) / (((F64_T)pData->cycleTime) * MICROSECOND_TO_SECOND);
+		preErrorTheta[k] = errorTheta[k];
+		targetTorque[k] = (pData->Kp[k] * errorTheta[k] + pData->Ki[k] * errorThetaSum[k] + pData->Kd[k]  * errorThetaDot[k]) * motor_direction[k];
+					
+		if(pData->motorTorqueSwitch[k] == 0) targetTorque[k] = 0;
+		trimmedTargetTorque[k] = TargetTorqueTrimming( targetTorque[k] );
+
+		// !!
+		NEC_CoE402SetTargetTorque( pData->axis[k], trimmedTargetTorque[k] );
+		// !!
+	}
 }
