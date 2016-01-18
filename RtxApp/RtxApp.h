@@ -114,7 +114,7 @@ typedef struct
 
 	// used in cyclic callback funciton
 	BOOL_T		Flag_ResetCnt;
-	BOOL_T		Flag_ResetError;
+	BOOL_T		Flag_ResetCbErrorTheta;
 	BOOL_T		Flag_ServoOn;
 	BOOL_T		Flag_ServoOff;
 	BOOL_T		Flag_HoldPosSaved;
@@ -173,14 +173,12 @@ RTN_ERR MotorType_3257(CANAxis_T Axis);
 RTN_ERR MotorType_3863(CANAxis_T Axis);
 RTN_ERR MotorType_3890(CANAxis_T Axis);
 
-void HOMING_UpdateCbTargetTheta(F64_T *targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *homeSensorValue, I32_T *HOMING_cnt);
-//void PP_UpdateCbTargetTheta(F64_T *targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *CSP_cnt);
-//void CSP_UpdateCbTargetTheta(F64_T *targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *CSP_cnt);
 
 void StartMaster(USER_DAT *pData);
 void CloseMaster(USER_DAT *pData);
 void HomingMethod35(USER_DAT *pData);
 void SaveHoldPos(F64_T *CB_targetTheta, F64_T *CB_actualTheta);
+void HOMING_UpdateCbTargetTheta(F64_T *targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *homeSensorValue, I32_T *HOMING_cnt);
 void PP_UpdateCbTargetTheta(F64_T *targetTheta, F64_T *CB_actualTheta, I32_T *PP_cnt);
 void CSP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T *CPS_cnt);
 

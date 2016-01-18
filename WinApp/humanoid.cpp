@@ -12,7 +12,7 @@ int _tmain(int argc)
 
 	printf("Wait....\n");
 
-if(0)
+if(1)
 {
 
 	ret = NEC_LoadRtxApp( "C:\\Program Files\\NEXCOM\\NexECMRtx\\Lib\\NexECMRtx\\x32\\NexECMRtx.rtss" );
@@ -60,7 +60,7 @@ if(0)
 
 
 	// update parameter
-	ImportParameterTxt(pWinData);
+	ImportParameterTxt();
 	UpdateWalkTraj();
 
 	printf("=======================\n");
@@ -68,10 +68,10 @@ if(0)
 	printf("=======================\n\n");
 
 
-	StartMaster(pWinData);
-	SetMotorParam(pWinData);
-	SetCurrPosHome(pWinData);
-	HoldPos(pWinData);
+	StartMaster();
+	SetMotorParam();
+	SetCurrPosHome();
+	HoldPos();
 
 }
 
@@ -87,20 +87,39 @@ if(0)
 			{
 			case 's':
 				cout << "soft" << endl;
-				NoTorque(pWinData);
+				NoTorque();
 				break;
 			case 'h':
 				cout << "hold" << endl;
-				HoldPos(pWinData);
+				HoldPos();
 				break;
 			case 'o':
 				cout << "pp: home" << endl;
-				PP_Move_deg(2.0, Pos_home);
+				PP_Move_deg(Pos_home, 2.0, false);
 				break;
 			case 'p':
+			{
 				cout << "pp: test" << endl;
-				PP_Move_deg(2.0, Pos_test);
+				ListFiles(pose_file);
+				int pose_num;
+				cout << "choose pose: ";
+				cin >> pose_num;
+				UpdatePpPose(pose_num);
+				PP_Move_deg(Pos_temp, 2.0, false);
 				break;
+			}
+			case 'e':
+			{
+				cout << "pp: walking initial" << endl;
+				ListFiles(walking_trajectory_file);
+				int traj_num;
+				cout << "choose trajectory: ";
+				cin >> traj_num;
+				
+				UpdateWalkTraj(traj_num);
+				PP_Move_rad(Pos_walking_inital, 3.0, true);
+				break;
+			}
 			case 'r':
 			{
 				cout << "csp: walking" << endl;
@@ -108,8 +127,11 @@ if(0)
 				int traj_num;
 				cout << "choose trajectory: ";
 				cin >> traj_num;
+				
 				UpdateWalkTraj(traj_num);
-				//CSP_Run();
+				PP_Move_rad(Pos_walking_inital, 3.0, true);
+				system("pause");
+				CSP_Run();
 				break;
 			}
 			case 'l':
@@ -132,8 +154,8 @@ if(0)
 
 _Byebye:
 
-	HoldPos(pWinData);
-
+	HoldPos();
+	ServoOff();
 	CloseMaster();
 
 	// close share memory
@@ -168,177 +190,6 @@ void PrintAllActualTheta(WIN32_DAT *pWinData)
 	printf("\n");
 }
 
-void UpdateAllKp(WIN32_DAT *pWinData)
-{
-	cout << "Motor, New Kp ratial, or -1 to leave\n";
-	int index;
-	double newKp;
-	while(1)
-	{
-		cin >> index;
-		if(index == -1) break;
-		cin >> newKp;
-		pWinData->Kp[index] = newKp;
-	}
-}
-void UpdateAllKd(WIN32_DAT *pWinData)
-{
-	cout << "Motor, New Kd ratial, or -1 to leave\n";
-	int index;
-	double newKd;
-	while(1)
-	{
-		cin >> index;
-		if(index == -1) break;
-		cin >> newKd;
-		pWinData->Kd[index] = newKd;
-	}
-}
-void PrintAllKp(WIN32_DAT *pWinData)
-{
-	int i;
-	printf("All Kp:\n");
-	for(i=0; i<TOTAL_AXIS; i++)
-	{
-		printf("%d = %f, ", i, pWinData->Kp[i]);
-		if(i%3 == 2) printf("\n");
-	}
-	printf("\n");
-}
-void PrintAllKd(WIN32_DAT *pWinData)
-{
-	int i;
-	printf("All Kd:\n");
-	for(i=0; i<TOTAL_AXIS; i++)
-	{
-		printf("%d = %f, ", i, pWinData->Kd[i]);
-		if(i%3 == 2) printf("\n");
-	}
-	printf("\n");
-}
-
-
-//void UpdataUserDefineData()
-//{
-//	int index;
-//	double degree;
-//
-//	printf("==============================\n");
-//	printf("Motor targetTheta, or -1 to leave.\n");
-//	printf("==============================\n");
-//
-//	while(1)
-//	{
-//		cin >> index;
-//		if(index == -1) break;
-//		cin >> degree;
-//		UserDefineTheta[0][index] = degree;
-//	}
-//}
-
-void UpdateWalkTraj()
-{
-	int i=0, j=0, cnt=0;
-	ifstream fin;
-    fin.open("C:..\\..\\WalkingTrajectories\\WalkingTrajectories.txt", ios::in);
-
-	fin>>pWinData->walkingTimeframe;
-	printf("Update walking trajectories (total timeframe = %d)\n", pWinData->walkingTimeframe);
-	if(pWinData->walkingTimeframe > MAX_WALKING_TIMEFRAME)
-	{
-		printf("walkingTimeframe > MAX_WALKING_TIMEFRAME\n");
-	}
-
-	for(i=0;i<TOTAL_AXIS;i++)
-	{
-		if(i==3 || i== 5 || i==8 || i==11 || i==19 || i==20 || i>=21)
-		{
-			for(j=0;j<pWinData->walkingTimeframe;j++)
-			{
-				if(!fin.eof())
-				{
-					fin>>(pWinData->WalkingTrajectories)[j][i];
-					cnt++;
-				}
-			}
-		}
-		else
-		{
-			for(j=0;j<pWinData->walkingTimeframe;j++)
-			{ 
-				pWinData->WalkingTrajectories[j][i] = 0;
-			}
-		}
-	}
-
-	// update walking initial theta
-	
-	for(i=0;i<TOTAL_AXIS;i++)
-	{
-		Pos_walking_inital[i] = (pWinData->WalkingTrajectories)[0][i] * 180 / PI;
-	}
-
-	//for(i=21;i<TOTAL_AXIS;i++)
-	//{
-	//	printf("%f ", (pWinData->WalkingTrajectories)[0][i]);
-	//}
-	//printf("\n");
-
-	fin.close();
-
-}
-void UpdateWalkTraj(int traj_num)
-{
-	int i=0, j=0, cnt=0;
-	ifstream fin;
-	string walking_traj_file = walking_traj_dir.append(file_list[traj_num]);
-    fin.open(walking_traj_file, ios::in);
-	cout << walking_traj_file << endl;
-	return;
-
-	fin>>pWinData->walkingTimeframe;
-	printf("Update walking trajectories (total timeframe = %d)\n", pWinData->walkingTimeframe);
-	if(pWinData->walkingTimeframe > MAX_WALKING_TIMEFRAME)
-	{
-		printf("walkingTimeframe > MAX_WALKING_TIMEFRAME\n");
-	}
-	for(i=0;i<TOTAL_AXIS;i++)
-	{
-		if(i==3 || i== 5 || i==8 || i==11 || i==19 || i==20 || i>=21)
-		{
-			for(j=0;j<pWinData->walkingTimeframe;j++)
-			{
-				if(!fin.eof())
-				{
-					fin>>(pWinData->WalkingTrajectories)[j][i];
-					cnt++;
-				}
-			}
-		}
-		else
-		{
-			for(j=0;j<pWinData->walkingTimeframe;j++)
-			{ 
-				pWinData->WalkingTrajectories[j][i] = 0;
-			}
-		}
-	}
-
-	// update walking initial theta
-	
-	for(i=0;i<TOTAL_AXIS;i++)
-	{
-		Pos_walking_inital[i] = (pWinData->WalkingTrajectories)[0][i] * 180 / PI;
-	}
-
-	//for(i=21;i<TOTAL_AXIS;i++)
-	//{
-	//	printf("%f ", (pWinData->WalkingTrajectories)[0][i]);
-	//}
-	//printf("\n");
-
-	fin.close();
-}
 
 void printWalkingTrajectories(WIN32_DAT *pWinData)
 {
@@ -375,99 +226,6 @@ void WriteWalkingTrajectories(WIN32_DAT *pWinData)
 	file2.close();
 }
 
-void ImportParameterTxt(WIN32_DAT *pWinData)
-{
-	int i;
-	ifstream fin;
-	char buffer[20];
-    fin.open("C:..\\parameter.txt", ios::in);
-
-	fin >> buffer;
-	fin >> pWinData->walkingSpeed;
-
-	fin >> buffer;
-	for(i=0;i<TOTAL_AXIS;i++)
-	{
-		fin >> pWinData->motorTorqueSwitch[i];
-	}
-	
-	fin >> buffer;
-	for(i=0;i<TOTAL_AXIS;i++)
-	{
-		fin >> pWinData->Kp[i];
-	}
-
-	fin >> buffer;
-	for(i=0;i<TOTAL_AXIS;i++)
-	{
-		fin >> pWinData->Ki[i];
-	}
-
-	fin >> buffer;
-	for(i=0;i<TOTAL_AXIS;i++)
-	{
-		fin >> pWinData->Kd[i];
-	}
-
-	fin >> buffer;
-	for(i=0;i<TOTAL_AXIS;i++)
-	{
-		fin >> pWinData->HOMING_homePositionOffset[i];
-		pWinData->HOMING_homePositionOffset[i] = -1.0 * pWinData->HOMING_homePositionOffset[i] * PI / 180.0;
-	}
-
-	printf("Import motor parameter\n");
-	fin.close();
-
-} 
-void PrintImportParameterTxt(WIN32_DAT *pWinData)
-{
-	int i;
-	printf("walkingSpeed\n");
-	printf("%f\n", pWinData->walkingSpeed);
-
-	printf("motorTorqueSwitch\n");
-	for(i=0; i<TOTAL_AXIS; i++)
-	{
-		printf("%f ", pWinData->motorTorqueSwitch[i]);
-	}
-	printf("\n");
-
-	printf("Kp\n");
-	for(i=0; i<TOTAL_AXIS; i++)
-	{
-		printf("%f ", pWinData->Kp[i]);
-	}
-	printf("\n");
-
-	printf("Kd\n");
-	for(i=0; i<TOTAL_AXIS; i++)
-	{
-		printf("%f ", pWinData->Kd[i]);
-	}
-	printf("\n");
-
-	printf("HOMING_homePositionOffset\n");
-	for(i=0; i<TOTAL_AXIS; i++)
-	{
-		printf("%f ", pWinData->HOMING_homePositionOffset[i]);
-	}
-	printf("\n\n");
-
-}
-void WritePose(WIN32_DAT *pWinData)
-{
-	fstream file;
-	UpdataAllActualTheta(pWinData);
-
-	file.open("C:..\\write_pose.txt", ios::app);
-	for(int i = 0; i<33; i++)
-		file << pWinData->actualTheta[i] * 180.0 / PI << " ";
-	file << endl;
-
-	printf("Write pose done\n");
-	file.close();
-}
 
 
 
@@ -526,47 +284,249 @@ void GenerateCubicPolyVec(WIN32_DAT *pWinData)
 	//}
 
 }
+void UpdateWalkTraj()
+{
+	int i=0, j=0, cnt=0;
+	ifstream fin;
+    fin.open("C:..\\..\\WalkingTrajectories\\WalkingTrajectories.txt", ios::in);
 
+	fin>>pWinData->walkingTimeframe;
+	printf("Update walking trajectories (total timeframe = %d)\n", pWinData->walkingTimeframe);
+	if(pWinData->walkingTimeframe > MAX_WALKING_TIMEFRAME)
+	{
+		printf("walkingTimeframe > MAX_WALKING_TIMEFRAME\n");
+	}
 
-void StartMaster(WIN32_DAT *pWinData)
+	for(i=0;i<TOTAL_AXIS;i++)
+	{
+		if(i==3 || i== 5 || i==8 || i==11 || i==19 || i==20 || i>=21)
+		{
+			for(j=0;j<pWinData->walkingTimeframe;j++)
+			{
+				if(!fin.eof())
+				{
+					fin>>(pWinData->WalkingTrajectories)[j][i];
+					cnt++;
+				}
+			}
+		}
+		else
+		{
+			for(j=0;j<pWinData->walkingTimeframe;j++)
+			{ 
+				pWinData->WalkingTrajectories[j][i] = 0;
+			}
+		}
+	}
+
+	// update walking initial theta
+	
+	for(i=0;i<TOTAL_AXIS;i++)
+	{
+		Pos_walking_inital[i] = (pWinData->WalkingTrajectories)[0][i];
+	}
+
+	//for(i=21;i<TOTAL_AXIS;i++)
+	//{
+	//	printf("%f ", (pWinData->WalkingTrajectories)[0][i]);
+	//}
+	//printf("\n");
+
+	fin.close();
+
+}
+void UpdateWalkTraj(int traj_num)
+{
+	int i=0, j=0, cnt=0;
+	ifstream fin;
+	string walking_traj_file = walking_traj_dir.append(file_list[traj_num]);
+    fin.open(walking_traj_file, ios::in);
+	cout << walking_traj_file << endl;
+
+	fin>>pWinData->walkingTimeframe;
+	printf("Update walking trajectories (total timeframe = %d)\n", pWinData->walkingTimeframe);
+	if(pWinData->walkingTimeframe > MAX_WALKING_TIMEFRAME)
+	{
+		printf("walkingTimeframe > MAX_WALKING_TIMEFRAME\n");
+	}
+	for(i=0;i<TOTAL_AXIS;i++)
+	{
+		if(i==3 || i== 5 || i==8 || i==11 || i==19 || i==20 || i>=21)
+		{
+			for(j=0;j<pWinData->walkingTimeframe;j++)
+			{
+				if(!fin.eof())
+				{
+					fin>>(pWinData->WalkingTrajectories)[j][i];
+					cnt++;
+				}
+			}
+		}
+		else
+		{
+			for(j=0;j<pWinData->walkingTimeframe;j++)
+			{ 
+				pWinData->WalkingTrajectories[j][i] = 0;
+			}
+		}
+	}
+
+	// update walking initial theta
+	
+	for(i=0;i<TOTAL_AXIS;i++)
+	{
+		Pos_walking_inital[i] = (pWinData->WalkingTrajectories)[0][i];
+	}
+
+	//for(i=21;i<TOTAL_AXIS;i++)
+	//{
+	//	printf("%f ", (pWinData->WalkingTrajectories)[0][i]);
+	//}
+	//printf("\n");
+
+	fin.close();
+}
+void UpdatePpPose(int pose_num)
+{
+	int i=0, j=0, cnt=0;
+	ifstream fin;
+	string pose_file = walking_traj_dir.append(file_list[pose_num]);
+    fin.open(pose_file, ios::in);
+	cout << pose_file << endl;
+	return;
+
+	for(i=0;i<TOTAL_AXIS;i++)
+	{
+		fin>>Pos_temp[i];
+	}
+
+	fin.close();
+}
+void ImportParameterTxt()
+{
+	int i;
+	ifstream fin;
+	char buffer[20];
+    fin.open("C:..\\parameter.txt", ios::in);
+
+	fin >> buffer;
+	fin >> pWinData->walkingSpeed;
+
+	fin >> buffer;
+	for(i=0;i<TOTAL_AXIS;i++)
+	{
+		fin >> pWinData->motorTorqueSwitch[i];
+	}
+	
+	fin >> buffer;
+	for(i=0;i<TOTAL_AXIS;i++)
+	{
+		fin >> pWinData->Kp[i];
+	}
+
+	fin >> buffer;
+	for(i=0;i<TOTAL_AXIS;i++)
+	{
+		fin >> pWinData->Ki[i];
+	}
+
+	fin >> buffer;
+	for(i=0;i<TOTAL_AXIS;i++)
+	{
+		fin >> pWinData->Kd[i];
+	}
+
+	fin >> buffer;
+	for(i=0;i<TOTAL_AXIS;i++)
+	{
+		fin >> pWinData->HOMING_homePositionOffset[i];
+		pWinData->HOMING_homePositionOffset[i] = -1.0 * pWinData->HOMING_homePositionOffset[i] * PI / 180.0;
+	}
+
+	printf("Import motor parameter\n");
+	fin.close();
+
+} 
+void PrintImportParameterTxt()
+{
+	int i;
+	printf("walkingSpeed\n");
+	printf("%f\n", pWinData->walkingSpeed);
+
+	printf("motorTorqueSwitch\n");
+	for(i=0; i<TOTAL_AXIS; i++)
+	{
+		printf("%f ", pWinData->motorTorqueSwitch[i]);
+	}
+	printf("\n");
+
+	printf("Kp\n");
+	for(i=0; i<TOTAL_AXIS; i++)
+	{
+		printf("%f ", pWinData->Kp[i]);
+	}
+	printf("\n");
+
+	printf("Kd\n");
+	for(i=0; i<TOTAL_AXIS; i++)
+	{
+		printf("%f ", pWinData->Kd[i]);
+	}
+	printf("\n");
+
+	printf("HOMING_homePositionOffset\n");
+	for(i=0; i<TOTAL_AXIS; i++)
+	{
+		printf("%f ", pWinData->HOMING_homePositionOffset[i]);
+	}
+	printf("\n\n");
+
+}
+
+void StartMaster()
 {
 	RtSetEvent(oBhandle[START_MASTER_AND_SLAVES]);
 	while(!pWinData->Flag_StartMasterDone){}
 	pWinData->Flag_StartMasterDone = 0;
 }
-void SetMotorParam(WIN32_DAT *pWinData)
+void SetMotorParam()
 {
 	RtSetEvent(oBhandle[SET_MOTOR_PARAMETERS]);
 	while(!pWinData->Flag_SetMotorParameterDone){}
 	pWinData->Flag_SetMotorParameterDone = 0;
 }
-void SetCurrPosHome(WIN32_DAT *pWinData)
+void SetCurrPosHome()
 {
 	RtSetEvent(oBhandle[SET_CURR_POS_HOME]);
 	while(!pWinData->Flag_SetCurrPosHomeDone){}
 	pWinData->Flag_SetCurrPosHomeDone = 0;
+}
+void ServoOff()
+{
+	pWinData->Flag_ServoOff = 1;
 }
 void CloseMaster()
 {
 	RtSetEvent(oBhandle[CLOSE_MASTER]);
 }
 
-void NoTorque(WIN32_DAT *pWinData)
+void NoTorque()
 {
 	pWinData->MotorState = MotorState_NoTq;
 }
-void HoldPos(WIN32_DAT *pWinData)
+void HoldPos()
 {
 	// reset
-	pWinData->Flag_PpReachTarget = 1;
+	pWinData->PP_Queue_Rear = pWinData->PP_Queue_Front;	// clear PP_Queue
+	pWinData->Flag_PpReachTarget = 1;	
 	pWinData->Flag_CspFinished = 0;
-	pWinData->Flag_ResetError = 1;
+	pWinData->Flag_ResetCbErrorTheta = 1;
 
 	pWinData->Flag_HoldPosSaved = 0;
 	pWinData->MotorState = MotorState_Hold;
 	pWinData->Flag_ServoOn = 1;
 }
-void PP_Move_rad(double timePeriod, double *PP_targetTheta)
+void PP_Move_rad(double *PP_targetTheta, double timePeriod, bool wait_until_reach)
 {
 	if((pWinData->PP_Queue_Front - pWinData->PP_Queue_Rear) % PP_QUEUE_SIZE == 1) // PP_Queue is full
 	{
@@ -589,8 +549,12 @@ void PP_Move_rad(double timePeriod, double *PP_targetTheta)
 
 	pWinData->MotorState = MotorState_PP;
 
+	if(wait_until_reach)
+	{
+		while(!pWinData->Flag_PpReachTarget){}
+	}
 }
-void PP_Move_deg(double timePeriod, double *PP_targetDeg)
+void PP_Move_deg(double *PP_targetDeg, double timePeriod, bool wait_until_reach)
 {
 	if((pWinData->PP_Queue_Front - pWinData->PP_Queue_Rear) % PP_QUEUE_SIZE == 1) // PP_Queue is full
 	{
@@ -608,7 +572,11 @@ void PP_Move_deg(double timePeriod, double *PP_targetDeg)
 	}
 
 	pWinData->MotorState = MotorState_PP;
-
+	
+	if(wait_until_reach)
+	{
+		while(!pWinData->Flag_PpReachTarget){}
+	}
 }
 void CSP_Run()
 {

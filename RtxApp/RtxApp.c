@@ -1358,110 +1358,6 @@ RTN_ERR MotorType_3890(CANAxis_T Axis)
 	return 0;
 }
 
-void HOMING_UpdateCbTargetTheta(F64_T *targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *homeSensorValue, I32_T *HOMING_cnt)
-{
-	int i;
-	static int homeSensorReachCnt = 0;
-	const int DinHallPdoLocalOffset = 10;
-
-	if((*HOMING_cnt) == 0)
-	{
-		for(i=0; i<TOTAL_AXIS; i++)
-		{
-			pData->HOMING_initialTheta[i] = actualTheta[i];
-			pData->HOMING_homeSensorReachFlag[i] = 1;
-		}
-
-
-		homeSensorReachCnt = 17;	// 17軸沒作homing, 當作已經reach home sensor了,下面16軸作homing而已
-
-		// trunk
-		pData->HOMING_homeSensorReachFlag[4]  = 0;	
-		pData->HOMING_homeSensorReachFlag[10] = 0;
-		pData->HOMING_homeSensorReachFlag[19] = 0;
-		// waist
-		pData->HOMING_homeSensorReachFlag[20] = 0;	
-		// left leg
-		pData->HOMING_homeSensorReachFlag[21] = 0;	
-		pData->HOMING_homeSensorReachFlag[22] = 0;
-		pData->HOMING_homeSensorReachFlag[23] = 0;
-		pData->HOMING_homeSensorReachFlag[24] = 0;
-		pData->HOMING_homeSensorReachFlag[25] = 0;
-		pData->HOMING_homeSensorReachFlag[26] = 0;
-		// right leg
-		pData->HOMING_homeSensorReachFlag[27] = 0;	
-		pData->HOMING_homeSensorReachFlag[28] = 0;
-		pData->HOMING_homeSensorReachFlag[29] = 0;
-		pData->HOMING_homeSensorReachFlag[30] = 0;
-		pData->HOMING_homeSensorReachFlag[31] = 0;
-		pData->HOMING_homeSensorReachFlag[32] = 0;
-	}
-	else
-	{
-		for(i=0; i<TOTAL_AXIS; i++)
-		{
-			if(pData->HOMING_homeSensorReachFlag[i] == 0)
-			{
-				NEC_RtGetSlaveProcessDataInput(pData->masterId, i, DinHallPdoLocalOffset, (U8_T*)&homeSensorValue[i], 4);
-				if(homeSensorValue[i] == homeSensorReachValue[i])
-				{
-					pData->HOMING_homeSensorTheta[i] = actualTheta[i];
-					RtPrintf("%d = %d\n", i, (I32_T)(pData->HOMING_homeSensorTheta[i]*180/PI) );
-
-					pData->HOMING_homeSensorReachFlag[i] = 1;
-					homeSensorReachCnt++;
-					if(homeSensorReachCnt == TOTAL_AXIS)
-					{
-						pData->HOMING_allHomeSensorReachFlag = 1;
-						break;
-					}
-
-				}
-				else
-				{
-					targetTheta[i] = pData->HOMING_initialTheta[i] + HOMING_maxVelocity[i] * ((*HOMING_cnt) * pData->cycleTime * MILISECOND_TO_SECOND);
-				}
-			}
-		}
-	}
-	(*HOMING_cnt)++;
-
-}
-//void PP_UpdateCbTargetTheta(F64_T *targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *PP_cnt)
-//{
-//	int i;
-//
-//	if((*PP_cnt) == 0)
-//	{
-//		for(i=0; i<TOTAL_AXIS; i++)
-//		{
-//			pData->PP_initialTheta[i] = actualTheta[i];
-//		}
-//	}
-//	else
-//	{
-//		for(i=0; i<TOTAL_AXIS; i++)
-//		{
-//			targetTheta[i] = pData->PP_initialTheta[i] + (pData->PP_targetTheta[i] - pData->PP_initialTheta[i]) * pData->PP_splineVec[(*PP_cnt)];
-//		}
-//	}
-//	(*PP_cnt)++;
-//
-//}
-//void CSP_UpdateCbTargetTheta(F64_T *targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *CSP_cnt)
-//{
-//	int i;
-//
-//	for(i=0; i<TOTAL_AXIS; i++)
-//	{
-//		if(i==3 || i== 5 || i==8 || i==11 || i==19 || i==20 || i>=21)
-//		{
-//			targetTheta[i] = pData->WalkingTrajectories[(int)floor((*CSP_cnt) * pData->walkingSpeed)][i];
-//			pData->ActualWalkingTrajectories[(*CSP_cnt)][i] = actualTheta[i];
-//		}
-//	}
-//	(*CSP_cnt)++;
-//}
 
 void StartMaster(USER_DAT *pData)
 {
@@ -1570,6 +1466,75 @@ void SaveHoldPos(F64_T *CB_targetTheta, F64_T *CB_actualTheta)
 		CB_targetTheta[k] = CB_actualTheta[k];
 	}
 }
+void HOMING_UpdateCbTargetTheta(F64_T *targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *homeSensorValue, I32_T *HOMING_cnt)
+{
+	int i;
+	static int homeSensorReachCnt = 0;
+	const int DinHallPdoLocalOffset = 10;
+
+	if((*HOMING_cnt) == 0)
+	{
+		for(i=0; i<TOTAL_AXIS; i++)
+		{
+			pData->HOMING_initialTheta[i] = actualTheta[i];
+			pData->HOMING_homeSensorReachFlag[i] = 1;
+		}
+
+
+		homeSensorReachCnt = 17;	// 17軸沒作homing, 當作已經reach home sensor了,下面16軸作homing而已
+
+		// trunk
+		pData->HOMING_homeSensorReachFlag[4]  = 0;	
+		pData->HOMING_homeSensorReachFlag[10] = 0;
+		pData->HOMING_homeSensorReachFlag[19] = 0;
+		// waist
+		pData->HOMING_homeSensorReachFlag[20] = 0;	
+		// left leg
+		pData->HOMING_homeSensorReachFlag[21] = 0;	
+		pData->HOMING_homeSensorReachFlag[22] = 0;
+		pData->HOMING_homeSensorReachFlag[23] = 0;
+		pData->HOMING_homeSensorReachFlag[24] = 0;
+		pData->HOMING_homeSensorReachFlag[25] = 0;
+		pData->HOMING_homeSensorReachFlag[26] = 0;
+		// right leg
+		pData->HOMING_homeSensorReachFlag[27] = 0;	
+		pData->HOMING_homeSensorReachFlag[28] = 0;
+		pData->HOMING_homeSensorReachFlag[29] = 0;
+		pData->HOMING_homeSensorReachFlag[30] = 0;
+		pData->HOMING_homeSensorReachFlag[31] = 0;
+		pData->HOMING_homeSensorReachFlag[32] = 0;
+	}
+	else
+	{
+		for(i=0; i<TOTAL_AXIS; i++)
+		{
+			if(pData->HOMING_homeSensorReachFlag[i] == 0)
+			{
+				NEC_RtGetSlaveProcessDataInput(pData->masterId, i, DinHallPdoLocalOffset, (U8_T*)&homeSensorValue[i], 4);
+				if(homeSensorValue[i] == homeSensorReachValue[i])
+				{
+					pData->HOMING_homeSensorTheta[i] = actualTheta[i];
+					RtPrintf("%d = %d\n", i, (I32_T)(pData->HOMING_homeSensorTheta[i]*180/PI) );
+
+					pData->HOMING_homeSensorReachFlag[i] = 1;
+					homeSensorReachCnt++;
+					if(homeSensorReachCnt == TOTAL_AXIS)
+					{
+						pData->HOMING_allHomeSensorReachFlag = 1;
+						break;
+					}
+
+				}
+				else
+				{
+					targetTheta[i] = pData->HOMING_initialTheta[i] + HOMING_maxVelocity[i] * ((*HOMING_cnt) * pData->cycleTime * MILISECOND_TO_SECOND);
+				}
+			}
+		}
+	}
+	(*HOMING_cnt)++;
+
+}
 void PP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T *PP_cnt)
 {
 	int i;
@@ -1606,7 +1571,6 @@ void CSP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T
 	if((*CSP_cnt) == 0)
 	{
 		// check if CB_targetThet != walking initial pose
-		RtPrintf("1\n");
 	}
 
 	if((*CSP_cnt) < pData->walkingTimeframe)
@@ -1644,14 +1608,14 @@ void MotorPosPidControl(F64_T *CB_targetTheta, F64_T *CB_actualTheta, USER_DAT *
 	F64_T			targetTorque[TOTAL_AXIS];
 	I16_T			trimmedTargetTorque[TOTAL_AXIS];
 
-	if(pData->Flag_ResetError == 1)
+	if(pData->Flag_ResetCbErrorTheta == 1)
 	{
 		for(k=0; k<TOTAL_AXIS; k++)
 		{
 			preErrorTheta[k] = 0;
 			errorThetaSum[k] = 0;
 		}
-		pData->Flag_ResetError = 0;
+		pData->Flag_ResetCbErrorTheta = 0;
 	}
 
 	for(k=0; k<TOTAL_AXIS; k++)

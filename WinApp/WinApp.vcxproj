@@ -69,12 +69,10 @@
   <ItemGroup>
     <ClInclude Include="humanoid.h" />
     <ClInclude Include="util.h" />
-    <ClInclude Include="MotionControl.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="humanoid.cpp" />
     <ClCompile Include="util.cpp" />
-    <ClCompile Include="MotionControl.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

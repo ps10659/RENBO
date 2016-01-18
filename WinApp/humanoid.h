@@ -43,7 +43,7 @@ typedef struct
 
 	// used in cyclic callback funciton
 	BOOL_T		Flag_ResetCnt;
-	BOOL_T		Flag_ResetError;
+	BOOL_T		Flag_ResetCbErrorTheta;
 	BOOL_T		Flag_ServoOn;
 	BOOL_T		Flag_ServoOff;
 	BOOL_T		Flag_HoldPosSaved;
@@ -90,91 +90,44 @@ typedef struct
 
 
 
-
-
-
-double Pos_home[TOTAL_AXIS] = {0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0};
-double Pos_test[TOTAL_AXIS] = {0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 20,0,0};
-double Pos_walking_inital[TOTAL_AXIS];
-
-
-// functions
-void UpdataAllActualTheta(WIN32_DAT *pWinData);
-void PrintAllActualTheta(WIN32_DAT *pWinData);
-void UpdateAllKp(WIN32_DAT *pWinData);
-void UpdateAllKd(WIN32_DAT *pWinData);
-void PrintAllKp(WIN32_DAT *pWinData);
-void PrintAllKd(WIN32_DAT *pWinData);
-
-
-void SetPP_targetTheta(WIN32_DAT *pWinData, int motionType, int currPointCnt);
-void UpdataUserDefineData();
-
-void UpdateWalkTraj();
-void UpdateWalkTraj(int traj_num);
-void printWalkingTrajectories(WIN32_DAT *pWinData);
-void WriteWalkingTrajectories(WIN32_DAT *pWinData);
-
-void ImportParameterTxt(WIN32_DAT *pWinData);
-void PrintImportParameterTxt(WIN32_DAT *pWinData);
-void WritePose(WIN32_DAT *pWinData);
-
-// initialization
-void InitPwindata(WIN32_DAT *pWinData);
-void GenerateCubicPolyVec(WIN32_DAT *pWinData);
-
-
-
-// 
-void StartMaster(WIN32_DAT *pWinData);
-void SetMotorParam(WIN32_DAT *pWinData);
-void SetCurrPosHome(WIN32_DAT *pWinData);
-void CloseMaster();
-
-// control function
-void NoTorque(WIN32_DAT *pWinData);
-void HoldPos(WIN32_DAT *pWinData);
-void PP_Move_rad(double timePeriod, double *PP_targetTheta);
-void PP_Move_deg(double timePeriod, double *PP_targetTheta);
-void CSP_Run();
-
-
-
-
 string file_list[20]; //20 file buffer for the list
 string walking_traj_dir = "C:..\\..\\WalkingTrajectories\\";
 LPCSTR walking_trajectory_file = "C:..\\..\\WalkingTrajectories\\*.txt";
 
+string pose_dir = "C:..\\..\\Poses\\";
+LPCSTR pose_file = "C:..\\..\\Poses\\*.txt";
+double Pos_home[TOTAL_AXIS] = {0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0};
+double Pos_temp[TOTAL_AXIS] = {0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 20,0,0};
+double Pos_walking_inital[TOTAL_AXIS];
 
 
-//#define UserDefineTotalPoint 1
-//#define GoHomeTotalPoint 1
-//#define SquatTotalPoint 5
-//#define WalkingInitialPoint 1
-//#define WalkingInitialReversePoint 1
-//#define ReadPoseTxtPoint 100
+void UpdataAllActualTheta(WIN32_DAT *pWinData);
+void PrintAllActualTheta(WIN32_DAT *pWinData);
 
-// Target Theta
-//F64_T UserDefineTheta[UserDefineTotalPoint][TOTAL_AXIS] = 
-//	{{0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0}};
+void printWalkingTrajectories(WIN32_DAT *pWinData);
+void WriteWalkingTrajectories(WIN32_DAT *pWinData);
+
+
+
 //
-//F64_T HomeTheta[GoHomeTotalPoint][TOTAL_AXIS] = 
-//	{{0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0}};
-//
-//
-//F64_T SquatTheta[SquatTotalPoint][TOTAL_AXIS] = 
-//	{{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-//		0, 0, -60, 120, -60, 0,  0, 0, -60, 120, -60, 0}};
-//
-//F64_T WalkingInitialTheta[WalkingInitialPoint][TOTAL_AXIS] =
-//	{{0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0, 
-//		0,0.0490,-22.3758,51.6053,-29.2296,-0.0490, 0,0.0490,-22.3758,51.6053,-29.2296,-0.0490
-// }};
-//
-//F64_T WalkingInitialReverseTheta[WalkingInitialReversePoint][TOTAL_AXIS] =
-//	{{0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,
-//		0,-0.0490,22.3758,-51.6053,29.2296,0.0490, 0,-0.0490,   22.3758,-51.6053,29.2296,0.0490}};
-//
-//
-//F64_T ReadPoseTxtTheta[ReadPoseTxtPoint][TOTAL_AXIS] = 
-//	{{0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0}};
+void InitPwindata(WIN32_DAT *pWinData);
+void GenerateCubicPolyVec(WIN32_DAT *pWinData);
+void UpdateWalkTraj();
+void UpdateWalkTraj(int traj_num);
+void UpdatePpPose(int pose_num);
+void ImportParameterTxt();
+void PrintImportParameterTxt();
+
+// 
+void StartMaster();
+void SetMotorParam();
+void SetCurrPosHome();
+void ServoOff();
+void CloseMaster();
+
+// control function
+void NoTorque();
+void HoldPos();
+void PP_Move_rad(double *PP_targetTheta, double timePeriod, bool wait_until_reach);
+void PP_Move_deg(double *PP_targetTheta, double timePeriod, bool wait_until_reach);
+void CSP_Run();
