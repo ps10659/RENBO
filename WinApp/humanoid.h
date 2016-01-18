@@ -50,6 +50,8 @@ typedef struct
 	BOOL_T		Flag_UpdateActualTheta;
 	BOOL_T		Flag_PpReachTarget;
 	BOOL_T		Flag_CspFinished;
+	BOOL_T		Flag_AllHomeSensorReached;
+	BOOL_T		Flag_HomeSensorReached[TOTAL_AXIS];
 
 
 	// motor parameters
@@ -58,14 +60,10 @@ typedef struct
 	F64_T		Ki[TOTAL_AXIS];
 	F64_T		Kd[TOTAL_AXIS];
 
-	F64_T		walkingSpeed;
 
 	// HOMING related variables
-	F64_T		HOMING_initialTheta[TOTAL_AXIS];
 	F64_T		HOMING_homePositionOffset[TOTAL_AXIS];
 	F64_T		HOMING_homeSensorTheta[TOTAL_AXIS];
-	BOOL_T		HOMING_homeSensorReachFlag[TOTAL_AXIS];
-	BOOL_T		HOMING_allHomeSensorReachFlag;
 	
 
 	// PP related variables
@@ -79,6 +77,7 @@ typedef struct
 	F64_T		WalkingTrajectories[MAX_WALKING_TIMEFRAME][TOTAL_AXIS];
 	F64_T		ActualWalkingTrajectories[MAX_WALKING_TIMEFRAME][TOTAL_AXIS];
 	I32_T		walkingTimeframe;
+	F64_T		walkingSpeed;
 
 
 
@@ -97,7 +96,7 @@ LPCSTR walking_trajectory_file = "C:..\\..\\WalkingTrajectories\\*.txt";
 string pose_dir = "C:..\\..\\Poses\\";
 LPCSTR pose_file = "C:..\\..\\Poses\\*.txt";
 double Pos_home[TOTAL_AXIS] = {0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0};
-double Pos_temp[TOTAL_AXIS] = {0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 20,0,0};
+double Pos_temp[TOTAL_AXIS];
 double Pos_walking_inital[TOTAL_AXIS];
 
 
@@ -128,6 +127,7 @@ void CloseMaster();
 // control function
 void NoTorque();
 void HoldPos();
+void HOMING_MoveToHomeSensor();
 void PP_Move_rad(double *PP_targetTheta, double timePeriod, bool wait_until_reach);
 void PP_Move_deg(double *PP_targetTheta, double timePeriod, bool wait_until_reach);
 void CSP_Run();

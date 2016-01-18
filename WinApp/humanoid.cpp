@@ -10,14 +10,13 @@ int _tmain(int argc)
 	bool breakWhile = 0;
 	int i = 0;
 
-	printf("Wait....\n");
-
 if(1)
 {
-
+	cout << "loading NexECMRtx.rtss ..." << endl;
 	ret = NEC_LoadRtxApp( "C:\\Program Files\\NEXCOM\\NexECMRtx\\Lib\\NexECMRtx\\x32\\NexECMRtx.rtss" );
 	if( ret != 0 ){ printf("NEC_LoadRtxApp NexECMRtx.rtss failed!");}
 	
+	cout << "loading RxtApp.rtss ..." << endl;
 	ret = NEC_LoadRtxApp( "C:..\\RTSSDebug\\RtxApp.rtss" ); 
 	if( ret != 0 ){ printf( "NEC_LoadRtxApp() RtxApp.rtss error %d \n", ret );}
 	
@@ -30,10 +29,11 @@ if(1)
 	ret = NEC_ResetEcMaster( masterId );
 	if( ret != 0 ) { printf( "NEC_ResetEcMaster failed!" );}
 
+	cout << "loading ENI.xml ..." << endl;
 	ret = NEC_LoadNetworkConfig( masterId, "c:..\\..\\ENI\\ENI_33_Motor_hall.xml", START_NETWORK_OPT_MASK_NIC_PORT);
 	if( ret != 0 ) { printf( "NEC_LoadNetworkConfig failed! (ENI_33_Motor.xml failed)" );}
 
-
+	cout << "open share memory ..." << endl;
 	// open share memory created in RtxApp
 	sMhandle = RtOpenSharedMemory( SHM_MAP_ALL_ACCESS , 0 , SHM_NAME , &location );
 	if( sMhandle == NULL )
@@ -44,6 +44,7 @@ if(1)
 	pWinData = (WIN32_DAT *) location;
 	pWinData->masterId = masterId;
 
+	cout << "open event ..." << endl;
 	// open event vreated in RtxApp
 	for(i=0; i<EVN_NUM; i++)
 	{
@@ -93,6 +94,28 @@ if(1)
 				cout << "hold" << endl;
 				HoldPos();
 				break;
+			case '0':
+			{
+				HOMING_MoveToHomeSensor();
+				break;
+			}
+			case '1':
+			{
+				for(int i=0; i<TOTAL_AXIS; i++)
+				{
+					Pos_temp[i] = pWinData->HOMING_homeSensorTheta[i] + pWinData->HOMING_homePositionOffset[i];
+					if(i==23 || i== 29) Pos_temp[i] += -15.65 * PI / 180.0;
+					if(i==24 || i== 30) Pos_temp[i] += 34.08 * PI / 180.0;
+					if(i==25 || i== 31) Pos_temp[i] += -18.43 * PI / 180.0;
+				}
+				PP_Move_rad(Pos_temp, 3.0, true);
+				break;
+			}
+			case '2':
+			{
+				SetCurrPosHome();
+				break;
+			}
 			case 'o':
 				cout << "pp: home" << endl;
 				PP_Move_deg(Pos_home, 2.0, false);
@@ -247,6 +270,7 @@ void InitPwindata(WIN32_DAT *pWinData)
 	pWinData->PP_Queue_Front = 0;
 	pWinData->Flag_PpReachTarget = 1;
 	pWinData->Flag_CspFinished = 0;
+	pWinData->Flag_AllHomeSensorReached = 0;
 
 	GenerateCubicPolyVec(pWinData);
 
@@ -526,6 +550,17 @@ void HoldPos()
 	pWinData->MotorState = MotorState_Hold;
 	pWinData->Flag_ServoOn = 1;
 }
+void HOMING_MoveToHomeSensor()
+{
+	if(pWinData->Flag_AllHomeSensorReached == 1)
+	{
+		pWinData->Flag_AllHomeSensorReached = 0;
+	}
+	pWinData->Flag_ResetCnt;
+	pWinData->MotorState = MotorState_Homing;
+
+	while(pWinData->Flag_AllHomeSensorReached == 0){};
+}
 void PP_Move_rad(double *PP_targetTheta, double timePeriod, bool wait_until_reach)
 {
 	if((pWinData->PP_Queue_Front - pWinData->PP_Queue_Rear) % PP_QUEUE_SIZE == 1) // PP_Queue is full
@@ -551,7 +586,7 @@ void PP_Move_rad(double *PP_targetTheta, double timePeriod, bool wait_until_reac
 
 	if(wait_until_reach)
 	{
-		while(!pWinData->Flag_PpReachTarget){}
+		while(!pWinData->Flag_PpReachTarget){cout << ".";}
 	}
 }
 void PP_Move_deg(double *PP_targetDeg, double timePeriod, bool wait_until_reach)

@@ -28,8 +28,8 @@
 
 // constant
 #define PI 3.14159265359
-#define MILISECOND_TO_SECOND 0.000001
-#define SECOND_TO_MILISECOND 1000000
+#define MICROSECOND_TO_SECOND 0.000001
+#define SECOND_TO_MICROSECOND 1000000
 
 // motor
 //#define L_Wrist_YAW 0
@@ -121,6 +121,8 @@ typedef struct
 	BOOL_T		Flag_UpdateActualTheta;
 	BOOL_T		Flag_PpReachTarget;
 	BOOL_T		Flag_CspFinished;
+	BOOL_T		Flag_AllHomeSensorReached;
+	BOOL_T		Flag_HomeSensorReached[TOTAL_AXIS];
 
 
 	// motor parameters
@@ -129,14 +131,10 @@ typedef struct
 	F64_T		Ki[TOTAL_AXIS];
 	F64_T		Kd[TOTAL_AXIS];
 
-	F64_T		walkingSpeed;
 
 	// HOMING related variables
-	F64_T		HOMING_initialTheta[TOTAL_AXIS];
 	F64_T		HOMING_homePositionOffset[TOTAL_AXIS];
 	F64_T		HOMING_homeSensorTheta[TOTAL_AXIS];
-	BOOL_T		HOMING_homeSensorReachFlag[TOTAL_AXIS];
-	BOOL_T		HOMING_allHomeSensorReachFlag;
 	
 
 	// PP related variables
@@ -150,6 +148,7 @@ typedef struct
 	F64_T		WalkingTrajectories[MAX_WALKING_TIMEFRAME][TOTAL_AXIS];
 	F64_T		ActualWalkingTrajectories[MAX_WALKING_TIMEFRAME][TOTAL_AXIS];
 	I32_T		walkingTimeframe;
+	F64_T		walkingSpeed;
 
 
 
@@ -178,7 +177,7 @@ void StartMaster(USER_DAT *pData);
 void CloseMaster(USER_DAT *pData);
 void HomingMethod35(USER_DAT *pData);
 void SaveHoldPos(F64_T *CB_targetTheta, F64_T *CB_actualTheta);
-void HOMING_UpdateCbTargetTheta(F64_T *targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *homeSensorValue, I32_T *HOMING_cnt);
+void HOMING_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T *home_sensor_value, I32_T *HOMING_cnt);
 void PP_UpdateCbTargetTheta(F64_T *targetTheta, F64_T *CB_actualTheta, I32_T *PP_cnt);
 void CSP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T *CPS_cnt);
 
@@ -225,14 +224,10 @@ F64_T		motor_direction[TOTAL_AXIS] = //{1};//3,7¡Ÿ®SΩT©w
 F64_T		axis_theta_to_motor_resolution[TOTAL_AXIS];
 
 
-const int homeSensorReachValue[TOTAL_AXIS] = 
-	{-1, -1, -1, -1, 6, -1, -1, -1, -1, -1, 6, -1, -1, -1, -1, -1, -1, -1, -1, 7, 6, 
-		6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, };
-
-const F64_T HOMING_maxVelocity[TOTAL_AXIS] = 
-	{0, 0, 0, 0, 2.0*PI/72.0, 0, 0, 0, 0, 0, -2.0*PI/72.0, 0, 0, 0, 0, 0, 0, 0, 0, 2.0*PI/72.0, 2.0*PI/72.0, 
-		-2.0*PI/72.0, 2.0*PI/72.0, -2.0*PI/72.0, 2.0*PI/72.0, -2.0*PI/72.0, -2.0*PI/72.0, 
-		2.0*PI/72.0, -2.0*PI/72.0, -2.0*PI/72.0, 2.0*PI/72.0, -2.0*PI/72.0, 2.0*PI/72.0, };
+const int homeSensorReachValue[TOTAL_AXIS] = {-1, -1, -1, -1, 6,  -1, -1, -1, -1, -1,  6, -1, -1, -1, -1,  -1, -1, -1, -1, 7,  6, 6, 6, 6, 6,  6, 6, 6, 6, 6,  6, 6, 6};
+const F64_T HOMING_maxVelocity[TOTAL_AXIS] = {0, 0, 0, 0, PI/36.0,  0, 0, 0, 0, 0,  -PI/36.0, 0, 0, 0, 0,  0, 0, 0, 0, PI/36.0,  PI/36.0,
+												-PI/36.0, PI/36.0, -PI/36.0, PI/36.0, -PI/36.0, -PI/36.0, 
+												PI/36.0, -PI/36.0, -PI/36.0, PI/36.0, -PI/36.0, PI/36.0};
 
 F64_T maxErrorThetaSum = 5 * PI / 180.0;
 

@@ -119,7 +119,7 @@ void __RtCyclicCallback( void *UserDataPtr )
 
 
 	// homing related
-	I32_T			homeSensorValue[TOTAL_AXIS];
+	I32_T			home_sensor_value[TOTAL_AXIS];
 
 
 
@@ -192,6 +192,11 @@ void __RtCyclicCallback( void *UserDataPtr )
 			break;
 
 		case MotorState_Homing:
+			if(pData->Flag_AllHomeSensorReached == 0)
+			{
+				HOMING_UpdateCbTargetTheta(CB_targetTheta, CB_actualTheta, home_sensor_value, &HOMING_cnt);
+			}
+			MotorPosPidControl(CB_targetTheta, CB_actualTheta, pData);
 			break;
 
 		case MotorState_PP:
@@ -242,7 +247,7 @@ void __RtCyclicCallback( void *UserDataPtr )
 		//		switch(pData->MotorState)
 		//		{
 		//			case HOMING_RUN:
-		//				HOMING_UpdateCbTargetTheta(targetTheta, pData, actualTheta, homeSensorValue, &HOMING_cnt);
+		//				HOMING_UpdateCbTargetTheta(targetTheta, pData, actualTheta, home_sensor_value, &HOMING_cnt);
 		//				if(pData->HOMING_allHomeSensorReachFlag == 1)
 		//				{
 		//					pData->Flag_ResetCnt = 1;
@@ -285,7 +290,7 @@ void __RtCyclicCallback( void *UserDataPtr )
 		//		errorTheta[k] = targetTheta[k] - actualTheta[k];
 		//		if(errorThetaSum[k] < maxErrorThetaSum)
 		//			errorThetaSum[k] = errorThetaSum[k] + errorTheta[k];
-		//		errorThetaDot[k] = (errorTheta[k] - preErrorTheta[k]) / (((F64_T)pData->cycleTime) * MILISECOND_TO_SECOND);
+		//		errorThetaDot[k] = (errorTheta[k] - preErrorTheta[k]) / (((F64_T)pData->cycleTime) * MICROSECOND_TO_SECOND);
 		//		preErrorTheta[k] = errorTheta[k];
 		//		targetTorque[k] = (pData->Kp[k] * errorTheta[k] + pData->Ki[k] * errorThetaSum[k] + pData->Kd[k]  * errorThetaDot[k]) * motor_direction[k];
 		//		
@@ -315,14 +320,14 @@ void __RtCyclicCallback( void *UserDataPtr )
 		//if( ( cnt % PRINT_COUNT ) == 0 )
 		//{
 		//	k=27;
-		//	//NEC_RtGetProcessDataInput(pData->masterId, 679, 4, (U8_T*)&homeSensorValue[k]);
-		//	NEC_RtGetSlaveProcessDataInput(pData->masterId, k, 10, (U8_T*)&homeSensorValue[k], 4);
+		//	//NEC_RtGetProcessDataInput(pData->masterId, 679, 4, (U8_T*)&home_sensor_value[k]);
+		//	NEC_RtGetSlaveProcessDataInput(pData->masterId, k, 10, (U8_T*)&home_sensor_value[k], 4);
 		//	RtPrintf("       %d, targetTheta %d, actualTheta %d, actualTorque %d, test: %d\n", 
 		//		k, 
 		//		(I32_T)(targetTheta[k]*180.0/PI),
 		//		(I32_T)(actualTheta[k]*180.0/PI), 
 		//		trimmedTargetTorque[k], 
-		//		(I32_T)(homeSensorValue[k])
+		//		(I32_T)(home_sensor_value[k])
 		//		);
 		//}
 		break;
@@ -1466,68 +1471,67 @@ void SaveHoldPos(F64_T *CB_targetTheta, F64_T *CB_actualTheta)
 		CB_targetTheta[k] = CB_actualTheta[k];
 	}
 }
-void HOMING_UpdateCbTargetTheta(F64_T *targetTheta, USER_DAT *pData, F64_T *actualTheta, I32_T *homeSensorValue, I32_T *HOMING_cnt)
+void HOMING_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T *home_sensor_value, I32_T *HOMING_cnt)
 {
 	int i;
 	static int homeSensorReachCnt = 0;
 	const int DinHallPdoLocalOffset = 10;
-
+	static F64_T HOMING_initialTheta[TOTAL_AXIS];
+	
 	if((*HOMING_cnt) == 0)
 	{
 		for(i=0; i<TOTAL_AXIS; i++)
 		{
-			pData->HOMING_initialTheta[i] = actualTheta[i];
-			pData->HOMING_homeSensorReachFlag[i] = 1;
+			HOMING_initialTheta[i] = CB_actualTheta[i];
+			pData->Flag_HomeSensorReached[i] = TRUE;
 		}
 
-
-		homeSensorReachCnt = 17;	// 17軸沒作homing, 當作已經reach home sensor了,下面16軸作homing而已
+		homeSensorReachCnt = 17;	// 17軸沒作homing, 當作已經reach home sensor, 只有下面16軸作homing而已
 
 		// trunk
-		pData->HOMING_homeSensorReachFlag[4]  = 0;	
-		pData->HOMING_homeSensorReachFlag[10] = 0;
-		pData->HOMING_homeSensorReachFlag[19] = 0;
+		pData->Flag_HomeSensorReached[4]  = FALSE;	
+		pData->Flag_HomeSensorReached[10] = FALSE;
+		pData->Flag_HomeSensorReached[19] = FALSE;
 		// waist
-		pData->HOMING_homeSensorReachFlag[20] = 0;	
+		pData->Flag_HomeSensorReached[20] = FALSE;	
 		// left leg
-		pData->HOMING_homeSensorReachFlag[21] = 0;	
-		pData->HOMING_homeSensorReachFlag[22] = 0;
-		pData->HOMING_homeSensorReachFlag[23] = 0;
-		pData->HOMING_homeSensorReachFlag[24] = 0;
-		pData->HOMING_homeSensorReachFlag[25] = 0;
-		pData->HOMING_homeSensorReachFlag[26] = 0;
+		pData->Flag_HomeSensorReached[21] = FALSE;	
+		pData->Flag_HomeSensorReached[22] = FALSE;
+		pData->Flag_HomeSensorReached[23] = FALSE;
+		pData->Flag_HomeSensorReached[24] = FALSE;
+		pData->Flag_HomeSensorReached[25] = FALSE;
+		pData->Flag_HomeSensorReached[26] = FALSE;
 		// right leg
-		pData->HOMING_homeSensorReachFlag[27] = 0;	
-		pData->HOMING_homeSensorReachFlag[28] = 0;
-		pData->HOMING_homeSensorReachFlag[29] = 0;
-		pData->HOMING_homeSensorReachFlag[30] = 0;
-		pData->HOMING_homeSensorReachFlag[31] = 0;
-		pData->HOMING_homeSensorReachFlag[32] = 0;
+		pData->Flag_HomeSensorReached[27] = FALSE;
+		pData->Flag_HomeSensorReached[28] = FALSE;
+		pData->Flag_HomeSensorReached[29] = FALSE;
+		pData->Flag_HomeSensorReached[30] = FALSE;
+		pData->Flag_HomeSensorReached[31] = FALSE;
+		pData->Flag_HomeSensorReached[32] = FALSE;
 	}
 	else
 	{
 		for(i=0; i<TOTAL_AXIS; i++)
 		{
-			if(pData->HOMING_homeSensorReachFlag[i] == 0)
+			if(pData->Flag_HomeSensorReached[i] == FALSE)
 			{
-				NEC_RtGetSlaveProcessDataInput(pData->masterId, i, DinHallPdoLocalOffset, (U8_T*)&homeSensorValue[i], 4);
-				if(homeSensorValue[i] == homeSensorReachValue[i])
+				NEC_RtGetSlaveProcessDataInput(pData->masterId, i, DinHallPdoLocalOffset, (U8_T*)&home_sensor_value[i], 4);
+				if(home_sensor_value[i] == homeSensorReachValue[i])
 				{
-					pData->HOMING_homeSensorTheta[i] = actualTheta[i];
-					RtPrintf("%d = %d\n", i, (I32_T)(pData->HOMING_homeSensorTheta[i]*180/PI) );
+					pData->HOMING_homeSensorTheta[i] = CB_actualTheta[i];
+					RtPrintf("%d = %d, ", i, (I32_T)(pData->HOMING_homeSensorTheta[i]*180/PI) );
 
-					pData->HOMING_homeSensorReachFlag[i] = 1;
+					pData->Flag_HomeSensorReached[i] = 1;
 					homeSensorReachCnt++;
 					if(homeSensorReachCnt == TOTAL_AXIS)
 					{
-						pData->HOMING_allHomeSensorReachFlag = 1;
+						pData->Flag_AllHomeSensorReached = 1;
 						break;
 					}
-
 				}
 				else
 				{
-					targetTheta[i] = pData->HOMING_initialTheta[i] + HOMING_maxVelocity[i] * ((*HOMING_cnt) * pData->cycleTime * MILISECOND_TO_SECOND);
+					CB_targetTheta[i] = HOMING_initialTheta[i] + HOMING_maxVelocity[i] * ((*HOMING_cnt) * pData->cycleTime * MICROSECOND_TO_SECOND);
 				}
 			}
 		}
@@ -1548,13 +1552,13 @@ void PP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T 
 		}
 	}
 
-	if((*PP_cnt) < pData->PP_Queue_TimePeriod[pData->PP_Queue_Front] / (pData->cycleTime * MILISECOND_TO_SECOND) - 1)
+	if((*PP_cnt) < pData->PP_Queue_TimePeriod[pData->PP_Queue_Front] / (pData->cycleTime * MICROSECOND_TO_SECOND) - 1)
 	{
 		for(i=0; i<TOTAL_AXIS; i++)
 		{
 			CB_targetTheta[i] = PP_initialTheta[i] + 
 								(pData->PP_Queue_TargetTheta[pData->PP_Queue_Front][i] - PP_initialTheta[i]) 
-									* pData->CubicPolyVec[(int)floor((*PP_cnt) * MAX_MOTION_TIME_FRAME * MILISECOND_TO_SECOND * pData->cycleTime / pData->PP_Queue_TimePeriod[pData->PP_Queue_Front])];
+									* pData->CubicPolyVec[(int)floor((*PP_cnt) * MAX_MOTION_TIME_FRAME * MICROSECOND_TO_SECOND * pData->cycleTime / pData->PP_Queue_TimePeriod[pData->PP_Queue_Front])];
 		}
 
 		(*PP_cnt)++;
@@ -1623,7 +1627,7 @@ void MotorPosPidControl(F64_T *CB_targetTheta, F64_T *CB_actualTheta, USER_DAT *
 		errorTheta[k] = CB_targetTheta[k] - CB_actualTheta[k];
 		if(errorThetaSum[k] < maxErrorThetaSum)
 			errorThetaSum[k] = errorThetaSum[k] + errorTheta[k];
-		errorThetaDot[k] = (errorTheta[k] - preErrorTheta[k]) / (((F64_T)pData->cycleTime) * MILISECOND_TO_SECOND);
+		errorThetaDot[k] = (errorTheta[k] - preErrorTheta[k]) / (((F64_T)pData->cycleTime) * MICROSECOND_TO_SECOND);
 		preErrorTheta[k] = errorTheta[k];
 		targetTorque[k] = (pData->Kp[k] * errorTheta[k] + pData->Ki[k] * errorThetaSum[k] + pData->Kd[k]  * errorThetaDot[k]) * motor_direction[k];
 					
