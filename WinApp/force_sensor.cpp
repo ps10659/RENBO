@@ -150,21 +150,20 @@ void getForceData(struct ft_data* fts)
 		fts->fy[ulChannelIndex] = 0;//vfsd[ulChannelIndex].filter1.fy;
 		fts->fz[ulChannelIndex] = vfsd[ulChannelIndex].filter1.fy;
 	}
-	std::cout << std::setw(5)<< fts->mx[0] << std::setw(5)<< fts->my[0] << std::setw(5)<< fts->mz[0];
-	std::cout << std::setw(5)<< fts->fx[0] << std::setw(5)<< fts->fy[0] << std::setw(5)<< fts->fz[0];
+	//std::cout << std::setw(5)<< fts->mx[0] << std::setw(5)<< fts->my[0] << std::setw(5)<< fts->mz[0];
+	//std::cout << std::setw(5)<< fts->fx[0] << std::setw(5)<< fts->fy[0] << std::setw(5)<< fts->fz[0];
 
-	std::cout << std::setw(5)<< fts->mx[1] << std::setw(5)<< fts->my[1] << std::setw(5)<< fts->mz[1];
-	std::cout << std::setw(5)<< fts->fx[1] << std::setw(5)<< fts->fy[1] << std::setw(5)<< fts->fz[1] << std::endl;
+	//std::cout << std::setw(5)<< fts->mx[1] << std::setw(5)<< fts->my[1] << std::setw(5)<< fts->mz[1];
+	//std::cout << std::setw(5)<< fts->fx[1] << std::setw(5)<< fts->fy[1] << std::setw(5)<< fts->fz[1] << std::endl;
 
 }
 
-void ForceDataLoop()
+void ForceDataLoop(struct ft_data* fts)
 {
-	extern HANDLE hJr3PciDevice;
-	force_sensor_data vfsd[2]; // Max 4 channels on any JR3 card.
-	ULONG ulNumWords = sizeof(vfsd[0]) / sizeof(short);
-	short * pusForceSensorData;
-	short mx[2], my[2], mz[2], fx[2], fy[2], fz[2];
+	//extern HANDLE hJr3PciDevice;
+	static force_sensor_data vfsd[2]; // 2 channels on this JR3 card.
+	static ULONG ulNumWords = sizeof(vfsd[0]) / sizeof(short);
+	static short * pusForceSensorData;
 
 	while(true)
 	{	
@@ -172,21 +171,24 @@ void ForceDataLoop()
 		{
 			pusForceSensorData = (short *) &vfsd[ulChannelIndex];
 
-			for(ULONG ulOffset=0; ulOffset<ulNumWords; ulOffset++)
-				pusForceSensorData[ulOffset] = ReadWord(hJr3PciDevice, (UCHAR) ulChannelIndex, ulOffset);
-		
-			mx[ulChannelIndex] = vfsd[ulChannelIndex].filter0.mx;
-			my[ulChannelIndex] = vfsd[ulChannelIndex].filter0.my;
-			mz[ulChannelIndex] = vfsd[ulChannelIndex].filter0.mz;
-			fx[ulChannelIndex] = vfsd[ulChannelIndex].filter0.fx;
-			fy[ulChannelIndex] = vfsd[ulChannelIndex].filter0.fy;
-			fz[ulChannelIndex] = vfsd[ulChannelIndex].filter0.fz;
-		}
-		std::cout << std::setw(5)<< mx[0] << std::setw(5)<< my[0] << std::setw(5)<< mz[0];
-		std::cout << std::setw(5)<< fx[0] << std::setw(5)<< fy[0] << std::setw(5)<< fz[0];
+			//for(ULONG ulOffset=ulNumWords-1; ulOffset>=0; ulOffset--)
 
-		std::cout << std::setw(5)<< mx[1] << std::setw(5)<< my[1] << std::setw(5)<< mz[1];
-		std::cout << std::setw(5)<< fx[1] << std::setw(5)<< fy[1] << std::setw(5)<< fz[1] << std::endl;
+			for(ULONG ulOffset=0; ulOffset<ulNumWords; ulOffset++)
+			{
+				pusForceSensorData[ulOffset] = ReadWord(hJr3PciDevice, (UCHAR) ulChannelIndex, ulOffset);
+			}
+			fts->mx[ulChannelIndex] = vfsd[ulChannelIndex].filter1.fz;
+			fts->my[ulChannelIndex] = vfsd[ulChannelIndex].filter1.mx;
+			fts->mz[ulChannelIndex] = vfsd[ulChannelIndex].filter1.my;
+			fts->fx[ulChannelIndex] = 0;//vfsd[ulChannelIndex].filter1.fx;
+			fts->fy[ulChannelIndex] = 0;//vfsd[ulChannelIndex].filter1.fy;
+			fts->fz[ulChannelIndex] = vfsd[ulChannelIndex].filter1.fy;
+		}
+		//std::cout << std::setw(5)<< fts->mx[0] << std::setw(5)<< fts->my[0] << std::setw(5)<< fts->mz[0];
+		//std::cout << std::setw(5)<< fts->fx[0] << std::setw(5)<< fts->fy[0] << std::setw(5)<< fts->fz[0];
+
+		//std::cout << std::setw(5)<< fts->mx[1] << std::setw(5)<< fts->my[1] << std::setw(5)<< fts->mz[1];
+		//std::cout << std::setw(5)<< fts->fx[1] << std::setw(5)<< fts->fy[1] << std::setw(5)<< fts->fz[1] << std::endl;
 
 		Sleep(100);
 	}

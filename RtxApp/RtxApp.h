@@ -111,7 +111,6 @@ typedef struct
 	// used by event waiting
 	BOOL_T		Flag_StartMasterDone;
 	BOOL_T		Flag_SetMotorParameterDone;
-	BOOL_T		Flag_SetCurrPosHomeDone;
 
 	// used in cyclic callback funciton
 	BOOL_T		Flag_ResetCnt;
@@ -124,6 +123,7 @@ typedef struct
 	BOOL_T		Flag_CspFinished;
 	BOOL_T		Flag_AllHomeSensorReached;
 	BOOL_T		Flag_HomeSensorReached[TOTAL_AXIS];
+	BOOL_T		Flag_SetCurrPosHome;
 
 	// motor parameters
 	F64_T		motorTorqueSwitch[TOTAL_AXIS];
@@ -195,15 +195,15 @@ RTN_ERR MotorType_3890(CANAxis_T Axis);
 void StartMaster(USER_DAT *pData);
 void CloseMaster(USER_DAT *pData);
 void HomingMethod35(USER_DAT *pData);
-void SaveHoldPos(F64_T *CB_targetTheta, F64_T *CB_actualTheta);
-void HOMING_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T *home_sensor_value, I32_T *HOMING_cnt);
-void PP_UpdateCbTargetTheta(F64_T *targetTheta, F64_T *CB_actualTheta, I32_T *PP_cnt);
-void CSP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T *CPS_cnt);
-void Fts_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T *CSP_cnt);
+void SaveHoldPos(F64_T *CB_targetTheta, F64_T *CB_actualTheta, F64_T *VirtualHomeTheta);
+void HOMING_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, F64_T *VirtualHomeTheta, I32_T *home_sensor_value, I32_T *HOMING_cnt);
+void PP_UpdateCbTargetTheta(F64_T *targetTheta, F64_T *CB_actualTheta, F64_T *VirtualHomeTheta, I32_T *PP_cnt);
+void CSP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, F64_T *VirtualHomeTheta, I32_T *CPS_cnt);
+void Fts_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, F64_T *VirtualHomeTheta, I32_T *CSP_cnt);
 
 I16_T TargetTorqueTrimming(F64_T tempTorque);
 
-void MotorPosPidControl(F64_T *CB_targetTheta, F64_T *CB_actualTheta, USER_DAT *pData);
+void MotorPosPidControl(F64_T *CB_targetTheta, F64_T *CB_actualTheta, F64_T *VirtualHomeTheta, USER_DAT *pData);
 
 // global variables
 static PVOID	location;

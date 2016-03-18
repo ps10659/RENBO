@@ -25,7 +25,7 @@ WORD ReadWord(HANDLE hJr3PciDevice, UCHAR ucChannel, ULONG ulOffset);
 
 bool InitForceSensor();
 void getForceData(struct ft_data* fts);
-void ForceDataLoop();
+void ForceDataLoop(struct ft_data* fts);
 
 static HANDLE hJr3PciDevice;
 

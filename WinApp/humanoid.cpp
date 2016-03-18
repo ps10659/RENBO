@@ -151,6 +151,7 @@ if(1)
 				break;
 			}
 			case '8':
+				cout << "set curr pos home" << endl;
 				SetCurrPosHome();
 				break;
 
@@ -275,7 +276,7 @@ void InitPwindata(WIN32_DAT *pWinData)
 
 	pWinData->Flag_StartMasterDone = 0;
 	pWinData->Flag_SetMotorParameterDone = 0;
-	pWinData->Flag_SetCurrPosHomeDone = 0;
+	pWinData->Flag_SetCurrPosHome = 0;
 
 	pWinData->Flag_ServoOn = 0;
 	pWinData->Flag_ServoOff = 0;
@@ -591,9 +592,10 @@ void SetMotorParam()
 }
 void SetCurrPosHome()
 {
-	RtSetEvent(oBhandle[SET_CURR_POS_HOME]);
+	/*RtSetEvent(oBhandle[SET_CURR_POS_HOME]);
 	while(!pWinData->Flag_SetCurrPosHomeDone){}
-	pWinData->Flag_SetCurrPosHomeDone = 0;
+	pWinData->Flag_SetCurrPosHomeDone = 0;*/
+	pWinData->Flag_SetCurrPosHome = 1;
 }
 void ServoOff()
 {

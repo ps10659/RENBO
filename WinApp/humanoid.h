@@ -40,7 +40,6 @@ typedef struct
 	// used by event waiting
 	BOOL_T		Flag_StartMasterDone;
 	BOOL_T		Flag_SetMotorParameterDone;
-	BOOL_T		Flag_SetCurrPosHomeDone;
 
 	// used in cyclic callback funciton
 	BOOL_T		Flag_ResetCnt;
@@ -53,6 +52,7 @@ typedef struct
 	BOOL_T		Flag_CspFinished;
 	BOOL_T		Flag_AllHomeSensorReached;
 	BOOL_T		Flag_HomeSensorReached[TOTAL_AXIS];
+	BOOL_T		Flag_SetCurrPosHome;
 
 	// motor parameters
 	F64_T		motorTorqueSwitch[TOTAL_AXIS];
