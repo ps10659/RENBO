@@ -11,6 +11,7 @@
 #include "..\RtxApp\RtxApp.h"
 #include <Eigen/Dense>
 #include "util.h"
+#include "force_sensor.h"
 
 using namespace std;
 
@@ -53,7 +54,6 @@ typedef struct
 	BOOL_T		Flag_AllHomeSensorReached;
 	BOOL_T		Flag_HomeSensorReached[TOTAL_AXIS];
 
-
 	// motor parameters
 	F64_T		motorTorqueSwitch[TOTAL_AXIS];
 	F64_T		Kp[TOTAL_AXIS];
@@ -79,14 +79,33 @@ typedef struct
 	I32_T		walkingTimeframe;
 	F64_T		walkingSpeed;
 
-
-
 	// motor status
 	F64_T		actualTheta[TOTAL_AXIS];
 
+	
+	// force torque data
+	I16_T mx[2];
+	I16_T my[2];
+	I16_T mz[2];
+	I16_T fx[2];
+	I16_T fy[2];
+	I16_T fz[2];
+	
+	F64_T Fts_LRK;	//left ankle roll K
+	F64_T Fts_LRC;	//left ankle roll C
+	F64_T Fts_LPK;	//left ankle pitch K
+	F64_T Fts_LPC;
+	F64_T Fts_RRK;	//right ankle roll K
+	F64_T Fts_RRC;
+	F64_T Fts_RPK;
+	F64_T Fts_RPC;
+
+	F64_T FzThreshold;
+	F64_T MxyThreshold;
+
 }WIN32_DAT;
 
-
+ft_data fts;
 
 
 string file_list[20]; //20 file buffer for the list
@@ -109,12 +128,14 @@ void WriteWalkingTrajectories(WIN32_DAT *pWinData);
 
 
 //
+void DisplayOptions();
 void InitPwindata(WIN32_DAT *pWinData);
 void GenerateCubicPolyVec(WIN32_DAT *pWinData);
 void UpdateWalkTraj();
 void UpdateWalkTraj(int traj_num);
 void UpdatePpPose();
 void UpdatePpPose(int pose_num);
+void WritePpPose();
 void ImportParameterTxt();
 void PrintImportParameterTxt();
 
@@ -132,3 +153,6 @@ void HOMING_MoveToHomeSensor();
 void PP_Move_rad(double *PP_targetTheta, double timePeriod, bool wait_until_reach);
 void PP_Move_deg(double *PP_targetTheta, double timePeriod, bool wait_until_reach);
 void CSP_Run();
+void FtsTest();
+
+void UpdateFtData();

@@ -111,6 +111,7 @@ void __RtCyclicCallback( void *UserDataPtr )
 	static I32_T	PP_cnt = 0;
 	static I32_T	HOMING_cnt = 0;
 	static I32_T	CSP_cnt = 0;
+	static I32_T	FTS_cnt = 0;
 
 	// state
 	static F64_T	CB_targetTheta[TOTAL_AXIS];
@@ -167,6 +168,7 @@ void __RtCyclicCallback( void *UserDataPtr )
 			HOMING_cnt = 0;
 			PP_cnt = 0;
 			CSP_cnt = 0;
+			FTS_cnt = 0;
 			pData->Flag_ResetCnt = 0;
 		}
 
@@ -221,14 +223,19 @@ void __RtCyclicCallback( void *UserDataPtr )
 			}
 			MotorPosPidControl(CB_targetTheta, CB_actualTheta, pData);
 			break;
+
+		case MotorState_FtsTest:
+			Fts_UpdateCbTargetTheta(CB_targetTheta, CB_actualTheta, &FTS_cnt);
+			MotorPosPidControl(CB_targetTheta, CB_actualTheta, pData);
+			break;
 			 
 		}
 
 		cnt++;
 
 		
-		//if( ( cnt % PRINT_COUNT ) == 0 )
-		//{
+		if( ( cnt % PRINT_COUNT ) == 0 )
+		{
 		//	k=27;
 		//	//NEC_RtGetProcessDataInput(pData->masterId, 679, 4, (U8_T*)&home_sensor_value[k]);
 		//	NEC_RtGetSlaveProcessDataInput(pData->masterId, k, 10, (U8_T*)&home_sensor_value[k], 4);
@@ -239,7 +246,8 @@ void __RtCyclicCallback( void *UserDataPtr )
 		//		trimmedTargetTorque[k], 
 		//		(I32_T)(home_sensor_value[k])
 		//		);
-		//}
+			RtPrintf("    %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d\n", (I32_T)pData->mx[0], (I32_T)pData->my[0], (I32_T)pData->mz[0], (I32_T)pData->fx[0], (I32_T)pData->fy[0], (I32_T)pData->fz[0], (I32_T)pData->mx[1], (I32_T)pData->my[1], (I32_T)pData->mz[1], (I32_T)pData->fx[1], (I32_T)pData->fy[1], (I32_T)pData->fz[1], (I32_T)pData->FzThreshold);
+		}
 		break;
 	}
 	
@@ -1487,7 +1495,7 @@ void CSP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T
 		// check if CB_targetThet != walking initial pose
 	}
 
-	if((*CSP_cnt) < pData->walkingTimeframe)
+	if((*CSP_cnt) * pData->walkingSpeed < pData->walkingTimeframe)
 	{
 		for(i=0; i<TOTAL_AXIS; i++)
 		{
@@ -1503,6 +1511,52 @@ void CSP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T
 	{
 		pData->Flag_CspFinished = 1;
 	}
+}
+void Fts_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T *FTS_cnt)
+{
+	int i;
+	int k=1;
+	static BOOL_T	Flag_touchGround[2];	// 1:left 2:right
+	static BOOL_T	Flag_adapteToGround[2];	// 1:left 2:right
+
+	int LAR = 26, LAP = 25, RAR = 32, RAP = 31;		// left/right ankle roll/pitch axis number
+
+	
+	if((*FTS_cnt) == 0)
+	{
+		for(i=0; i<2; i++)
+		{
+			Flag_touchGround[i] = 0;
+			Flag_adapteToGround[i] = 0;
+		}
+		(*FTS_cnt)++;
+		RtPrintf("XX 0\n");
+	}
+	
+	if((*FTS_cnt) != 0 && Flag_touchGround[k] == 0 && abs(pData->fz[k]) < pData->FzThreshold)
+	{
+		RtPrintf("XX 1\n");
+	}
+	else if(Flag_touchGround[k] == 0 && abs(pData->fz[k]) >= pData->FzThreshold)
+	{
+		Flag_touchGround[k] = 1;
+		RtPrintf("XX 2\n");
+	}
+	else if(Flag_touchGround[k] == 1 && Flag_adapteToGround[k] == 0 && (abs(pData->mx[k]) >= pData->MxyThreshold || abs(pData->my[k]) >= pData->MxyThreshold))
+	{
+		CB_targetTheta[RAR] = CB_actualTheta[RAR] + pData->Fts_RRK * (F64_T)pData->mx[k];
+		CB_targetTheta[RAP] = CB_actualTheta[RAP] + pData->Fts_RPK * (F64_T)pData->my[k];
+
+		(*FTS_cnt)++;
+	}
+	else if(Flag_touchGround[k] == 1 && Flag_adapteToGround[k] == 0 && abs(pData->fz[k]) > pData->FzThreshold && (abs(pData->mx[k]) < pData->MxyThreshold && abs(pData->my[k]) < pData->MxyThreshold))
+	{
+		Flag_adapteToGround[k] = 1;
+		RtPrintf("XX 4\n");
+	}
+	
+	CB_targetTheta[LAR] = CB_actualTheta[LAR] + pData->Fts_LRK * (F64_T)pData->mx[0];
+	CB_targetTheta[LAP] = CB_actualTheta[LAP] + pData->Fts_LPK * (F64_T)pData->my[0];
 }
 
 I16_T TargetTorqueTrimming(F64_T tempTorque)

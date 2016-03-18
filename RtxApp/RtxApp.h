@@ -73,6 +73,7 @@
 #define MotorState_Homing 2
 #define MotorState_PP 3
 #define MotorState_CSP 4
+#define MotorState_FtsTest 5
 
 
 // event 
@@ -90,7 +91,7 @@ LPCSTR EVN_NAME[EVN_NUM] =
 };
 
 
-// shared memory
+// share memory
 typedef struct
 {
 	U16_T		masterId;
@@ -124,7 +125,6 @@ typedef struct
 	BOOL_T		Flag_AllHomeSensorReached;
 	BOOL_T		Flag_HomeSensorReached[TOTAL_AXIS];
 
-
 	// motor parameters
 	F64_T		motorTorqueSwitch[TOTAL_AXIS];
 	F64_T		Kp[TOTAL_AXIS];
@@ -150,10 +150,29 @@ typedef struct
 	I32_T		walkingTimeframe;
 	F64_T		walkingSpeed;
 
-
-
 	// motor status
 	F64_T		actualTheta[TOTAL_AXIS];
+
+	
+	// force torque data
+	I16_T mx[2];
+	I16_T my[2];
+	I16_T mz[2];
+	I16_T fx[2];
+	I16_T fy[2];
+	I16_T fz[2];
+	
+	F64_T Fts_LRK;	//left ankle roll K
+	F64_T Fts_LRC;	//left ankle roll C
+	F64_T Fts_LPK;	//left ankle pitch K
+	F64_T Fts_LPC;
+	F64_T Fts_RRK;	//right ankle roll K
+	F64_T Fts_RRC;
+	F64_T Fts_RPK;
+	F64_T Fts_RPC;
+
+	F64_T FzThreshold;
+	F64_T MxyThreshold;
 
 }USER_DAT;
 
@@ -180,6 +199,7 @@ void SaveHoldPos(F64_T *CB_targetTheta, F64_T *CB_actualTheta);
 void HOMING_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T *home_sensor_value, I32_T *HOMING_cnt);
 void PP_UpdateCbTargetTheta(F64_T *targetTheta, F64_T *CB_actualTheta, I32_T *PP_cnt);
 void CSP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T *CPS_cnt);
+void Fts_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T *CSP_cnt);
 
 I16_T TargetTorqueTrimming(F64_T tempTorque);
 

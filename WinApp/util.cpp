@@ -20,7 +20,7 @@ void ListFiles(LPCSTR targetFile)
 		}
 		else
 		{
-			file_list[file_nums] = FindFileData.cFileName;
+			file_list[file_nums] = FindFileData.cFileName;			
 			_tprintf(TEXT("   %d. %s\n"), file_nums, FindFileData.cFileName);
 			file_nums++;
 		}

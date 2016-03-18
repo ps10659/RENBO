@@ -1,4 +1,5 @@
 #include "humanoid.h"
+
 HANDLE sMhandle ;
 HANDLE oBhandle[EVN_NUM] ;
 
@@ -7,7 +8,6 @@ WIN32_DAT *pWinData;
 int _tmain(int argc)
 {
 	RTN_ERR     ret;
-	bool breakWhile = 0;
 	int i = 0;
 
 if(1)
@@ -33,7 +33,6 @@ if(1)
 	ret = NEC_LoadNetworkConfig( masterId, "c:..\\..\\ENI\\ENI_33_Motor_hall.xml", START_NETWORK_OPT_MASK_NIC_PORT);
 	if( ret != 0 ) { printf( "NEC_LoadNetworkConfig failed! (ENI_33_Motor.xml failed)" );}
 
-	cout << "open share memory ..." << endl;
 	// open share memory created in RtxApp
 	sMhandle = RtOpenSharedMemory( SHM_MAP_ALL_ACCESS , 0 , SHM_NAME , &location );
 	if( sMhandle == NULL )
@@ -44,7 +43,6 @@ if(1)
 	pWinData = (WIN32_DAT *) location;
 	pWinData->masterId = masterId;
 
-	cout << "open event ..." << endl;
 	// open event vreated in RtxApp
 	for(i=0; i<EVN_NUM; i++)
 	{
@@ -73,13 +71,16 @@ if(1)
 	SetMotorParam();
 	SetCurrPosHome();
 	HoldPos();
-
+	system("pause");
 }
+	
+	InitForceSensor();
 
-
-
+	
+	DisplayOptions();
+	
 	while(1)
-	{
+	{	
 		if(_kbhit())
 		{
 			int key = _getch();
@@ -94,32 +95,18 @@ if(1)
 				cout << "hold" << endl;
 				HoldPos();
 				break;
-			case '9':
-			{
-				HOMING_MoveToHomeSensor();
-				for(int i=0; i<TOTAL_AXIS; i++)
-				{
-					Pos_temp[i] = pWinData->HOMING_homeSensorTheta[i] + pWinData->HOMING_homePositionOffset[i];
-					if(i==23 || i== 29) Pos_temp[i] += -15.65 * PI / 180.0;
-					if(i==24 || i== 30) Pos_temp[i] += 34.08 * PI / 180.0;
-					if(i==25 || i== 31) Pos_temp[i] += -18.43 * PI / 180.0;
-				}
-				PP_Move_rad(Pos_temp, 3.0, true);
-				SetCurrPosHome();
-				break;
-			}
 			case 'o':
 				cout << "pp: home" << endl;
 				PP_Move_deg(Pos_home, 2.0, false);
 				break;
-			case 'P':
+			case 'p':
 			{
 				cout << "pp: temp" << endl;
 				UpdatePpPose();
 				PP_Move_deg(Pos_temp, 2.0, false);
 				break;
 			}
-			case 'p':
+			case 'P':
 			{
 				cout << "pp: choose" << endl;
 				ListFiles(pose_file);
@@ -144,21 +131,45 @@ if(1)
 				CSP_Run();
 				break;
 			}
-			case 'l':
-				cout << "ls" << endl;
-				ListFiles(walking_trajectory_file);
+			case 't':
+				cout << "fts test" << endl;
+				FtsTest();
 				break;
 
+			case '7':
+			{
+				HOMING_MoveToHomeSensor();
+				for(int i=0; i<TOTAL_AXIS; i++)
+				{
+					Pos_temp[i] = pWinData->HOMING_homeSensorTheta[i] + pWinData->HOMING_homePositionOffset[i];
+					if(i==23 || i== 29) Pos_temp[i] += -15.65 * PI / 180.0;
+					if(i==24 || i== 30) Pos_temp[i] += 34.08 * PI / 180.0;
+					if(i==25 || i== 31) Pos_temp[i] += -18.43 * PI / 180.0;
+				}
+				PP_Move_rad(Pos_temp, 3.0, true);
+				SetCurrPosHome();
+				break;
+			}
+			case '8':
+				SetCurrPosHome();
+				break;
+
+			case '9':
+				ImportParameterTxt();
+				break;
+			
 			case '.':
-				cout << "@@" << endl;
+				WritePpPose();
 				break;
-
+			
 			case ESC_KEY:
 				goto _Byebye;
 			}
-		}
-	}
 
+			DisplayOptions();
+		}
+		UpdateFtData();
+	}
 
 
 
@@ -182,6 +193,24 @@ _Byebye:
 }
 
 
+void DisplayOptions()
+{
+	system("CLS");
+
+	printf("[s] soft\n");
+	printf("[h] hold\n");
+	printf("[o] Go to home pose\n");
+	printf("[p] Go to temp pose\n");
+	printf("[P] Go to selected pose\n");
+	printf("[r] run selected walking traj");
+	printf("[t] fts test\n\n");
+
+	printf("[7] reset home position\n");
+	printf("[8] set curr pos home\n");
+	printf("[9] import parameter.txt\n");
+	printf("[.] Write pose \n");
+	printf("[esc] Quit\n");
+}
 
 void UpdataAllActualTheta(WIN32_DAT *pWinData)
 {
@@ -351,11 +380,11 @@ void UpdateWalkTraj(int traj_num)
 	int i=0, j=0, cnt=0;
 	ifstream fin;
 	string temp = walking_traj_dir;
-	string walking_traj_file = walking_traj_dir.append(file_list[traj_num]);
+	string walking_traj_file = temp.append(file_list[traj_num]);
     fin.open(walking_traj_file, ios::in);
 	cout << walking_traj_file << endl;
 
-	fin>>pWinData->walkingTimeframe;
+	fin>>pWinData->walkingTimeframe;	
 	printf("Update walking trajectories (total timeframe = %d)\n", pWinData->walkingTimeframe);
 	if(pWinData->walkingTimeframe > MAX_WALKING_TIMEFRAME)
 	{
@@ -427,11 +456,28 @@ void UpdatePpPose(int pose_num)
 
 	fin.close();
 }
+void WritePpPose()
+{
+	string file_name;
+	cout << "	file name: ";
+	cin >> file_name;
+
+	fstream file;
+	UpdataAllActualTheta(pWinData);
+
+	file.open(pose_dir + file_name, ios::app);
+	for(int i = 0; i<33; i++)
+		file << pWinData->actualTheta[i] * 180.0 / PI << " ";
+	file << endl;
+
+	printf("	Write pose done\n");
+	file.close();
+}
 void ImportParameterTxt()
 {
 	int i;
 	ifstream fin;
-	char buffer[20];
+	char buffer[40];
     fin.open("C:..\\parameter.txt", ios::in);
 
 	fin >> buffer;
@@ -462,6 +508,20 @@ void ImportParameterTxt()
 	}
 
 	fin >> buffer;
+	fin >> pWinData->Fts_LRK;
+	fin >> pWinData->Fts_LRC;
+	fin >> pWinData->Fts_LPK;
+	fin >> pWinData->Fts_LPC;
+	fin >> pWinData->Fts_RRK;
+	fin >> pWinData->Fts_RRC;
+	fin >> pWinData->Fts_RPK;
+	fin >> pWinData->Fts_RPC;
+
+	fin >> buffer;
+	fin >> pWinData->FzThreshold;
+	fin >> pWinData->MxyThreshold;
+
+	fin >> buffer;
 	for(i=0;i<TOTAL_AXIS;i++)
 	{
 		fin >> pWinData->HOMING_homePositionOffset[i];
@@ -469,6 +529,8 @@ void ImportParameterTxt()
 	}
 
 	printf("Import motor parameter\n");
+	PrintImportParameterTxt();
+	Sleep(500);
 	fin.close();
 
 } 
@@ -499,11 +561,17 @@ void PrintImportParameterTxt()
 	}
 	printf("\n");
 
-	printf("HOMING_homePositionOffset\n");
+	printf("LRK,LRC,LPK,LPC,RRK,RRC,RPK,RPC\n");
+	printf("%f %f %f %f %f %f %f %f\n", pWinData->Fts_LRK, pWinData->Fts_LRC, pWinData->Fts_LPK, pWinData->Fts_LPC, pWinData->Fts_RRK, pWinData->Fts_RRC, pWinData->Fts_RPK, pWinData->Fts_RPC);
+
+	printf("FzThreshold,MxyThreshold\n");
+	printf("%f %f\n", pWinData->FzThreshold, pWinData->MxyThreshold);
+
+	/*printf("HOMING_homePositionOffset\n");
 	for(i=0; i<TOTAL_AXIS; i++)
 	{
 		printf("%f ", pWinData->HOMING_homePositionOffset[i]);
-	}
+	}*/
 	printf("\n\n");
 
 
@@ -623,4 +691,27 @@ void CSP_Run()
 	}
 	pWinData->Flag_ResetCnt;
 	pWinData->MotorState = MotorState_CSP;
+}
+void FtsTest()
+{
+	pWinData->Flag_ResetCnt = 1;
+	pWinData->MotorState = MotorState_FtsTest;
+}
+void UpdateFtData()
+{
+	getForceData(&fts);
+
+	pWinData->mx[0] = fts.mx[0];
+	pWinData->my[0] = fts.my[0];
+	pWinData->mz[0] = fts.mz[0];
+	pWinData->fx[0] = fts.fx[0];
+	pWinData->fy[0] = fts.fy[0];
+	pWinData->fz[0] = fts.fz[0];
+
+	pWinData->mx[1] = fts.mx[1];
+	pWinData->my[1] = fts.my[1];
+	pWinData->mz[1] = fts.mz[1];
+	pWinData->fx[1] = fts.fx[1];
+	pWinData->fy[1] = fts.fy[1];
+	pWinData->fz[1] = fts.fz[1];
 }

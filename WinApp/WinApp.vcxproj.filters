@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="標頭檔\Sensor">
+      <UniqueIdentifier>{4804d936-deaf-4277-b5ef-e804ad99b3cc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="原始程式檔\Sensor">
+      <UniqueIdentifier>{8db56f86-c8e2-449a-817c-0bbe8bc05378}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="humanoid.h">
@@ -21,6 +27,12 @@
     <ClInclude Include="util.h">
       <Filter>標頭檔</Filter>
     </ClInclude>
+    <ClInclude Include="force_sensor.h">
+      <Filter>標頭檔\Sensor</Filter>
+    </ClInclude>
+    <ClInclude Include="jr3pci_ft.h">
+      <Filter>標頭檔\Sensor</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="humanoid.cpp">
@@ -28,6 +40,9 @@
     </ClCompile>
     <ClCompile Include="util.cpp">
       <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="force_sensor.cpp">
+      <Filter>原始程式檔\Sensor</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

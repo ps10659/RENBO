@@ -37,7 +37,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>C:\Users\Humanoid\Desktop\GiGiFace\Lib\Eigen_3.2.4;$(IncludePath)</IncludePath>
+    <IncludePath>C:\lib\JR3PCI_WDM_driver;C:\Users\Humanoid\Desktop\GiGiFace\Lib\Eigen_3.2.4;$(IncludePath)</IncludePath>
     <LibraryPath>$(LibraryPath)</LibraryPath>
     <ExecutablePath>C:\Users\Humanoid\Documents\GitHub\New\Lib\Eigen_3.2.4;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
@@ -46,11 +46,14 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>C:\Users\Humanoid\Documents\GitHub\New\Lib\Eigen_3.2.4;C:\Program Files\IntervalZero\RTX\include;C:\Users\Humanoid\Documents\GitHub\New\Header;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\Program Files\IntervalZero\RTX\lib;C:\Users\Humanoid\Documents\GitHub\New\Lib\NexECMRtx\x32;C:\Users\Humanoid\Desktop\GiGiFace\Lib\NexECM\x32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>NexECMRtx.lib;NexEcm.lib;rtapi_w32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -67,10 +70,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="force_sensor.h" />
     <ClInclude Include="humanoid.h" />
+    <ClInclude Include="jr3pci_ft.h" />
     <ClInclude Include="util.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="force_sensor.cpp" />
     <ClCompile Include="humanoid.cpp" />
     <ClCompile Include="util.cpp" />
   </ItemGroup>
