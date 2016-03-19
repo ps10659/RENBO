@@ -136,7 +136,7 @@ void __RtCyclicCallback( void *UserDataPtr )
 		for(k=0; k<TOTAL_AXIS; k++) 
 		{
 			NEC_CoE402GetActualPosition( pData->axis[k], &actualEncoderPos[k]);
-			CB_actualTheta[k] = ((F64_T)actualEncoderPos[k]) / axis_theta_to_motor_resolution[k];	
+			CB_actualTheta[k] = ((F64_T)actualEncoderPos[k]) / axis_theta_to_motor_resolution[k] - VirtualHomeTheta[k];	
 		}
 
 		// flags
@@ -160,7 +160,7 @@ void __RtCyclicCallback( void *UserDataPtr )
 		{
 			for(k=0; k<TOTAL_AXIS; k++) 
 			{
-				pData->actualTheta[k] = CB_actualTheta[k] - VirtualHomeTheta[k];
+				pData->actualTheta[k] = CB_actualTheta[k];
 			}
 			pData->Flag_UpdateActualTheta = 0;
 		}
@@ -168,7 +168,8 @@ void __RtCyclicCallback( void *UserDataPtr )
 		{
 			for(k=0; k<TOTAL_AXIS; k++) 
 			{
-				VirtualHomeTheta[k] = CB_actualTheta[k];
+				VirtualHomeTheta[k] = ((F64_T)actualEncoderPos[k]) / axis_theta_to_motor_resolution[k];
+				CB_actualTheta[k] = 0;//CB_actualTheta[k] - VirtualHomeTheta[k];
 				CB_targetTheta[k] = 0;
 			}
 			pData->Flag_SetCurrPosHome = 0;
@@ -196,19 +197,19 @@ void __RtCyclicCallback( void *UserDataPtr )
 		case MotorState_Hold:
 			if(pData->Flag_HoldPosSaved == 0)
 			{	
-				SaveHoldPos(CB_targetTheta, CB_actualTheta, VirtualHomeTheta);
+				SaveHoldPos(CB_targetTheta, CB_actualTheta);
 				pData->Flag_HoldPosSaved = 1;
 			}
 
-			MotorPosPidControl(CB_targetTheta, CB_actualTheta, VirtualHomeTheta, pData);
+			MotorPosPidControl(CB_targetTheta, CB_actualTheta, pData);
 			break;
 
 		case MotorState_Homing:
 			if(pData->Flag_AllHomeSensorReached == 0)
 			{
-				HOMING_UpdateCbTargetTheta(CB_targetTheta, CB_actualTheta, VirtualHomeTheta, home_sensor_value, &HOMING_cnt);
+				HOMING_UpdateCbTargetTheta(CB_targetTheta, CB_actualTheta, home_sensor_value, &HOMING_cnt);
 			}
-			MotorPosPidControl(CB_targetTheta, CB_actualTheta, VirtualHomeTheta, pData);
+			MotorPosPidControl(CB_targetTheta, CB_actualTheta, pData);
 			break;
 
 		case MotorState_PP:
@@ -220,23 +221,23 @@ void __RtCyclicCallback( void *UserDataPtr )
 			}
 			else if(pData->Flag_PpReachTarget == 0)
 			{
-				PP_UpdateCbTargetTheta(CB_targetTheta, CB_actualTheta, VirtualHomeTheta, &PP_cnt);
+				PP_UpdateCbTargetTheta(CB_targetTheta, CB_actualTheta, &PP_cnt);
 			}
 
-			MotorPosPidControl(CB_targetTheta, CB_actualTheta, VirtualHomeTheta, pData);
+			MotorPosPidControl(CB_targetTheta, CB_actualTheta, pData);
 			break;
 
 		case MotorState_CSP:
 			if(pData->Flag_CspFinished == 0)
 			{
-				CSP_UpdateCbTargetTheta(CB_targetTheta, CB_actualTheta, VirtualHomeTheta, &CSP_cnt);
+				CSP_UpdateCbTargetTheta(CB_targetTheta, CB_actualTheta, &CSP_cnt);
 			}
-			MotorPosPidControl(CB_targetTheta, CB_actualTheta, VirtualHomeTheta, pData);
+			MotorPosPidControl(CB_targetTheta, CB_actualTheta, pData);
 			break;
 
 		case MotorState_FtsTest:
-			Fts_UpdateCbTargetTheta(CB_targetTheta, CB_actualTheta, VirtualHomeTheta, &FTS_cnt);
-			MotorPosPidControl(CB_targetTheta, CB_actualTheta, VirtualHomeTheta, pData);
+			Fts_UpdateCbTargetTheta(CB_targetTheta, CB_actualTheta, &FTS_cnt);
+			MotorPosPidControl(CB_targetTheta, CB_actualTheta, pData);
 			break;
 			 
 		}
@@ -244,10 +245,13 @@ void __RtCyclicCallback( void *UserDataPtr )
 		cnt++;
 
 		
-		if( ( cnt % PRINT_COUNT ) == 0 )
+		if( ( cnt % 30 ) == 0 )
 		{
-			k=32;
-			RtPrintf("  CB_target = %d, VirtualHomeTheta = %d, CB_actual = %d\n", (I32_T)(CB_targetTheta[k]*180.0/PI), (I32_T)(VirtualHomeTheta[k]*180.0/PI), (I32_T)(CB_actualTheta[k]*180.0/PI));
+			RtPrintf(" %d, %d, %d, %d\n", pData->supportState, (I32_T)pData->fz[0], (I32_T)pData->fz[1], pData->DoubleSupport_cnt);
+			//RtPrintf("    %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d\n", (I32_T)pData->mx[0], (I32_T)pData->my[0], (I32_T)pData->mz[0], (I32_T)pData->fx[0], (I32_T)pData->fy[0], (I32_T)pData->fz[0], (I32_T)pData->mx[1], (I32_T)pData->my[1], (I32_T)pData->mz[1], (I32_T)pData->fx[1], (I32_T)pData->fy[1], (I32_T)pData->fz[1], (I32_T)pData->FzThreshold);
+		
+		//	k=32;
+		//	RtPrintf("  CB_target = %d, VirtualHomeTheta = %d, CB_actual = %d\n", (I32_T)(CB_targetTheta[k]*180.0/PI), (I32_T)(VirtualHomeTheta[k]*180.0/PI), (I32_T)(CB_actualTheta[k]*180.0/PI));
 		////	//NEC_RtGetProcessDataInput(pData->masterId, 679, 4, (U8_T*)&home_sensor_value[k]);
 		////	NEC_RtGetSlaveProcessDataInput(pData->masterId, k, 10, (U8_T*)&home_sensor_value[k], 4);
 		////	RtPrintf("       %d, targetTheta %d, actualTheta %d, actualTorque %d, test: %d\n", 
@@ -1392,15 +1396,15 @@ void HomingMethod35(USER_DAT *pData)
 	//pData->Flag_SetCurrPosHomeDone = 1;
 	
 }
-void SaveHoldPos(F64_T *CB_targetTheta, F64_T *CB_actualTheta, F64_T *VirtualHomeTheta)
+void SaveHoldPos(F64_T *CB_targetTheta, F64_T *CB_actualTheta)
 {
 	int k;
 	for(k=0; k<TOTAL_AXIS; k++) 
 	{	
-		CB_targetTheta[k] = CB_actualTheta[k] - VirtualHomeTheta[k];
+		CB_targetTheta[k] = CB_actualTheta[k];
 	}
 }
-void HOMING_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, F64_T *VirtualHomeTheta, I32_T *home_sensor_value, I32_T *HOMING_cnt)
+void HOMING_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T *home_sensor_value, I32_T *HOMING_cnt)
 {
 	int i;
 	static int homeSensorReachCnt = 0;
@@ -1411,7 +1415,7 @@ void HOMING_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, F6
 	{
 		for(i=0; i<TOTAL_AXIS; i++)
 		{
-			HOMING_initialTheta[i] = CB_actualTheta[i] - VirtualHomeTheta[i];
+			HOMING_initialTheta[i] = CB_actualTheta[i];
 			pData->Flag_HomeSensorReached[i] = TRUE;
 		}
 
@@ -1447,7 +1451,7 @@ void HOMING_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, F6
 				NEC_RtGetSlaveProcessDataInput(pData->masterId, i, DinHallPdoLocalOffset, (U8_T*)&home_sensor_value[i], 4);
 				if(home_sensor_value[i] == homeSensorReachValue[i])
 				{
-					pData->HOMING_homeSensorTheta[i] = CB_actualTheta[i] - VirtualHomeTheta[i];
+					pData->HOMING_homeSensorTheta[i] = CB_actualTheta[i];
 					RtPrintf("%d = %d, ", i, (I32_T)(pData->HOMING_homeSensorTheta[i]*180/PI) );
 
 					pData->Flag_HomeSensorReached[i] = 1;
@@ -1468,7 +1472,7 @@ void HOMING_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, F6
 	(*HOMING_cnt)++;
 
 }
-void PP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, F64_T *VirtualHomeTheta, I32_T *PP_cnt)
+void PP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T *PP_cnt)
 {
 	int i;
 	static F64_T PP_initialTheta[TOTAL_AXIS];
@@ -1477,7 +1481,7 @@ void PP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, F64_T 
 	{
 		for(i=0; i<TOTAL_AXIS; i++)
 		{
-			PP_initialTheta[i] = CB_actualTheta[i] - VirtualHomeTheta[i];
+			PP_initialTheta[i] = CB_actualTheta[i];
 		}
 	}
 
@@ -1497,10 +1501,10 @@ void PP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, F64_T 
 		pData->Flag_PpReachTarget = 1;
 	}
 }
-void CSP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, F64_T *VirtualHomeTheta, I32_T *CSP_cnt)
+void CSP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T *CSP_cnt)
 {
 	int i;
-
+	//static int DoubleSupport_cnt;
 	if((*CSP_cnt) == 0)
 	{
 		// check if CB_targetThet != walking initial pose
@@ -1513,9 +1517,31 @@ void CSP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, F64_T
 			if(i==3 || i== 5 || i==8 || i==11 || i==19 || i==20 || i>=21)
 			{
 				CB_targetTheta[i] = pData->WalkingTrajectories[(int)floor((*CSP_cnt) * pData->walkingSpeed)][i];
-				pData->ActualWalkingTrajectories[(*CSP_cnt)][i] = CB_actualTheta[i] - VirtualHomeTheta[i];
+				pData->ActualWalkingTrajectories[(*CSP_cnt)][i] = CB_actualTheta[i];
 			}
 		}
+
+		if(abs(pData->fz[0]) > pData->FzThreshold && abs(pData->fz[1]) < pData->FzThreshold && pData->DoubleSupport_cnt > 125)
+		{
+			pData->DoubleSupport_cnt = 0;
+			pData->supportState = 0;
+		}
+		else if(abs(pData->fz[0]) < pData->FzThreshold && abs(pData->fz[1]) > pData->FzThreshold && pData->DoubleSupport_cnt > 125)
+		{
+			pData->DoubleSupport_cnt = 0;
+			pData->supportState = 1;
+		}
+		else if(abs(pData->fz[0]) > pData->FzThreshold && abs(pData->fz[1]) > pData->FzThreshold)
+		{
+			pData->supportState = 2;
+			(pData->DoubleSupport_cnt)++;
+		}
+		else if(abs(pData->fz[0]) < pData->FzThreshold && abs(pData->fz[1]) < pData->FzThreshold)
+		{
+			pData->DoubleSupport_cnt = 0;
+			pData->supportState = 3;
+		}
+
 		(*CSP_cnt)++;
 	}
 	else
@@ -1523,7 +1549,7 @@ void CSP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, F64_T
 		pData->Flag_CspFinished = 1;
 	}
 }
-void Fts_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, F64_T *VirtualHomeTheta, I32_T *FTS_cnt)
+void Fts_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T *FTS_cnt)
 {
 	int i;
 	int k=1;
@@ -1555,8 +1581,8 @@ void Fts_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, F64_T
 	}
 	else if(Flag_touchGround[k] == 1 && Flag_adapteToGround[k] == 0 && (abs(pData->mx[k]) >= pData->MxyThreshold || abs(pData->my[k]) >= pData->MxyThreshold))
 	{
-		CB_targetTheta[RAR] = CB_actualTheta[RAR] - VirtualHomeTheta[RAR] + pData->Fts_RRK * (F64_T)pData->mx[k];
-		CB_targetTheta[RAP] = CB_actualTheta[RAP] - VirtualHomeTheta[RAP] + pData->Fts_RPK * (F64_T)pData->my[k];
+		CB_targetTheta[RAR] = CB_actualTheta[RAR] + pData->Fts_RRK * (F64_T)pData->mx[k];
+		CB_targetTheta[RAP] = CB_actualTheta[RAP] + pData->Fts_RPK * (F64_T)pData->my[k];
 
 		(*FTS_cnt)++;
 	}
@@ -1566,8 +1592,8 @@ void Fts_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, F64_T
 		RtPrintf("XX 4\n");
 	}
 	
-	CB_targetTheta[LAR] = CB_actualTheta[LAR] - VirtualHomeTheta[LAR] + pData->Fts_LRK * (F64_T)pData->mx[0];
-	CB_targetTheta[LAP] = CB_actualTheta[LAP] - VirtualHomeTheta[LAP] + pData->Fts_LPK * (F64_T)pData->my[0];
+	CB_targetTheta[LAR] = CB_actualTheta[LAR] + pData->Fts_LRK * (F64_T)pData->mx[0];
+	CB_targetTheta[LAP] = CB_actualTheta[LAP] + pData->Fts_LPK * (F64_T)pData->my[0];
 }
 
 I16_T TargetTorqueTrimming(F64_T tempTorque)
@@ -1577,7 +1603,7 @@ I16_T TargetTorqueTrimming(F64_T tempTorque)
 	else return (I16_T)tempTorque;
 }
 
-void MotorPosPidControl(F64_T *CB_targetTheta, F64_T *CB_actualTheta, F64_T *VirtualHomeTheta, USER_DAT *pData)
+void MotorPosPidControl(F64_T *CB_targetTheta, F64_T *CB_actualTheta, USER_DAT *pData)
 {
 	int k;
 	F64_T			errorTheta[TOTAL_AXIS];
@@ -1599,7 +1625,7 @@ void MotorPosPidControl(F64_T *CB_targetTheta, F64_T *CB_actualTheta, F64_T *Vir
 
 	for(k=0; k<TOTAL_AXIS; k++)
 	{
-		errorTheta[k] = CB_targetTheta[k] + VirtualHomeTheta[k] - CB_actualTheta[k];
+		errorTheta[k] = CB_targetTheta[k] - CB_actualTheta[k];
 		if(errorThetaSum[k] < maxErrorThetaSum)
 			errorThetaSum[k] = errorThetaSum[k] + errorTheta[k];
 		errorThetaDot[k] = (errorTheta[k] - preErrorTheta[k]) / (((F64_T)pData->cycleTime) * MICROSECOND_TO_SECOND);

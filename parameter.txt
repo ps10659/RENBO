@@ -1,5 +1,5 @@
 WalkingSpeed 
-0.45
+0.2
 
 TorqueSwitch
 0 0 0 1 1

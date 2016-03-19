@@ -34,8 +34,10 @@ typedef struct
 
 
 
-
+	// motor status
 	I32_T		MotorState;
+	F64_T		actualTheta[TOTAL_AXIS];
+	I16_T		supportState;	// 0:left 1:right 2:double 3:none
 
 	// used by event waiting
 	BOOL_T		Flag_StartMasterDone;
@@ -79,9 +81,6 @@ typedef struct
 	I32_T		walkingTimeframe;
 	F64_T		walkingSpeed;
 
-	// motor status
-	F64_T		actualTheta[TOTAL_AXIS];
-
 	
 	// force torque data
 	I16_T mx[2];
@@ -102,7 +101,9 @@ typedef struct
 
 	F64_T FzThreshold;
 	F64_T MxyThreshold;
-
+	
+	// temp
+	I32_T DoubleSupport_cnt;
 }WIN32_DAT;
 
 ft_data fts;

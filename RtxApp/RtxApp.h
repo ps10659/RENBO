@@ -105,8 +105,11 @@ typedef struct
 
 
 
-
+	// motor status
 	I32_T		MotorState;
+	F64_T		actualTheta[TOTAL_AXIS];
+	I16_T		supportState;	// 0:left 1:right 2:double 3:none
+
 
 	// used by event waiting
 	BOOL_T		Flag_StartMasterDone;
@@ -150,8 +153,6 @@ typedef struct
 	I32_T		walkingTimeframe;
 	F64_T		walkingSpeed;
 
-	// motor status
-	F64_T		actualTheta[TOTAL_AXIS];
 
 	
 	// force torque data
@@ -174,6 +175,8 @@ typedef struct
 	F64_T FzThreshold;
 	F64_T MxyThreshold;
 
+	// temp
+	I32_T DoubleSupport_cnt;
 }USER_DAT;
 
 
@@ -195,15 +198,15 @@ RTN_ERR MotorType_3890(CANAxis_T Axis);
 void StartMaster(USER_DAT *pData);
 void CloseMaster(USER_DAT *pData);
 void HomingMethod35(USER_DAT *pData);
-void SaveHoldPos(F64_T *CB_targetTheta, F64_T *CB_actualTheta, F64_T *VirtualHomeTheta);
-void HOMING_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, F64_T *VirtualHomeTheta, I32_T *home_sensor_value, I32_T *HOMING_cnt);
-void PP_UpdateCbTargetTheta(F64_T *targetTheta, F64_T *CB_actualTheta, F64_T *VirtualHomeTheta, I32_T *PP_cnt);
-void CSP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, F64_T *VirtualHomeTheta, I32_T *CPS_cnt);
-void Fts_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, F64_T *VirtualHomeTheta, I32_T *CSP_cnt);
+void SaveHoldPos(F64_T *CB_targetTheta, F64_T *CB_actualTheta);
+void HOMING_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T *home_sensor_value, I32_T *HOMING_cnt);
+void PP_UpdateCbTargetTheta(F64_T *targetTheta, F64_T *CB_actualTheta, I32_T *PP_cnt);
+void CSP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T *CPS_cnt);
+void Fts_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T *CSP_cnt);
 
 I16_T TargetTorqueTrimming(F64_T tempTorque);
 
-void MotorPosPidControl(F64_T *CB_targetTheta, F64_T *CB_actualTheta, F64_T *VirtualHomeTheta, USER_DAT *pData);
+void MotorPosPidControl(F64_T *CB_targetTheta, F64_T *CB_actualTheta, USER_DAT *pData);
 
 // global variables
 static PVOID	location;
