@@ -71,7 +71,7 @@ if(1)
 	SetMotorParam();
 	SetCurrPosHome();
 	HoldPos();
-	system("pause");
+	//system("pause");
 }
 	
 	InitForceSensor();
@@ -265,8 +265,6 @@ void WriteWalkingTrajectories(WIN32_DAT *pWinData)
 	file1.close();
 	file2.close();
 }
-
-
 
 
 void InitPwindata(WIN32_DAT *pWinData)
@@ -529,8 +527,12 @@ void ImportParameterTxt()
 		pWinData->HOMING_homePositionOffset[i] = -1.0 * pWinData->HOMING_homePositionOffset[i] * PI / 180.0;
 	}
 
+	fin >> buffer;
+	fin >> pWinData->S_Step;
+	fin >> pWinData->adaptive_cnt;
+
 	printf("Import motor parameter\n");
-	PrintImportParameterTxt();
+	//PrintImportParameterTxt();
 	Sleep(500);
 	fin.close();
 
@@ -568,6 +570,9 @@ void PrintImportParameterTxt()
 	printf("FzThreshold,MxyThreshold\n");
 	printf("%f %f\n", pWinData->FzThreshold, pWinData->MxyThreshold);
 
+	printf("S_Step, adaptive_cnt\n");
+	printf("%f\n", pWinData->S_Step);
+	printf("%f\n", pWinData->adaptive_cnt);
 	/*printf("HOMING_homePositionOffset\n");
 	for(i=0; i<TOTAL_AXIS; i++)
 	{

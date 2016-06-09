@@ -245,24 +245,24 @@ void __RtCyclicCallback( void *UserDataPtr )
 		cnt++;
 
 		
-		if( ( cnt % 30 ) == 0 )
-		{
-			RtPrintf(" %d, %d, %d, %d\n", pData->supportState, (I32_T)pData->fz[0], (I32_T)pData->fz[1], pData->DoubleSupport_cnt);
-			//RtPrintf("    %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d\n", (I32_T)pData->mx[0], (I32_T)pData->my[0], (I32_T)pData->mz[0], (I32_T)pData->fx[0], (I32_T)pData->fy[0], (I32_T)pData->fz[0], (I32_T)pData->mx[1], (I32_T)pData->my[1], (I32_T)pData->mz[1], (I32_T)pData->fx[1], (I32_T)pData->fy[1], (I32_T)pData->fz[1], (I32_T)pData->FzThreshold);
-		
-		//	k=32;
-		//	RtPrintf("  CB_target = %d, VirtualHomeTheta = %d, CB_actual = %d\n", (I32_T)(CB_targetTheta[k]*180.0/PI), (I32_T)(VirtualHomeTheta[k]*180.0/PI), (I32_T)(CB_actualTheta[k]*180.0/PI));
-		////	//NEC_RtGetProcessDataInput(pData->masterId, 679, 4, (U8_T*)&home_sensor_value[k]);
-		////	NEC_RtGetSlaveProcessDataInput(pData->masterId, k, 10, (U8_T*)&home_sensor_value[k], 4);
-		////	RtPrintf("       %d, targetTheta %d, actualTheta %d, actualTorque %d, test: %d\n", 
-		////		k, 
-		////		(I32_T)(targetTheta[k]*180.0/PI),
-		////		(I32_T)(actualTheta[k]*180.0/PI), 
-		////		trimmedTargetTorque[k], 
-		////		(I32_T)(home_sensor_value[k])
-		////		);
-		//	RtPrintf("    %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d\n", (I32_T)pData->mx[0], (I32_T)pData->my[0], (I32_T)pData->mz[0], (I32_T)pData->fx[0], (I32_T)pData->fy[0], (I32_T)pData->fz[0], (I32_T)pData->mx[1], (I32_T)pData->my[1], (I32_T)pData->mz[1], (I32_T)pData->fx[1], (I32_T)pData->fy[1], (I32_T)pData->fz[1], (I32_T)pData->FzThreshold);
-		}
+		//if( ( cnt % 30 ) == 0 )
+		//{
+		//	RtPrintf(" %d, %d, %d, %d\n", pData->supportState, (I32_T)pData->fz[0], (I32_T)pData->fz[1], pData->DoubleSupport_cnt);
+		//	//RtPrintf("    %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d\n", (I32_T)pData->mx[0], (I32_T)pData->my[0], (I32_T)pData->mz[0], (I32_T)pData->fx[0], (I32_T)pData->fy[0], (I32_T)pData->fz[0], (I32_T)pData->mx[1], (I32_T)pData->my[1], (I32_T)pData->mz[1], (I32_T)pData->fx[1], (I32_T)pData->fy[1], (I32_T)pData->fz[1], (I32_T)pData->FzThreshold);
+		//
+		////	k=32;
+		////	RtPrintf("  CB_target = %d, VirtualHomeTheta = %d, CB_actual = %d\n", (I32_T)(CB_targetTheta[k]*180.0/PI), (I32_T)(VirtualHomeTheta[k]*180.0/PI), (I32_T)(CB_actualTheta[k]*180.0/PI));
+		//////	//NEC_RtGetProcessDataInput(pData->masterId, 679, 4, (U8_T*)&home_sensor_value[k]);
+		//////	NEC_RtGetSlaveProcessDataInput(pData->masterId, k, 10, (U8_T*)&home_sensor_value[k], 4);
+		//////	RtPrintf("       %d, targetTheta %d, actualTheta %d, actualTorque %d, test: %d\n", 
+		//////		k, 
+		//////		(I32_T)(targetTheta[k]*180.0/PI),
+		//////		(I32_T)(actualTheta[k]*180.0/PI), 
+		//////		trimmedTargetTorque[k], 
+		//////		(I32_T)(home_sensor_value[k])
+		//////		);
+		////	RtPrintf("    %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d\n", (I32_T)pData->mx[0], (I32_T)pData->my[0], (I32_T)pData->mz[0], (I32_T)pData->fx[0], (I32_T)pData->fy[0], (I32_T)pData->fz[0], (I32_T)pData->mx[1], (I32_T)pData->my[1], (I32_T)pData->mz[1], (I32_T)pData->fx[1], (I32_T)pData->fy[1], (I32_T)pData->fz[1], (I32_T)pData->FzThreshold);
+		//}
 		break;
 	}
 	
@@ -1501,10 +1501,187 @@ void PP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T 
 		pData->Flag_PpReachTarget = 1;
 	}
 }
+
 void CSP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T *CSP_cnt)
 {
-	int i;
+	
+	/*
+	int i, k;
+	int prepare_cnt = 150; // 0.3 second
+	//int adaptive_cnt = 300;
+	int PC_prepare_cnt = 500;
+
+	static BOOL_T	Flag_touchGround[2];	// 1:left 2:right
+	static BOOL_T	Flag_adapteToGround[2];	// 1:left 2:right
+	static double LAR_adaptive_offset;
+	static double LAP_adaptive_offset;
+	static double RAR_adaptive_offset;
+	static double RAP_adaptive_offset;
+	static int FTS_cnt;
 	//static int DoubleSupport_cnt;
+
+
+
+
+	if((*CSP_cnt) == 0)
+	{
+		for(i=0; i<2; i++)
+		{
+			Flag_touchGround[i] = 1;
+			Flag_adapteToGround[i] = 1;
+		}
+		LAR_adaptive_offset = 0;
+		LAP_adaptive_offset = 0;
+		RAR_adaptive_offset = 0;
+		RAP_adaptive_offset = 0;
+		FTS_cnt = 0;
+		
+		// check if CB_targetThet != walking initial pose
+	}
+
+	if((*CSP_cnt) * pData->walkingSpeed < pData->walkingTimeframe)
+	{
+		for(i=0; i<TOTAL_AXIS; i++)
+		{
+			if(i==25)
+				CB_targetTheta[i] = pData->WalkingTrajectories[(int)floor((*CSP_cnt) * pData->walkingSpeed)][i] + LAP_adaptive_offset;
+			else if(i==26)
+				CB_targetTheta[i] = pData->WalkingTrajectories[(int)floor((*CSP_cnt) * pData->walkingSpeed)][i] + LAR_adaptive_offset;
+			else if(i==31)
+				CB_targetTheta[i] = pData->WalkingTrajectories[(int)floor((*CSP_cnt) * pData->walkingSpeed)][i] + RAP_adaptive_offset;
+			else if(i==32)
+				CB_targetTheta[i] = pData->WalkingTrajectories[(int)floor((*CSP_cnt) * pData->walkingSpeed)][i] + RAR_adaptive_offset;
+			else if(i==3 || i== 5 || i==8 || i==11 || i==19 || i==20 || i>=21)
+			{
+				CB_targetTheta[i] = pData->WalkingTrajectories[(int)floor((*CSP_cnt) * pData->walkingSpeed)][i];
+				//pData->ActualWalkingTrajectories[(*CSP_cnt)][i] = CB_actualTheta[i];
+			}
+		}
+
+/*
+		// prepare_time before swing leg landing
+		if(((int)floor(((*CSP_cnt) - PC_prepare_cnt) * pData->walkingSpeed*2) + prepare_cnt) % (I32_T)(pData->S_Step / ((pData->cycleTime) * MICROSECOND_TO_SECOND)) == 0)
+		{
+			if((*CSP_cnt) - PC_prepare_cnt < 0)
+			{}
+			else if(((int)floor(((*CSP_cnt) - PC_prepare_cnt) * pData->walkingSpeed*2) + prepare_cnt) / (I32_T)(pData->S_Step / ((pData->cycleTime) * MICROSECOND_TO_SECOND)) % 2 == 0)
+			{
+				// before left foot landing
+				RtPrintf("0  %d %d\n", (I32_T)floor(((*CSP_cnt) - PC_prepare_cnt) * pData->walkingSpeed), (I32_T)(pData->S_Step / ((pData->cycleTime) * MICROSECOND_TO_SECOND)));
+				
+				Flag_touchGround[0] = 0;
+				Flag_adapteToGround[0] = 0;
+				FTS_cnt++;
+			}
+			else if(((int)floor(((*CSP_cnt) - PC_prepare_cnt) * pData->walkingSpeed*2) + prepare_cnt) / (I32_T)(pData->S_Step / ((pData->cycleTime) * MICROSECOND_TO_SECOND)) % 2 == 1)
+			{
+				// before left foot landing
+				RtPrintf("1  %d %d\n", (I32_T)floor(((*CSP_cnt) - PC_prepare_cnt) * pData->walkingSpeed), (I32_T)(pData->S_Step / ((pData->cycleTime) * MICROSECOND_TO_SECOND)));				
+			
+				Flag_touchGround[1] = 0;
+				Flag_adapteToGround[1] = 0;
+				FTS_cnt++;
+			}
+		}
+		else if(((int)floor(((*CSP_cnt) - PC_prepare_cnt) * pData->walkingSpeed*2) - pData->adaptive_cnt) % (I32_T)(pData->S_Step / ((pData->cycleTime) * MICROSECOND_TO_SECOND)) == 0)
+		{
+			for(i=0; i<2; i++)
+			{
+				Flag_touchGround[i] = 1;
+				Flag_adapteToGround[i] = 1;
+				FTS_cnt = 0;
+			}
+		}
+
+		k=0;	
+		if(FTS_cnt != 0 && Flag_touchGround[k] == 0 && abs(pData->fz[k]) < pData->FzThreshold)
+		{
+			//RtPrintf("XX 1\n");
+		}
+		else if(Flag_touchGround[k] == 0 && abs(pData->fz[k]) >= pData->FzThreshold)
+		{
+			Flag_touchGround[k] = 1;
+			//RtPrintf("XX 2\n");
+		}
+		else if(Flag_touchGround[k] == 1 && Flag_adapteToGround[k] == 0 && (abs(pData->mx[k]) >= pData->MxyThreshold || abs(pData->my[k]) >= pData->MxyThreshold))
+		{
+			LAR_adaptive_offset += pData->Fts_LRK * (F64_T)pData->mx[k];
+			LAP_adaptive_offset += pData->Fts_LPK * (F64_T)pData->my[k];
+			FTS_cnt++;
+		}
+		else if(Flag_touchGround[k] == 1 && Flag_adapteToGround[k] == 0 && abs(pData->fz[k]) > pData->FzThreshold && (abs(pData->mx[k]) < pData->MxyThreshold && abs(pData->my[k]) < pData->MxyThreshold))
+		{
+			Flag_adapteToGround[k] = 1;
+			FTS_cnt = 0;
+			//RtPrintf("XX 4\n");
+		}
+		
+		k=1;
+		if(FTS_cnt != 0 && Flag_touchGround[k] == 0 && abs(pData->fz[k]) < pData->FzThreshold)
+		{
+			//RtPrintf("XX 1\n");
+		}
+		else if(Flag_touchGround[k] == 0 && abs(pData->fz[k]) >= pData->FzThreshold)
+		{
+			Flag_touchGround[k] = 1;
+			//RtPrintf("XX 2\n");
+		}
+		else if(Flag_touchGround[k] == 1 && Flag_adapteToGround[k] == 0 && (abs(pData->mx[k]) >= pData->MxyThreshold || abs(pData->my[k]) >= pData->MxyThreshold))
+		{
+			RAR_adaptive_offset += pData->Fts_RRK * (F64_T)pData->mx[k];
+			RAP_adaptive_offset += pData->Fts_RPK * (F64_T)pData->my[k];
+			FTS_cnt++;
+		}
+		else if(Flag_touchGround[k] == 1 && Flag_adapteToGround[k] == 0 && abs(pData->fz[k]) > pData->FzThreshold && (abs(pData->mx[k]) < pData->MxyThreshold && abs(pData->my[k]) < pData->MxyThreshold))
+		{
+			Flag_adapteToGround[k] = 1;
+			FTS_cnt = 0;
+			//RtPrintf("XX 4\n");
+		}
+*/
+		//	recognizing support leg
+		//
+		//if(abs(pData->fz[0]) > pData->FzThreshold && abs(pData->fz[1]) < pData->FzThreshold && pData->DoubleSupport_cnt > 125)
+		//{
+		//	pData->DoubleSupport_cnt = 0;
+		//	pData->supportState = 0;
+		//}
+		//else if(abs(pData->fz[0]) < pData->FzThreshold && abs(pData->fz[1]) > pData->FzThreshold && pData->DoubleSupport_cnt > 125)
+		//{
+		//	pData->DoubleSupport_cnt = 0;
+		//	pData->supportState = 1;
+		//}
+		//else if(abs(pData->fz[0]) > pData->FzThreshold && abs(pData->fz[1]) > pData->FzThreshold)
+		//{
+		//	pData->supportState = 2;
+		//	(pData->DoubleSupport_cnt)++;
+		//}
+		//else if(abs(pData->fz[0]) < pData->FzThreshold && abs(pData->fz[1]) < pData->FzThreshold)
+		//{
+		//	pData->DoubleSupport_cnt = 0;
+		//	pData->supportState = 3;
+		//}
+/*
+		LAR_adaptive_offset += pData->Fts_LRK * (F64_T)pData->mx[0];
+		LAP_adaptive_offset += pData->Fts_LPK * (F64_T)pData->my[0];
+		RAP_adaptive_offset += pData->Fts_RRK * (F64_T)pData->mx[1];
+		RAP_adaptive_offset += pData->Fts_RPK * (F64_T)pData->my[1];
+
+		(*CSP_cnt)++;
+	}
+	else
+	{
+		for(i=0; i<2; i++)
+		{
+			Flag_touchGround[i] = 1;
+			Flag_adapteToGround[i] = 1;
+			FTS_cnt = 0;
+		}
+		pData->Flag_CspFinished = 1;
+	}
+*/
+	//  Original
+	int i;
 	if((*CSP_cnt) == 0)
 	{
 		// check if CB_targetThet != walking initial pose
@@ -1520,28 +1697,6 @@ void CSP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T
 				pData->ActualWalkingTrajectories[(*CSP_cnt)][i] = CB_actualTheta[i];
 			}
 		}
-
-		if(abs(pData->fz[0]) > pData->FzThreshold && abs(pData->fz[1]) < pData->FzThreshold && pData->DoubleSupport_cnt > 125)
-		{
-			pData->DoubleSupport_cnt = 0;
-			pData->supportState = 0;
-		}
-		else if(abs(pData->fz[0]) < pData->FzThreshold && abs(pData->fz[1]) > pData->FzThreshold && pData->DoubleSupport_cnt > 125)
-		{
-			pData->DoubleSupport_cnt = 0;
-			pData->supportState = 1;
-		}
-		else if(abs(pData->fz[0]) > pData->FzThreshold && abs(pData->fz[1]) > pData->FzThreshold)
-		{
-			pData->supportState = 2;
-			(pData->DoubleSupport_cnt)++;
-		}
-		else if(abs(pData->fz[0]) < pData->FzThreshold && abs(pData->fz[1]) < pData->FzThreshold)
-		{
-			pData->DoubleSupport_cnt = 0;
-			pData->supportState = 3;
-		}
-
 		(*CSP_cnt)++;
 	}
 	else
@@ -1549,6 +1704,8 @@ void CSP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T
 		pData->Flag_CspFinished = 1;
 	}
 }
+
+
 void Fts_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T *FTS_cnt)
 {
 	int i;

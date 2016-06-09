@@ -80,6 +80,8 @@ typedef struct
 	F64_T		ActualWalkingTrajectories[MAX_WALKING_TIMEFRAME][TOTAL_AXIS];
 	I32_T		walkingTimeframe;
 	F64_T		walkingSpeed;
+	F64_T		S_Step;
+	I32_T		adaptive_cnt;
 
 	
 	// force torque data
