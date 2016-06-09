@@ -74,6 +74,7 @@
 #define MotorState_PP 3
 #define MotorState_CSP 4
 #define MotorState_FtsTest 5
+#define MotorState_OPG 6
 
 
 // event 
@@ -155,6 +156,16 @@ typedef struct
 	F64_T		S_Step;
 	I32_T		adaptive_cnt;
 
+	// OPG related variables
+	I16_T		curr_state;	
+	I16_T		next_state_cmd;		// -2: before started 
+									// -1: stop 
+									//  0: begin to stop
+									//  1: begin to start
+									//  5: walk in the same place
+									//  8: walk forward
+									//  2: walk backward
+
 	
 	// force torque data
 	I16_T mx[2];
@@ -204,6 +215,7 @@ void HOMING_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I3
 void PP_UpdateCbTargetTheta(F64_T *targetTheta, F64_T *CB_actualTheta, I32_T *PP_cnt);
 void CSP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T *CPS_cnt);
 void Fts_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T *CSP_cnt);
+void OPG_UpdateTargetPose(I32_T *OPG_cnt);
 
 I16_T TargetTorqueTrimming(F64_T tempTorque);
 

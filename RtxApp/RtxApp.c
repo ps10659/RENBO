@@ -112,6 +112,7 @@ void __RtCyclicCallback( void *UserDataPtr )
 	static I32_T	HOMING_cnt = 0;
 	static I32_T	CSP_cnt = 0;
 	static I32_T	FTS_cnt = 0;
+	static I32_T	OPG_cnt = 0;
 
 	// state
 	I32_T			actualEncoderPos[TOTAL_AXIS];
@@ -180,6 +181,7 @@ void __RtCyclicCallback( void *UserDataPtr )
 			PP_cnt = 0;
 			CSP_cnt = 0;
 			FTS_cnt = 0;
+			OPG_cnt = 0;
 			pData->Flag_ResetCnt = 0;
 		}
 
@@ -239,7 +241,13 @@ void __RtCyclicCallback( void *UserDataPtr )
 			Fts_UpdateCbTargetTheta(CB_targetTheta, CB_actualTheta, &FTS_cnt);
 			MotorPosPidControl(CB_targetTheta, CB_actualTheta, pData);
 			break;
-			 
+
+		case MotorState_OPG:
+			OPG_UpdateTargetPose(&OPG_cnt);
+			//UpdateIK_FK();
+			//GravityCompensation();
+			//MotorPosPidControl(CB_targetTheta, CB_actualTheta, pData);
+			break;
 		}
 
 		cnt++;
@@ -1501,7 +1509,6 @@ void PP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T 
 		pData->Flag_PpReachTarget = 1;
 	}
 }
-
 void CSP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T *CSP_cnt)
 {
 	
@@ -1704,8 +1711,6 @@ void CSP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T
 		pData->Flag_CspFinished = 1;
 	}
 }
-
-
 void Fts_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T *FTS_cnt)
 {
 	int i;
@@ -1752,6 +1757,25 @@ void Fts_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T
 	CB_targetTheta[LAR] = CB_actualTheta[LAR] + pData->Fts_LRK * (F64_T)pData->mx[0];
 	CB_targetTheta[LAP] = CB_actualTheta[LAP] + pData->Fts_LPK * (F64_T)pData->my[0];
 }
+void OPG_UpdateTargetPose(I32_T *OPG_cnt)
+{
+	double sampling_time	= 0.002;
+	double step_time		= 0.5;
+	double curr_time		= (*OPG_cnt) * sampling_time;
+
+	double cog_height		= 70;
+	double G				= 980.665;
+	double omega			= pow(G / cog_height, 0.5);
+	double cp_offset		= 2;
+	double foot_distance	= 25;
+	double step_length		= 10;
+	double swing_leg_height = 3;
+	double b				= exp(omega * step_time);
+
+	int sup_leg				= 1;
+
+
+}
 
 I16_T TargetTorqueTrimming(F64_T tempTorque)
 {
@@ -1759,7 +1783,6 @@ I16_T TargetTorqueTrimming(F64_T tempTorque)
 	else if(tempTorque<=-1000.0) return (I16_T)-1000;
 	else return (I16_T)tempTorque;
 }
-
 void MotorPosPidControl(F64_T *CB_targetTheta, F64_T *CB_actualTheta, USER_DAT *pData)
 {
 	int k;

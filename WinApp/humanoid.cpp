@@ -131,6 +131,54 @@ if(1)
 				CSP_Run();
 				break;
 			}
+			case 'R':
+			{
+				pWinData->next_state_cmd = -2;
+				pWinData->Flag_ResetCnt;
+				pWinData->MotorState = MotorState_OPG;
+
+				while(pWinData->next_state_cmd != -1)
+				{
+					if(_kbhit())
+					{
+						int key = _getch();
+
+						switch(key)
+						{
+						case '5':
+							if(pWinData->next_state_cmd != -1 && pWinData->next_state_cmd != 0 && pWinData->next_state_cmd != 1)
+								pWinData->next_state_cmd = 5;
+							break;
+						case '8':
+							if(pWinData->next_state_cmd != -1 && pWinData->next_state_cmd != 0 && pWinData->next_state_cmd != 1)
+							pWinData->next_state_cmd = 8;
+							break;
+						case '2':
+							if(pWinData->next_state_cmd != -1 && pWinData->next_state_cmd != 0 && pWinData->next_state_cmd != 1)
+							pWinData->next_state_cmd = 2;
+							break;
+						case '0':
+							if(pWinData->curr_state == 5)
+								pWinData->next_state_cmd = 0;
+							break;
+						case 'h':
+							HoldPos();
+							break;
+						}
+
+						system("CLS");
+
+						printf("[8] forward\n");
+						printf("[5] stay\n");
+						printf("[2] backward\n");
+						printf("[0] stop walking\n");
+						printf("[h] STOP immediately\n");
+					}
+
+					//UpdateFtData();
+				}
+				break;
+			}
 			case 't':
 				cout << "fts test" << endl;
 				FtsTest();

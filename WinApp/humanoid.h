@@ -83,6 +83,16 @@ typedef struct
 	F64_T		S_Step;
 	I32_T		adaptive_cnt;
 
+	// OPG related variables
+	I16_T		curr_state;	
+	I16_T		next_state_cmd;		// -2: before started 
+									// -1: stop 
+									//  0: begin to stop
+									//  1: begin to start
+									//  5: walk in the same place
+									//  8: walk forward
+									//  2: walk backward
+													
 	
 	// force torque data
 	I16_T mx[2];
