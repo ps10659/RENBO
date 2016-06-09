@@ -75,13 +75,13 @@ if(1)
 }
 
 	// eigen test
-	/*Eigen::Vector2d a(1,2);
-	Eigen::Vector4d b;
-	b << a, Eigen::Vector2d(3,4);
-	cout << b << endl;
-	b << b(2), b(3), b(0), b(1);
-	cout << b << endl;
-	system("pause");*/
+	//Eigen::Vector2d a(1,2);
+	//Eigen::Vector4d b;
+	//b << a, Eigen::Vector2d(3,4);
+	//cout << b << endl;
+	//b << b(2), b(3), b(0), b(1);
+	//cout << b << endl;
+	//system("pause");
 	
 	InitForceSensor();
 	DisplayOptions();
@@ -140,11 +140,20 @@ if(1)
 			}
 			case 'R':
 			{
-				pWinData->next_state_cmd = -2;
+				pWinData->Flag_break_while = 0;
+				pWinData->next_state_cmd = 1;
+				pWinData->curr_state = 1;
 				pWinData->Flag_ResetCnt;
 				pWinData->MotorState = MotorState_OPG;
+				
+				system("CLS");
+				printf("[8] forward\n");
+				printf("[5] stay\n");
+				printf("[2] backward\n");
+				printf("[0] stop walking\n");
+				printf("[h] STOP immediately\n");
 
-				while(pWinData->next_state_cmd != -1)
+				while(pWinData->Flag_break_while != 1)
 				{
 					if(_kbhit())
 					{
@@ -173,17 +182,23 @@ if(1)
 							break;
 						}
 
-						system("CLS");
-
-						printf("[8] forward\n");
-						printf("[5] stay\n");
-						printf("[2] backward\n");
-						printf("[0] stop walking\n");
-						printf("[h] STOP immediately\n");
+						
 					}
-
+					system("CLS");
+					printf("%d, %d, %d\n", pWinData->curr_state, pWinData->next_state, pWinData->next_state_cmd);
+					cout << pWinData->curr_state << ", " <<  pWinData->next_state << ", " <<  pWinData->next_state_cmd << endl;
+					cout << "cog_x: " << pWinData->cog[0] << endl;
+					cout << "cog_y: " << pWinData->cog[1] << endl;
+					cout << "cog_z: " << pWinData->cog[2] << endl << endl;
+					cout << "lfoot_x: " << pWinData->left_foot[0] << endl;
+					cout << "lfoot_y: " << pWinData->left_foot[1] << endl;
+					cout << "lfoot_z: " << pWinData->left_foot[2] << endl << endl;
+					cout << "rfoot_x: " << pWinData->right_foot[0] << endl;
+					cout << "rfoot_y: " << pWinData->right_foot[1] << endl;
+					cout << "rfoot_z: " << pWinData->right_foot[2] << endl << endl;
 					//UpdateFtData();
 				}
+				HoldPos();
 				break;
 			}
 			case 't':
@@ -342,8 +357,10 @@ void InitPwindata(WIN32_DAT *pWinData)
 	pWinData->Flag_CspFinished = 0;
 	pWinData->Flag_AllHomeSensorReached = 0;
 
-	GenerateCubicPolyVec(pWinData);
-
+	//GenerateCubicPolyVec(pWinData);
+	UpdateSplineVec(pWinData->CubicPolyVec, MAX_MOTION_TIME_FRAME, 3);
+	UpdateSplineVec(pWinData->leg_swing_xy_vec, 2500, 5);
+	UpdateSwingVec(pWinData->leg_swing_z_vec, 5);
 }
 void GenerateCubicPolyVec(WIN32_DAT *pWinData)
 {
@@ -377,8 +394,87 @@ void GenerateCubicPolyVec(WIN32_DAT *pWinData)
 	//	cout << pWinData->CubicPolyVec[i];
 	//}
 }
+void UpdateSplineVec(double *vec, int vec_length, int splineType)
+{
+	Eigen::VectorXd spline_vec;
+	spline_vec.resize(vec_length);
 
+	if(splineType == 1){
+		spline_vec.row(0).setLinSpaced(vec_length, 0, 1-1/vec_length);
+		for(int i=0; i<vec_length; i++)
+		{
+			vec[i] = spline_vec(i);
+		}
+	}
+	else if(splineType == 3){
+		double	x1 = 0,
+				x2 = vec_length,
+				y1 = 0,
+				ydot1 = 0,
+				y2 = 1,
+				ydot2 = 0;
 
+		Eigen::MatrixXd A(4,4);
+		A << pow(x1,3.0),		pow(x1,2.0),	x1,		1,
+			 3*pow(x1,2.0),		2*x1,			1,		0,
+			 pow(x2,3.0),		pow(x2,2.0),	x2,		1,
+			 3*pow(x2,2.0),		2*x2,			1,		0;
+
+		Eigen::VectorXd B(4);
+		B << y1, ydot1, y2, ydot2;
+
+		Eigen::VectorXd S(4);
+		S = A.inverse() * B;
+
+		for(double j=0; j<vec_length; j++){
+			//printf("%e\n", S(0) * pow(j,3) + S(1) * pow(j,2) + S(2) * j + S(3));
+			vec[(int)j] = S(0) * pow(j,3) + S(1) * pow(j,2) + S(2) * j + S(3);
+		}
+
+	}
+	else if(splineType == 5){
+		double	x1 = 0,
+				x2 = vec_length,
+				y1 = 0,
+				y1Vel = 0,
+				y1Acc = 0,
+				y2 = 1,
+				y2Vel = 0,
+				y2Acc = 0;
+			
+		Eigen::MatrixXd A(6,6);
+		A << pow(x1,5),		pow(x1,4),		pow(x1,3),		pow(x1,2),	pow(x1,1),	1,
+			 5*pow(x1,4),	4*pow(x1,3),	3*pow(x1,2),	2*x1,		1,			0,
+			 20*pow(x1,3),	12*pow(x1,2),	6*x1,			2,			0,			0,
+			 pow(x2,5),		pow(x2,4),		pow(x2,3),		pow(x2,2),	pow(x2,1),	1,
+			 5*pow(x2,4),	4*pow(x2,3),	3*pow(x2,2),	2*x2,		1,			0,
+			 20*pow(x2,3),	12*pow(x2,2),	6*x2,			2,			0,			0;
+
+		Eigen::VectorXd B(6);
+		B << y1, y1Vel, y1Acc, y2, y2Vel, y2Acc;
+
+		Eigen::VectorXd S(6);
+		S = A.inverse() * B;
+
+		for(double j=0; j<vec_length; j++){
+			vec[(int)j] = S(0) * pow(j,5) + S(1) * pow(j,4) + S(2) * pow(j,3) + S(3) * pow(j,2) + S(4) * j + S(5);
+		}
+	}
+	//for(i=0; i<vec_length; i=i+300)
+	//{
+	//	printf("%f ", pWinData->PP_Spline_splineVec[(int)i]);
+	//}
+}
+void UpdateSwingVec(double *vec, int splineType)
+{
+	// total 2500 time frames -> 2500*0.002 = 5 second
+	double vec_1[1250];
+	UpdateSplineVec(vec_1, 1250, 5);
+	for(int i=0; i<1250; i++){
+		vec[i] = vec_1[i];
+		vec[2499-i] = vec_1[i];
+	}
+}
 void UpdateWalkTraj()
 {
 	int i=0, j=0, cnt=0;

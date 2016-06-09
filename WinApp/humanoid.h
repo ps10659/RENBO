@@ -95,7 +95,12 @@ typedef struct
 									//  2: walk backward
 	F64_T		leg_swing_xy_vec[2500];	
 	F64_T		leg_swing_z_vec[2500];	// 暫時用GenerateCubicPolyVec的3rd order spline, 有需要再改
-	
+	F64_T		cog[4];
+	F64_T		left_foot[4];
+	F64_T		right_foot[4];
+	BOOL_T		Flag_break_while;
+
+
 	// force torque data
 	I16_T mx[2];
 	I16_T my[2];
@@ -146,6 +151,8 @@ void WriteWalkingTrajectories(WIN32_DAT *pWinData);
 void DisplayOptions();
 void InitPwindata(WIN32_DAT *pWinData);
 void GenerateCubicPolyVec(WIN32_DAT *pWinData);
+void UpdateSplineVec(double *vec, int vec_length, int splineType);
+void UpdateSwingVec(double *vec, int splineType);
 void UpdateWalkTraj();
 void UpdateWalkTraj(int traj_num);
 void UpdatePpPose();

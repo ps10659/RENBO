@@ -1760,237 +1760,253 @@ void Fts_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T
 }
 void OPG_UpdateTargetPose(I32_T *OPG_cnt)
 {
-	double sampling_time	= 0.002;
-	double step_time		= 0.5;
-	double curr_time		= (*OPG_cnt) * sampling_time;
+	static double sampling_time		= 0.002;
+	static double step_time			= 2;
+	static I32_T  cycle_frames		= (I32_T)step_time / sampling_time;
+	double curr_time				= (double)(*OPG_cnt) * sampling_time;
 
-	double cog_height		= 70;
-	double G				= 980.665;
-	double omega			= pow(G / cog_height, 0.5);
-	double cp_offset		= 2;
-	double foot_distance	= 25;
-	double step_length		= 10;
-	double swing_leg_height = 3;
-	double b				= exp(omega * step_time);
-	double ewt;
-	double step_theta		= atan(step_length / foot_distance);
+	static double cog_height		= 70;
+	static double G					= 980.665;
+	static double omega				= pow(G / cog_height, 0.5);
+	static double cp_offset			= 2;
+	static double foot_distance		= 25;
+	static double step_length		= 10;
+	static double swing_leg_height	= 3;
+	static double b					= exp(omega * step_time);
+	static double ewt;
+	static double step_theta		= atan(step_length / foot_distance);
 
-	Eigen::Vector2d	cp;
-	Eigen::Vector2d	cp_init;
-	Eigen::Vector2d	cp_end;
-	Eigen::Vector2d	orig_next_cp_end;
-	Eigen::Vector2d	zmp;
-	Eigen::Vector2d	cog_proj;
-	Eigen::Vector2d next_step;
+	static Eigen::Vector2d	cp;
+	static Eigen::Vector2d	cp_init;
+	static Eigen::Vector2d	cp_end;
+	static Eigen::Vector2d	orig_next_cp_end;
+	static Eigen::Vector2d	zmp;
+	static Eigen::Vector2d	cog_proj;
+	static Eigen::Vector2d  next_step;
 	
 	
-	Eigen::Vector4d	cog;
-	Eigen::Vector4d	left_foot(0, 0.5 * foot_distance, 0, 0);
-	Eigen::Vector4d right_foot(0, -0.5 * foot_distance, 0, 0);
+	static Eigen::Vector4d	cog;
+	static Eigen::Vector4d	left_foot(0, 0.5 * foot_distance, 0, 0);
+	static Eigen::Vector4d  right_foot(0, -0.5 * foot_distance, 0, 0);
 	
-	int direction_changed   = 0;
-	int start_cnt_down		= 2;
-	int stop_cnt_down		= 2;
-	int sup_leg				= 1;
-	pData->curr_state		= 1;
+	static int direction_changed	= 0;
+	static int start_cnt_down		= 2;
+	static int stop_cnt_down		= 2;
+	static int sup_leg				= 1;
 
-	while(1)
-	{
-		if(curr_time == 0)
-		{	
-			pData->next_state = pData->next_state_cmd;
+
+
+	if(curr_time == 0)
+	{	
+		pData->next_state = pData->next_state_cmd;
 			
-			// compute original next cp_end if next_state is not changed
-			if(pData->curr_state == 5 && sup_leg == 0)			// stay
-				orig_next_cp_end = right_foot.head(2) + Eigen::Vector2d(0, foot_distance - cp_offset);
-			else if(pData->curr_state == 5 && sup_leg == 1)
-				orig_next_cp_end = left_foot.head(2) + Eigen::Vector2d(0, -foot_distance + cp_offset);
+		// compute original next cp_end if next_state is not changed
+		if(pData->curr_state == 5 && sup_leg == 0)			// stay
+			orig_next_cp_end = right_foot.head(2) + Eigen::Vector2d(0, foot_distance - cp_offset);
+		else if(pData->curr_state == 5 && sup_leg == 1)
+			orig_next_cp_end = left_foot.head(2) + Eigen::Vector2d(0, -foot_distance + cp_offset);
 
-			else if(pData->curr_state == 8 && sup_leg == 0)		// forward
-				orig_next_cp_end = right_foot.head(2) + Eigen::Vector2d(step_length, foot_distance) + Eigen::Vector2d(cp_offset * sin(step_theta), -cp_offset * cos(step_theta));
-			else if(pData->curr_state == 8 && sup_leg == 1)
-				orig_next_cp_end = left_foot.head(2) + Eigen::Vector2d(step_length, -foot_distance) + Eigen::Vector2d(cp_offset * sin(step_theta), cp_offset * cos(step_theta));
+		else if(pData->curr_state == 8 && sup_leg == 0)		// forward
+			orig_next_cp_end = right_foot.head(2) + Eigen::Vector2d(step_length, foot_distance) + Eigen::Vector2d(cp_offset * sin(step_theta), -cp_offset * cos(step_theta));
+		else if(pData->curr_state == 8 && sup_leg == 1)
+			orig_next_cp_end = left_foot.head(2) + Eigen::Vector2d(step_length, -foot_distance) + Eigen::Vector2d(cp_offset * sin(step_theta), cp_offset * cos(step_theta));
 
-			else if(pData->curr_state == 2 && sup_leg == 0)		// backward
-				orig_next_cp_end = right_foot.head(2) + Eigen::Vector2d(-step_length, foot_distance) + Eigen::Vector2d(-cp_offset * sin(step_theta), -cp_offset * cos(step_theta));
-			else if(pData->curr_state == 2 && sup_leg == 1)
-				orig_next_cp_end = left_foot.head(2) + Eigen::Vector2d(-step_length, -foot_distance) + Eigen::Vector2d(-cp_offset * sin(step_theta), cp_offset * cos(step_theta));
+		else if(pData->curr_state == 2 && sup_leg == 0)		// backward
+			orig_next_cp_end = right_foot.head(2) + Eigen::Vector2d(-step_length, foot_distance) + Eigen::Vector2d(-cp_offset * sin(step_theta), -cp_offset * cos(step_theta));
+		else if(pData->curr_state == 2 && sup_leg == 1)
+			orig_next_cp_end = left_foot.head(2) + Eigen::Vector2d(-step_length, -foot_distance) + Eigen::Vector2d(-cp_offset * sin(step_theta), cp_offset * cos(step_theta));
 
-			else if(pData->curr_state == 0 && sup_leg == 0)		// stay
-				orig_next_cp_end = right_foot.head(2) + Eigen::Vector2d(0, 0.5 * foot_distance);
-			else if(pData->curr_state == 0 && sup_leg == 1)
-				orig_next_cp_end = left_foot.head(2) + Eigen::Vector2d(0, -0.5 * foot_distance);
+		else if(pData->curr_state == 0 && sup_leg == 0)		// stay
+			orig_next_cp_end = right_foot.head(2) + Eigen::Vector2d(0, 0.5 * foot_distance);
+		else if(pData->curr_state == 0 && sup_leg == 1)
+			orig_next_cp_end = left_foot.head(2) + Eigen::Vector2d(0, -0.5 * foot_distance);
 
 			
-			// compute new cp_init, cp_end, next_step
-			if(pData->next_state == 1)		// start
-			{
-				pData->curr_state = 1;
-				start_cnt_down -= 1;
-				cp_init << 0, 0;
-				cp_end << 0, 0.5 * foot_distance - cp_offset;
-				cog_proj << 0, 0;
-			}
-			else if(pData->next_state == 5)	// stay
-			{
-				pData->curr_state = 5;
-				cp_init = cp;
-
-				if(sup_leg == 0)
-				{
-					sup_leg = 1;
-					cp_end = right_foot.head(2) + Eigen::Vector2d(0, foot_distance - cp_offset);
-					next_step = right_foot.head(2) + Eigen::Vector2d(0, foot_distance);
-				}
-				else if(sup_leg == 1)
-				{
-					sup_leg = 0;
-					cp_end = left_foot.head(2) + Eigen::Vector2d(0, -foot_distance + cp_offset);
-					next_step = left_foot.head(2) + Eigen::Vector2d(0, -foot_distance);
-				}
-			}
-			else if(pData->next_state == 8)	// forward
-			{
-				if(pData->curr_state != 8)
-				{
-					direction_changed = 1;
-					pData->curr_state = 8;
-				}
-				else
-					direction_changed = 0;
-
-				cp_init = cp;
-				// step_theta = atan(step_length / foot_distance);   // do the updating if step length can change
-
-				if(sup_leg == 0)
-				{
-					sup_leg = 1;
-					if(direction_changed == 1)
-						cp_end = orig_next_cp_end;
-					else
-						cp_end = right_foot.head(2) + Eigen::Vector2d(step_length, foot_distance) + Eigen::Vector2d(cp_offset * sin(step_theta), -cp_offset * cos(step_theta));
-
-					next_step = cp_end + Eigen::Vector2d(-cp_offset * sin(step_theta), cp_offset * cos(step_theta));
-				}
-				else if(sup_leg == 1)
-				{
-					sup_leg = 0;
-					if(direction_changed == 1)
-						cp_end = orig_next_cp_end;
-					else
-						cp_end = left_foot.head(2) + Eigen::Vector2d(step_length, -foot_distance) + Eigen::Vector2d(cp_offset * sin(step_theta), cp_offset * cos(step_theta));
-
-					next_step = cp_end + Eigen::Vector2d(-cp_offset * sin(step_theta), -cp_offset * cos(step_theta));
-				}
-			}
-			else if(pData->next_state == 2)	// backward
-			{
-				if(pData->curr_state != 2)
-				{
-					direction_changed = 1;
-					pData->curr_state = 2;
-				}
-				else
-					direction_changed = 0;
-
-				cp_init = cp;
-				// step_theta = atan(step_length / foot_distance);   // do the updating if step length can change
-
-				if(sup_leg == 0)
-				{
-					sup_leg = 1;
-					if(direction_changed == 1)
-						cp_end = orig_next_cp_end;
-					else
-						cp_end = right_foot.head(2) + Eigen::Vector2d(-step_length, foot_distance) + Eigen::Vector2d(-cp_offset * sin(step_theta), -cp_offset * cos(step_theta));
-
-					next_step = cp_end + Eigen::Vector2d(cp_offset * sin(step_theta), cp_offset * cos(step_theta));
-				}
-				else if(sup_leg == 1)
-				{
-					sup_leg = 0;
-					if(direction_changed == 1)
-						cp_end = orig_next_cp_end;
-					else
-						cp_end = left_foot.head(2) + Eigen::Vector2d(-step_length, -foot_distance) + Eigen::Vector2d(-cp_offset * sin(step_theta), cp_offset * cos(step_theta));
-
-					next_step = cp_end + Eigen::Vector2d(cp_offset * sin(step_theta), -cp_offset * cos(step_theta));
-				}
-			}
-			else if(pData->next_state == 0)	// stop
-			{
-				if(pData->curr_state != 0)
-					pData->curr_state = 0;
-				else if(stop_cnt_down > -1)
-					stop_cnt_down -= 1;
-
-				cp_init = cp;
-				// step_theta = atan(step_length / foot_distance);   // do the updating if step length can change
-
-				if(sup_leg == 0)
-				{
-					sup_leg = 1;
-					if(stop_cnt_down == 2)
-						cp_end = orig_next_cp_end;
-					else
-						cp_end = right_foot.head(2) + Eigen::Vector2d(0, 0.5 * foot_distance);
-
-					next_step = right_foot.head(2) + Eigen::Vector2d(0, foot_distance);
-				}
-				else if(sup_leg == 1)
-				{
-					sup_leg = 0;
-					if(stop_cnt_down == 2)
-						cp_end = orig_next_cp_end;
-					else
-						cp_end = left_foot.head(2) + Eigen::Vector2d(0, -0.5 * foot_distance);
-
-					next_step = left_foot.head(2) + Eigen::Vector2d(0, -foot_distance);
-				}
-			}
-		}
-
-
-		// compute zmp and cog at curr_time
-		zmp = 1.0/(1-b) * cp_end - b/(1-b) * cp_init;
-		ewt = exp(omega * curr_time);
-		cp = ewt * cp_init + (1-ewt) * zmp;
-		cog_proj += sampling_time * omega * (cp - cog_proj);
-		cog << cog_proj, Eigen::Vector2d(cog_height, 0);
-
-		// compute foot position at curr_time
-		if(start_cnt_down >=0)
+		// compute new cp_init, cp_end, next_step
+		if(pData->next_state == 1)		// start
 		{
-			if(curr_time == step_time - sampling_time)
-			{
-				pData->next_state_cmd = 5;
-				start_cnt_down = -1;
-			}
+			pData->curr_state = 1;
+			start_cnt_down -= 1;
+			cp_init << 0, 0;
+			cp_end << 0, 0.5 * foot_distance - cp_offset;
+			cog_proj << 0, 0;
 		}
-		else if(stop_cnt_down == 0)
+		else if(pData->next_state == 5)	// stay
 		{
-			cp = zmp;
-		}
-		else if(stop_cnt_down == -1)
-		{
-			pData->next_state_cmd = -1;
-			break;
-		}
-		else
-		{
+			pData->curr_state = 5;
+			cp_init = cp;
+
 			if(sup_leg == 0)
-				// BIG MISTAKE!! but works...though the x,y position is not proportional leg_swing_xy_vec anymore
-				right_foot <<	right_foot(0) + (next_step(0) - right_foot(0)) * pData->leg_swing_xy_vec[(int)floor(curr_time / step_time * 2500)],
-								right_foot(1) + (next_step(1) - right_foot(1)) * pData->leg_swing_xy_vec[(int)floor(curr_time / step_time * 2500)],
-								swing_leg_height * pData->leg_swing_z_vec[(int)floor(curr_time / step_time * 2500)],
-								0;
+			{
+				sup_leg = 1;
+				cp_end = right_foot.head(2) + Eigen::Vector2d(0, foot_distance - cp_offset);
+				next_step = right_foot.head(2) + Eigen::Vector2d(0, foot_distance);
+			}
 			else if(sup_leg == 1)
-				left_foot  <<	left_foot(0) + (next_step(0) - left_foot(0)) * pData->leg_swing_xy_vec[(int)floor(curr_time / step_time * 2500)],
-								left_foot(1) + (next_step(1) - left_foot(1)) * pData->leg_swing_xy_vec[(int)floor(curr_time / step_time * 2500)],
-								swing_leg_height * pData->leg_swing_z_vec[(int)floor(curr_time / step_time * 2500)],
-								0;
+			{
+				sup_leg = 0;
+				cp_end = left_foot.head(2) + Eigen::Vector2d(0, -foot_distance + cp_offset);
+				next_step = left_foot.head(2) + Eigen::Vector2d(0, -foot_distance);
+			}
+		}
+		else if(pData->next_state == 8)	// forward
+		{
+			if(pData->curr_state != 8)
+			{
+				direction_changed = 1;
+				pData->curr_state = 8;
+			}
+			else
+				direction_changed = 0;
+
+			cp_init = cp;
+			// step_theta = atan(step_length / foot_distance);   // do the updating if step length can change
+
+			if(sup_leg == 0)
+			{
+				sup_leg = 1;
+				if(direction_changed == 1)
+					cp_end = orig_next_cp_end;
+				else
+					cp_end = right_foot.head(2) + Eigen::Vector2d(step_length, foot_distance) + Eigen::Vector2d(cp_offset * sin(step_theta), -cp_offset * cos(step_theta));
+
+				next_step = cp_end + Eigen::Vector2d(-cp_offset * sin(step_theta), cp_offset * cos(step_theta));
+			}
+			else if(sup_leg == 1)
+			{
+				sup_leg = 0;
+				if(direction_changed == 1)
+					cp_end = orig_next_cp_end;
+				else
+					cp_end = left_foot.head(2) + Eigen::Vector2d(step_length, -foot_distance) + Eigen::Vector2d(cp_offset * sin(step_theta), cp_offset * cos(step_theta));
+
+				next_step = cp_end + Eigen::Vector2d(-cp_offset * sin(step_theta), -cp_offset * cos(step_theta));
+			}
+		}
+		else if(pData->next_state == 2)	// backward
+		{
+			if(pData->curr_state != 2)
+			{
+				direction_changed = 1;
+				pData->curr_state = 2;
+			}
+			else
+				direction_changed = 0;
+
+			cp_init = cp;
+			// step_theta = atan(step_length / foot_distance);   // do the updating if step length can change
+
+			if(sup_leg == 0)
+			{
+				sup_leg = 1;
+				if(direction_changed == 1)
+					cp_end = orig_next_cp_end;
+				else
+					cp_end = right_foot.head(2) + Eigen::Vector2d(-step_length, foot_distance) + Eigen::Vector2d(-cp_offset * sin(step_theta), -cp_offset * cos(step_theta));
+
+				next_step = cp_end + Eigen::Vector2d(cp_offset * sin(step_theta), cp_offset * cos(step_theta));
+			}
+			else if(sup_leg == 1)
+			{
+				sup_leg = 0;
+				if(direction_changed == 1)
+					cp_end = orig_next_cp_end;
+				else
+					cp_end = left_foot.head(2) + Eigen::Vector2d(-step_length, -foot_distance) + Eigen::Vector2d(-cp_offset * sin(step_theta), cp_offset * cos(step_theta));
+
+				next_step = cp_end + Eigen::Vector2d(cp_offset * sin(step_theta), -cp_offset * cos(step_theta));
+			}
+		}
+		else if(pData->next_state == 0)	// stop
+		{
+			if(pData->curr_state != 0)
+				pData->curr_state = 0;
+			else if(stop_cnt_down > -1)
+				stop_cnt_down -= 1;
+
+			cp_init = cp;
+			// step_theta = atan(step_length / foot_distance);   // do the updating if step length can change
+
+			if(sup_leg == 0)
+			{
+				sup_leg = 1;
+				if(stop_cnt_down == 2)
+					cp_end = orig_next_cp_end;
+				else
+					cp_end = right_foot.head(2) + Eigen::Vector2d(0, 0.5 * foot_distance);
+
+				next_step = right_foot.head(2) + Eigen::Vector2d(0, foot_distance);
+			}
+			else if(sup_leg == 1)
+			{
+				sup_leg = 0;
+				if(stop_cnt_down == 2)
+					cp_end = orig_next_cp_end;
+				else
+					cp_end = left_foot.head(2) + Eigen::Vector2d(0, -0.5 * foot_distance);
+
+				next_step = left_foot.head(2) + Eigen::Vector2d(0, -foot_distance);
+			}
 		}
 	}
+
+
+	// compute zmp and cog at curr_time
+	zmp = 1.0/(1-b) * cp_end - b/(1-b) * cp_init;
+	ewt = exp(omega * curr_time);
+	cp = ewt * cp_init + (1-ewt) * zmp;
+	cog_proj += sampling_time * omega * (cp - cog_proj);
+	cog << cog_proj, Eigen::Vector2d(cog_height, 0);
+	
+
+	// compute foot position at curr_time
+	if(start_cnt_down >=0)
+	{
+		if((*OPG_cnt) = cycle_frames - 1)
+		{
+			pData->next_state_cmd = 5;
+			start_cnt_down = -1;
+		}
+	}
+	else if(stop_cnt_down == 0)
+	{
+		cp = zmp;
+	}
+	else if(stop_cnt_down == -1)
+	{
+		pData->next_state_cmd = -1;
+		pData->Flag_break_while = 1; // break the OPG loop in WinApp
+	}
+	else
+	{
+		if(sup_leg == 0)
+			// BIG MISTAKE!! but works...though the x,y position is not proportional leg_swing_xy_vec anymore
+			right_foot <<	right_foot(0) + (next_step(0) - right_foot(0)) * pData->leg_swing_xy_vec[(int)floor(curr_time / step_time * 2500)],
+							right_foot(1) + (next_step(1) - right_foot(1)) * pData->leg_swing_xy_vec[(int)floor(curr_time / step_time * 2500)],
+							swing_leg_height * pData->leg_swing_z_vec[(int)floor(curr_time / step_time * 2500)],
+							0;
+		else if(sup_leg == 1)
+			left_foot  <<	left_foot(0) + (next_step(0) - left_foot(0)) * pData->leg_swing_xy_vec[(int)floor(curr_time / step_time * 2500)],
+							left_foot(1) + (next_step(1) - left_foot(1)) * pData->leg_swing_xy_vec[(int)floor(curr_time / step_time * 2500)],
+							swing_leg_height * pData->leg_swing_z_vec[(int)floor(curr_time / step_time * 2500)],
+							0;
+	}
+
+
+	// update cog, left, right_foot in the share memory
+	for(int i=0; i<4; i++){
+		pData->cog[i] = cog(i);
+		pData->left_foot[i] = left_foot(i);
+		pData->right_foot[i] = right_foot(i);
+	}
+	// clock
+	(*OPG_cnt) ++;
+	if((*OPG_cnt) == cycle_frames)
+		(*OPG_cnt) = 0;
+
+	// printf
+	//if((*OPG_cnt) % 100 == 0)
+	//	RtPrintf("%d\n", sup_leg);
 }
 
 I16_T TargetTorqueTrimming(F64_T tempTorque)

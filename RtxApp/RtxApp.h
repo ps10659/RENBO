@@ -165,6 +165,10 @@ typedef struct
 	I16_T		next_state_cmd;
 	F64_T		leg_swing_xy_vec[2500];	
 	F64_T		leg_swing_z_vec[2500];
+	F64_T		cog[4];
+	F64_T		left_foot[4];
+	F64_T		right_foot[4];
+	BOOL_T		Flag_break_while;
 
 	
 	// force torque data
