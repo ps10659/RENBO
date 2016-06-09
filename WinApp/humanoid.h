@@ -85,6 +85,7 @@ typedef struct
 
 	// OPG related variables
 	I16_T		curr_state;	
+	I16_T		next_state;	
 	I16_T		next_state_cmd;		// -2: before started 
 									// -1: stop 
 									//  0: begin to stop
@@ -92,7 +93,8 @@ typedef struct
 									//  5: walk in the same place
 									//  8: walk forward
 									//  2: walk backward
-													
+	F64_T		leg_swing_xy_vec[2500];	
+	F64_T		leg_swing_z_vec[2500];	// 暫時用GenerateCubicPolyVec的3rd order spline, 有需要再改
 	
 	// force torque data
 	I16_T mx[2];

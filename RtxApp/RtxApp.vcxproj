@@ -22,7 +22,7 @@
     <ClInclude Include="RtxApp.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="RtxApp.c" />
+    <ClCompile Include="RtxApp.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{0E1DFE39-8345-42E9-9A19-6D2108CF335E}</ProjectGuid>
@@ -89,7 +89,7 @@
       <Message>RTX SDK post-build binary stamp tool.</Message>
     </PostBuildEvent>
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\Users\Humanoid\Desktop\GiGiFace\Header;$(RtxSdkDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Biped include\Boost_include\boost;C:\lib\Eigen_3.2.4;C:\Users\Humanoid\Desktop\GiGiFace\Header;$(RtxSdkDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>OldStyle</DebugInformationFormat>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>

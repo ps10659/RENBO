@@ -73,10 +73,17 @@ if(1)
 	HoldPos();
 	//system("pause");
 }
+
+	// eigen test
+	/*Eigen::Vector2d a(1,2);
+	Eigen::Vector4d b;
+	b << a, Eigen::Vector2d(3,4);
+	cout << b << endl;
+	b << b(2), b(3), b(0), b(1);
+	cout << b << endl;
+	system("pause");*/
 	
 	InitForceSensor();
-
-	
 	DisplayOptions();
 	
 	while(1)
@@ -369,8 +376,9 @@ void GenerateCubicPolyVec(WIN32_DAT *pWinData)
 	//for(int i=0; i<MAX_MOTION_TIME_FRAME; i+=500){
 	//	cout << pWinData->CubicPolyVec[i];
 	//}
-
 }
+
+
 void UpdateWalkTraj()
 {
 	int i=0, j=0, cnt=0;
