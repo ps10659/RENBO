@@ -14,6 +14,7 @@
 #include <tchar.h>
 #include <wchar.h>
 #include <Eigen/Dense>
+#include "Kinematics.h"
 
 #include "NexECMRtx.h"
 #include "NexCoeMotion.h"
@@ -168,6 +169,8 @@ typedef struct
 	F64_T		cog[4];
 	F64_T		left_foot[4];
 	F64_T		right_foot[4];
+	F64_T		left_foot_theta[6];
+	F64_T		right_foot_theta[6];
 	BOOL_T		Flag_break_while;
 
 	
@@ -219,10 +222,10 @@ void HOMING_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I3
 void PP_UpdateCbTargetTheta(F64_T *targetTheta, F64_T *CB_actualTheta, I32_T *PP_cnt);
 void CSP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T *CPS_cnt);
 void Fts_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T *CSP_cnt);
-void OPG_UpdateTargetPose(I32_T *OPG_cnt);
+void OPG_UpdateTargetPose(Eigen::Matrix4d& T_cog, Eigen::Matrix4d& T_left_foot, Eigen::Matrix4d& T_right_foot, I32_T *OPG_cnt);
 
 I16_T TargetTorqueTrimming(F64_T tempTorque);
-
+void UpdateIK_FK(F64_T *CB_targetTheta, Eigen::Matrix4d& T_cog, Eigen::Matrix4d& T_left_foot, Eigen::Matrix4d& T_right_foot);
 void MotorPosPidControl(F64_T *CB_targetTheta, F64_T *CB_actualTheta, USER_DAT *pData);
 
 // global variables

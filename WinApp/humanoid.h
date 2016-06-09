@@ -98,6 +98,8 @@ typedef struct
 	F64_T		cog[4];
 	F64_T		left_foot[4];
 	F64_T		right_foot[4];
+	F64_T		left_foot_theta[6];
+	F64_T		right_foot_theta[6];
 	BOOL_T		Flag_break_while;
 
 

@@ -1,7 +1,7 @@
 #include "RtxApp.h"
 
 USER_DAT	*pData;
-
+Kinematics   leg_kin;
 
 void 
 _cdecl
@@ -119,6 +119,12 @@ void __RtCyclicCallback( void *UserDataPtr )
 	F64_T			CB_actualTheta[TOTAL_AXIS];
 	static F64_T	CB_targetTheta[TOTAL_AXIS];
 	static F64_T	VirtualHomeTheta[TOTAL_AXIS];
+
+	// pose
+	static Eigen::Matrix4d T_cog;
+	static Eigen::Matrix4d T_left_foot;
+	static Eigen::Matrix4d T_right_foot;
+
 
 
 	// homing related
@@ -243,8 +249,8 @@ void __RtCyclicCallback( void *UserDataPtr )
 			break;
 
 		case MotorState_OPG:
-			OPG_UpdateTargetPose(&OPG_cnt);
-			//UpdateIK_FK();
+			OPG_UpdateTargetPose(T_cog, T_left_foot, T_right_foot, &OPG_cnt);
+			UpdateIK_FK(CB_targetTheta, T_cog, T_left_foot, T_right_foot);
 			//GravityCompensation();
 			MotorPosPidControl(CB_targetTheta, CB_actualTheta, pData);
 			break;
@@ -1758,7 +1764,7 @@ void Fts_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T
 	CB_targetTheta[LAR] = CB_actualTheta[LAR] + pData->Fts_LRK * (F64_T)pData->mx[0];
 	CB_targetTheta[LAP] = CB_actualTheta[LAP] + pData->Fts_LPK * (F64_T)pData->my[0];
 }
-void OPG_UpdateTargetPose(I32_T *OPG_cnt)
+void OPG_UpdateTargetPose(Eigen::Matrix4d& T_cog, Eigen::Matrix4d& T_left_foot, Eigen::Matrix4d& T_right_foot, I32_T *OPG_cnt)
 {
 	static double sampling_time		= 0.002;
 	static double step_time			= 2;
@@ -1974,6 +1980,12 @@ void OPG_UpdateTargetPose(I32_T *OPG_cnt)
 	}
 	else if(stop_cnt_down == -1)
 	{
+		direction_changed	= 0;
+		sup_leg = 1;
+		left_foot << 0, 0.5 * foot_distance, 0, 0;
+		right_foot << 0, -0.5 * foot_distance, 0, 0;
+		start_cnt_down = 2;
+		stop_cnt_down = 2;
 		pData->next_state_cmd = -1;
 		pData->Flag_break_while = 1; // break the OPG loop in WinApp
 	}
@@ -1992,6 +2004,21 @@ void OPG_UpdateTargetPose(I32_T *OPG_cnt)
 							0;
 	}
 
+	// update cog, left_foot, right_foot 
+	T_cog		<<  1, 0, 0, cog(1),
+					0, 1, 0, cog(2),
+					0, 0, 1, cog(0),
+					0, 0, 0,      1;
+
+	T_left_foot <<	0, 1, 0, left_foot(1),
+					0, 0, 1, left_foot(2),
+					1, 0, 0, left_foot(0),
+					0, 0, 0,      1;
+
+	T_right_foot << 0, 1, 0, right_foot(1),
+					0, 0, 1, right_foot(2),
+					1, 0, 0, right_foot(0),
+					0, 0, 0,      1;
 
 	// update cog, left, right_foot in the share memory
 	for(int i=0; i<4; i++){
@@ -2014,6 +2041,23 @@ I16_T TargetTorqueTrimming(F64_T tempTorque)
 	if(tempTorque>=1000.0) return (I16_T)1000;
 	else if(tempTorque<=-1000.0) return (I16_T)-1000;
 	else return (I16_T)tempTorque;
+}
+void UpdateIK_FK(F64_T *CB_targetTheta, Eigen::Matrix4d& T_cog, Eigen::Matrix4d& T_left_foot, Eigen::Matrix4d& T_right_foot)
+{
+	leg_kin.IK(T_cog, T_left_foot, T_right_foot);
+	
+
+	for(int i=0; i<6; i++){
+		pData->left_foot_theta[i] = leg_kin.l_leg_target_angles[i];
+		pData->right_foot_theta[i] = leg_kin.r_leg_target_angles[i];
+	}
+
+	CB_targetTheta[19] = leg_kin.waist_target_angles[0];
+	CB_targetTheta[20] = leg_kin.waist_target_angles[1];
+	for(int i=0; i<6; i++){
+		CB_targetTheta[i+21] = leg_kin.l_leg_target_angles[i];
+		CB_targetTheta[i+27] = leg_kin.r_leg_target_angles[i];
+	}
 }
 void MotorPosPidControl(F64_T *CB_targetTheta, F64_T *CB_actualTheta, USER_DAT *pData)
 {

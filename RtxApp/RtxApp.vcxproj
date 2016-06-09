@@ -19,9 +19,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Kinematics.h" />
     <ClInclude Include="RtxApp.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Kinematics.cpp" />
     <ClCompile Include="RtxApp.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

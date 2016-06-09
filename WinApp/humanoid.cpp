@@ -178,6 +178,7 @@ if(1)
 								pWinData->next_state_cmd = 0;
 							break;
 						case 'h':
+							pWinData->Flag_break_while = 1;
 							HoldPos();
 							break;
 						}
@@ -187,15 +188,27 @@ if(1)
 					system("CLS");
 					printf("%d, %d, %d\n", pWinData->curr_state, pWinData->next_state, pWinData->next_state_cmd);
 					cout << pWinData->curr_state << ", " <<  pWinData->next_state << ", " <<  pWinData->next_state_cmd << endl;
-					cout << "cog_x: " << pWinData->cog[0] << endl;
-					cout << "cog_y: " << pWinData->cog[1] << endl;
-					cout << "cog_z: " << pWinData->cog[2] << endl << endl;
-					cout << "lfoot_x: " << pWinData->left_foot[0] << endl;
-					cout << "lfoot_y: " << pWinData->left_foot[1] << endl;
-					cout << "lfoot_z: " << pWinData->left_foot[2] << endl << endl;
-					cout << "rfoot_x: " << pWinData->right_foot[0] << endl;
-					cout << "rfoot_y: " << pWinData->right_foot[1] << endl;
-					cout << "rfoot_z: " << pWinData->right_foot[2] << endl << endl;
+					cout << setw(10) << pWinData->cog[0];
+					cout << setw(10) << pWinData->cog[1];
+					cout << setw(10) << pWinData->cog[2] << endl;
+					cout << setw(10) << pWinData->left_foot[0];
+					cout << setw(10) << pWinData->left_foot[1];
+					cout << setw(10) << pWinData->left_foot[2] << endl;
+					cout << setw(10) << pWinData->right_foot[0];
+					cout << setw(10) << pWinData->right_foot[1];
+					cout << setw(10) << pWinData->right_foot[2] << endl;
+					cout << setw(10) << pWinData->left_foot_theta[0] * 180 / M_PI;
+					cout << setw(10) << pWinData->left_foot_theta[1] * 180 / M_PI;
+					cout << setw(10) << pWinData->left_foot_theta[2] * 180 / M_PI;
+					cout << setw(10) << pWinData->left_foot_theta[3] * 180 / M_PI;
+					cout << setw(10) << pWinData->left_foot_theta[4] * 180 / M_PI;
+					cout << setw(10) << pWinData->left_foot_theta[5] * 180 / M_PI << endl;
+					cout << setw(10) << pWinData->right_foot_theta[0] * 180 / M_PI;
+					cout << setw(10) << pWinData->right_foot_theta[1] * 180 / M_PI;
+					cout << setw(10) << pWinData->right_foot_theta[2] * 180 / M_PI;
+					cout << setw(10) << pWinData->right_foot_theta[3] * 180 / M_PI;
+					cout << setw(10) << pWinData->right_foot_theta[4] * 180 / M_PI;
+					cout << setw(10) << pWinData->right_foot_theta[5] * 180 / M_PI << endl;
 					//UpdateFtData();
 				}
 				HoldPos();
