@@ -22,6 +22,8 @@ public:
 
 	bool IK (const Eigen::Matrix4d& COM, const Eigen::Matrix4d& left_leg, const Eigen::Matrix4d& right_leg);
 
+	bool pre_FK(const Eigen::Matrix4d& T_cog, double *waist_angles);
+
 	bool FK();
 
 	bool FK (double l_leg_actual_angles[6], double r_leg_actual_angles[6], double waist_theta[2]);
@@ -52,6 +54,8 @@ public:
 	Eigen::Vector3d l_hip_actual_pos, l_knee_actual_pos, l_ankle_actual_pos, l_foot_actual_pos;
 	Eigen::Vector3d r_hip_actual_pos, r_knee_actual_pos, r_ankle_actual_pos, r_foot_actual_pos;
 
+	Eigen::Matrix4d T_waist_center;
+
 	// command angles
 	double l_leg_target_angles[6];
 	double r_leg_target_angles[6];
@@ -76,6 +80,8 @@ protected:
 					T_waist_left_hip, T_waist_right_hip, T_left_hip_waist, T_right_hip_waist,
 					T_trunk_left_hip, T_trunk_right_hip, T_trunk_1, T_trunk_r;
 	
+
+	Eigen::Matrix4d T_waist_yaw, T_waist_roll;
 	// gravity compensate
 	double link_cog[12];
 	Eigen::Vector3d force[12];

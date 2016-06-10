@@ -101,8 +101,8 @@ bool Kinematics::IK(const Eigen::Matrix4d& COM, const Eigen::Matrix4d& left_leg,
 
 	Eigen::Matrix4d l_knee = left_leg*((matDH(shin, 0.0, 0.0, l_leg_target_angles[3]) * matDH(0.0, M_PI / 2, 0.0, l_leg_target_angles[4]) * matDH(0.0, M_PI / 2, 0.0, -M_PI / 2 + l_leg_target_angles[5])*matDH(0.0, 0, -sole, M_PI / 2)).inverse());
 	Eigen::Matrix3d l_rot = getDHRot(l_hip).inverse()*getDHRot(l_knee);
-	l_leg_target_angles[1] = asin(-l_rot(0, 2));
 	l_leg_target_angles[0] = -atan2(l_rot(1, 2), l_rot(2, 2));
+	l_leg_target_angles[1] = atan2(-l_rot(0,2), -l_rot(1,2)/sin(l_leg_target_angles[0]));//asin(-l_rot(0, 2));
 	l_leg_target_angles[2] = -atan2(l_rot(0, 1), l_rot(0, 0));
 
 
@@ -162,9 +162,26 @@ bool Kinematics::IK(const Eigen::Matrix4d& COM, const Eigen::Matrix4d& left_leg,
 
 	Eigen::Matrix4d r_knee = right_leg*((matDH(shin, 0.0, 0.0, r_leg_target_angles[3]) * matDH(0.0, M_PI / 2, 0.0, r_leg_target_angles[4]) * matDH(0.0, M_PI / 2, 0.0, -M_PI / 2 + r_leg_target_angles[5])*matDH(0.0, 0, -sole, M_PI / 2)).inverse());
 	Eigen::Matrix3d r_rot = getDHRot(r_hip).inverse()*getDHRot(r_knee);
-	r_leg_target_angles[1] = asin(-r_rot(0, 2));
 	r_leg_target_angles[0] = -atan2(r_rot(1, 2), r_rot(2, 2));
+	r_leg_target_angles[1] = atan2(-r_rot(0,2), -r_rot(1,2)/sin(r_leg_target_angles[0]));//asin(-r_rot(0, 2));
 	r_leg_target_angles[2] = -atan2(r_rot(0, 1), r_rot(0, 0));
+
+	if(COM(1,3)+12 < left_leg(1,3))
+	{
+		l_leg_target_angles[1] *= -1;
+		r_leg_target_angles[1] *= -1;
+		l_leg_target_angles[5] *= -1;
+		r_leg_target_angles[5] *= -1;
+	}
+	return true;
+}
+
+bool Kinematics::pre_FK(const Eigen::Matrix4d& T_cog, double *waist_angles)
+{
+	T_waist_yaw = matDH(0.0, 0, 0.0,  M_PI / 2+waist_angles[0]);
+	T_waist_roll = matDH(0.0, M_PI / 2, 0.0, waist_angles[1]);
+
+	T_waist_center = T_cog * T_waist_yaw * T_waist_roll;
 
 	return true;
 }

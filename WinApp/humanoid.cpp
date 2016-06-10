@@ -12,6 +12,9 @@ int _tmain(int argc)
 
 if(1)
 {
+	/*system("RtssKill 002");
+	system("RtssKill 001");*/
+
 	cout << "loading NexECMRtx.rtss ..." << endl;
 	ret = NEC_LoadRtxApp( "C:\\Program Files\\NEXCOM\\NexECMRtx\\Lib\\NexECMRtx\\x32\\NexECMRtx.rtss" );
 	if( ret != 0 ){ printf("NEC_LoadRtxApp NexECMRtx.rtss failed!");}
@@ -271,7 +274,8 @@ _Byebye:
 	{	
 		RtCloseHandle(oBhandle[i]);
 	}
-
+	system("RtssKill 002");
+	system("RtssKill 001");
 	system("pause");
 	return 0;
 }
