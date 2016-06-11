@@ -107,7 +107,7 @@ void __RtCyclicCallback( void *UserDataPtr )
 	int				k = 0;
 
 	// counter
-	static I32_T	cnt = 0; // global counter
+	static I32_T	cnt = 0; // global counter, don't reset
 	static I32_T	PP_cnt = 0;
 	static I32_T	HOMING_cnt = 0;
 	static I32_T	CSP_cnt = 0;
@@ -127,13 +127,24 @@ void __RtCyclicCallback( void *UserDataPtr )
 	static Eigen::Matrix4d T_left_foot;
 	static Eigen::Matrix4d T_right_foot;
 
-
-
 	// homing related
 	I32_T			home_sensor_value[TOTAL_AXIS];
 
-
-
+	// initialization at the very beginning
+	if(cnt == 0){
+		T_cog << 1, 0, 0, 0,
+			 	 0, 1, 0, 0,
+				 0, 0, 1, 74.5,
+				 0, 0, 0, 1;
+		T_left_foot << 1, 0, 0, 0,
+					   0, 1, 0, 12.6,
+					   0, 0, 1, 0,
+					   0, 0, 0, 1;
+		T_right_foot << 1, 0, 0, 0,
+						0, 1, 0, -12.6,
+						0, 0, 1, 0,
+						0, 0, 0, 1;
+	}
 
 	NEC_RtGetMasterState( pData->masterId, &state );
 	switch( state )
@@ -151,11 +162,15 @@ void __RtCyclicCallback( void *UserDataPtr )
 		{
 			leg_kin.l_leg_actual_angle[i] = CB_actualTheta[21+i];
 			leg_kin.r_leg_actual_angle[i] = CB_actualTheta[27+i];
-			//memcpy(&leg_kin.l_leg_actual_angle[i], &CB_actualTheta[27+i], sizeof(leg_kin.l_leg_actual_angle)/sizeof(leg_kin.l_leg_actual_angle[0]));
 		}
 		leg_kin.waist_actual_angle[0] = CB_actualTheta[19];
 		leg_kin.waist_actual_angle[1] = CB_actualTheta[20];
-
+		leg_kin.FK (T_cog, leg_kin.l_leg_actual_angle, leg_kin.r_leg_actual_angle, leg_kin.waist_actual_angle);
+		for(int i=0; i<3; i++){
+			pData->actual_cog[i] = T_cog(i,3);
+			pData->actual_left_foot[i] = leg_kin.T_l_base[6](i,3);
+			pData->actual_right_foot[i] = leg_kin.T_r_base[6](i,3);
+		}
 
 		// flags
 		if(pData->Flag_ServoOn == 1)
@@ -191,6 +206,22 @@ void __RtCyclicCallback( void *UserDataPtr )
 				CB_targetTheta[k] = 0;
 			}
 			pData->Flag_SetCurrPosHome = 0;
+		}
+		if(pData->Flag_ResetT_cog == 1)
+		{
+			T_cog << 1, 0, 0, 0,
+			 			0, 1, 0, 0,
+						0, 0, 1, 74.5,
+						0, 0, 0, 1;
+			T_left_foot << 1, 0, 0, 0,
+							0, 1, 0, 12.6,
+							0, 0, 1, 0,
+							0, 0, 0, 1;
+			T_right_foot << 1, 0, 0, 0,
+							0, 1, 0, -12.6,
+							0, 0, 1, 0,
+							0, 0, 0, 1;
+			pData->Flag_ResetT_cog = 0;	
 		}
 		if(pData->Flag_ResetCnt == 1)
 		{
@@ -246,6 +277,8 @@ void __RtCyclicCallback( void *UserDataPtr )
 			MotorPosPidControl(CB_targetTheta, CB_actualTheta, pData, l_leg_gc, r_leg_gc);
 			break;
 
+
+
 		case MotorState_CSP:
 			if(pData->Flag_CspFinished == 0)
 			{
@@ -260,9 +293,17 @@ void __RtCyclicCallback( void *UserDataPtr )
 			break;
 
 		case MotorState_OPG:
-			OPG_UpdateTargetPose(T_cog, T_left_foot, T_right_foot, &OPG_cnt);
-			UpdateIK_FK(CB_targetTheta, T_cog, T_left_foot, T_right_foot);
-			GravityCompensation(l_leg_gc, r_leg_gc);
+			if(pData->Flag_PpReachTarget == 0)
+			{
+				PP_UpdateTargetPose(T_cog, T_left_foot, T_right_foot, &PP_cnt);
+				UpdateIK_FK(CB_targetTheta, T_cog, T_left_foot, T_right_foot);
+			}
+			else
+			{
+				OPG_UpdateTargetPose(T_cog, T_left_foot, T_right_foot, &OPG_cnt);
+				UpdateIK_FK(CB_targetTheta, T_cog, T_left_foot, T_right_foot);
+				GravityCompensation(l_leg_gc, r_leg_gc);
+			}
 			MotorPosPidControl(CB_targetTheta, CB_actualTheta, pData, l_leg_gc, r_leg_gc);
 			break;
 		}
@@ -1779,7 +1820,7 @@ void OPG_UpdateTargetPose(Eigen::Matrix4d& T_cog, Eigen::Matrix4d& T_left_foot, 
 {
 	double sampling_time			= 0.002;
 	double step_time				= pData->step_time;
-	I32_T  cycle_frames				= (I32_T)step_time / sampling_time;
+	I32_T  cycle_frames				= (I32_T)(step_time / sampling_time);
 	double curr_time				= (double)(*OPG_cnt) * sampling_time;
 
 	double cog_height_for_omega		= pData->cog_height_for_omega;
@@ -1814,7 +1855,22 @@ void OPG_UpdateTargetPose(Eigen::Matrix4d& T_cog, Eigen::Matrix4d& T_left_foot, 
 	static int stop_cnt_down		= 2;
 	static int sup_leg				= 1;
 
+	if(pData->Flag_ResetStaticInOPG == 1)
+	{
+		direction_changed	= 0;
+		sup_leg = 1;
+		cp_init << 0, 0;
+		cp_end << 0, 0.5 * foot_distance - cp_offset;
+		cog_proj << 0, 0;
+		left_foot << 0, 0.5 * foot_distance, 0, 0;
+		right_foot << 0, -0.5 * foot_distance, 0, 0;
+		temp_step = right_foot.head(2);
+		next_step = left_foot.head(2);
+		start_cnt_down = 2;
+		stop_cnt_down = 2;
 
+		pData->Flag_ResetStaticInOPG = 0;
+	}
 
 	if(curr_time == 0)
 	{	
@@ -1978,7 +2034,7 @@ void OPG_UpdateTargetPose(Eigen::Matrix4d& T_cog, Eigen::Matrix4d& T_left_foot, 
 				next_step = left_foot.head(2) + Eigen::Vector2d(0, -foot_distance);
 			}
 		}
-	}
+	} // end of "if(curr_time == 0)"
 
 
 	// compute zmp and cog at curr_time
@@ -1992,7 +2048,7 @@ void OPG_UpdateTargetPose(Eigen::Matrix4d& T_cog, Eigen::Matrix4d& T_left_foot, 
 	// compute foot position at curr_time
 	if(start_cnt_down >=0)
 	{
-		if((*OPG_cnt) = cycle_frames - 1)
+		if((*OPG_cnt) == cycle_frames - 1)
 		{
 			pData->next_state_cmd = 5;
 			start_cnt_down = -1;
@@ -2004,28 +2060,27 @@ void OPG_UpdateTargetPose(Eigen::Matrix4d& T_cog, Eigen::Matrix4d& T_left_foot, 
 	}
 	else if(stop_cnt_down == -1)
 	{
-		direction_changed	= 0;
-		sup_leg = 1;
-		left_foot << 0, 0.5 * foot_distance, 0, 0;
-		right_foot << 0, -0.5 * foot_distance, 0, 0;
-		start_cnt_down = 2;
-		stop_cnt_down = 2;
+		// reset the static andf shared variables
 		pData->next_state_cmd = -1;
+		pData->Flag_HoldPosSaved = 0;
 		pData->MotorState = MotorState_Hold;
 		pData->Flag_break_while = 1; // break the OPG loop in WinApp
 	}
 	else
 	{
+		int t = floor(curr_time / step_time * 2500);
+		if(t>=2500) t=2499;
+
 		if(sup_leg == 0)
 			// BIG MISTAKE!! but works...though the x,y position is not proportional leg_swing_xy_vec anymore
-			right_foot <<	curr_step(0) + (next_step(0) - curr_step(0)) * pData->leg_swing_xy_vec[(int)floor(curr_time / step_time * 2500)],
-							curr_step(1) + (next_step(1) - curr_step(1)) * pData->leg_swing_xy_vec[(int)floor(curr_time / step_time * 2500)],
-							swing_leg_height * pData->leg_swing_z_vec[(int)floor(curr_time / step_time * 2500)],
+			right_foot <<	curr_step(0) + (next_step(0) - curr_step(0)) * pData->leg_swing_xy_vec[t],
+							curr_step(1) + (next_step(1) - curr_step(1)) * pData->leg_swing_xy_vec[t],
+							swing_leg_height * pData->leg_swing_z_vec[t],
 							0;
 		else if(sup_leg == 1)
-			left_foot  <<	curr_step(0) + (next_step(0) - curr_step(0)) * pData->leg_swing_xy_vec[(int)floor(curr_time / step_time * 2500)],
-							curr_step(1) + (next_step(1) - curr_step(1)) * pData->leg_swing_xy_vec[(int)floor(curr_time / step_time * 2500)],
-							swing_leg_height * pData->leg_swing_z_vec[(int)floor(curr_time / step_time * 2500)],
+			left_foot  <<	curr_step(0) + (next_step(0) - curr_step(0)) * pData->leg_swing_xy_vec[t],
+							curr_step(1) + (next_step(1) - curr_step(1)) * pData->leg_swing_xy_vec[t],
+							swing_leg_height * pData->leg_swing_z_vec[t],
 							0;
 	}
 
@@ -2045,9 +2100,9 @@ void OPG_UpdateTargetPose(Eigen::Matrix4d& T_cog, Eigen::Matrix4d& T_left_foot, 
 
 	// update cog, left, right_foot in the share memory
 	for(int i=0; i<4; i++){
-		pData->cog[i] = cog(i);
-		pData->left_foot[i] = left_foot(i);
-		pData->right_foot[i] = right_foot(i);
+		pData->target_cog[i] = cog(i);
+		pData->target_left_foot[i] = left_foot(i);
+		pData->target_right_foot[i] = right_foot(i);
 	}
 	pData->sup_leg = sup_leg;
 
@@ -2056,9 +2111,54 @@ void OPG_UpdateTargetPose(Eigen::Matrix4d& T_cog, Eigen::Matrix4d& T_left_foot, 
 	if((*OPG_cnt) == cycle_frames)
 		(*OPG_cnt) = 0;
 
-	// printf
-	//if((*OPG_cnt) % 100 == 0)
-	//	RtPrintf("%d\n", sup_leg);
+	// print
+	//if((*OPG_cnt) % 50 == 0)
+		//RtPrintf("%d, %d\n", (I32_T)curr_time * 1000, (I32_T)step_time * 1000);
+		//RtPrintf("%d, %d, %d\n", (I32_T)cog(1), (I32_T)cp_init(1), (I32_T)cp_end(1));
+}
+void PP_UpdateTargetPose(Eigen::Matrix4d& T_cog, Eigen::Matrix4d& T_left_foot, Eigen::Matrix4d& T_right_foot, I32_T *PP_cnt)
+{
+	static F64_T init_cog[3];
+	static F64_T init_left_foot[3];
+	static F64_T init_right_foot[3];
+
+	F64_T PP_time_period = 3.0; // Set PP period to 5 second temporary!!
+
+	if((*PP_cnt) == 0)
+	{
+		for(int i=0; i<3; i++) // Not consider direction yet!!!!!!!
+		{
+			/*init_cog[i] = T_cog(i,3);
+			init_left_foot[i] = T_left_foot(i,3);
+			init_right_foot[i] = T_right_foot(i,3);*/
+			init_cog[i] = pData->actual_cog[i];
+			init_left_foot[i] = pData->actual_left_foot[i];
+			init_right_foot[i] = pData->actual_right_foot[i];
+
+			
+		}
+		//RtPrintf("init: %d %d %d, %d %d %d\n", (I32_T)init_cog[0], (I32_T)init_cog[1], (I32_T)init_cog[2], (I32_T)init_left_foot[0], (I32_T)init_left_foot[1], (I32_T)init_left_foot[2]);
+		//RtPrintf("targ: %d %d %d, %d %d %d\n", (I32_T)pData->target_cog[0], (I32_T)pData->target_cog[1], (I32_T)pData->target_cog[2], (I32_T)pData->target_left_foot[0], (I32_T)pData->target_left_foot[1], (I32_T)pData->target_left_foot[2]);
+	}
+
+	if((*PP_cnt) < PP_time_period / (pData->cycleTime * MICROSECOND_TO_SECOND) - 1) 
+	{
+		for(int i=0; i<3; i++)
+		{
+			T_cog(i,3) = init_cog[i] + (pData->target_cog[i] - init_cog[i]) * 
+										pData->CubicPolyVec[(int)floor((*PP_cnt) * MAX_MOTION_TIME_FRAME * MICROSECOND_TO_SECOND * pData->cycleTime / PP_time_period)];
+			T_left_foot(i,3) = init_left_foot[i] + (pData->target_left_foot[i] - init_left_foot[i]) * 
+										pData->CubicPolyVec[(int)floor((*PP_cnt) * MAX_MOTION_TIME_FRAME * MICROSECOND_TO_SECOND * pData->cycleTime / PP_time_period)];
+			T_right_foot(i,3)= init_right_foot[i] + (pData->target_right_foot[i] - init_right_foot[i]) * 
+										pData->CubicPolyVec[(int)floor((*PP_cnt) * MAX_MOTION_TIME_FRAME * MICROSECOND_TO_SECOND * pData->cycleTime / PP_time_period)];
+		}
+
+		(*PP_cnt)++;
+	}
+	else
+	{
+		pData->Flag_PpReachTarget = 1;
+	}
 }
 
 I16_T TargetTorqueTrimming(F64_T tempTorque)
@@ -2090,13 +2190,13 @@ void UpdateIK_FK(F64_T *CB_targetTheta, Eigen::Matrix4d& T_cog, Eigen::Matrix4d&
 	}
 
 	
-	// FKKKKK
-	leg_kin.FK (T_cog, leg_kin.l_leg_target_angles, leg_kin.r_leg_target_angles, leg_kin.waist_target_angles);
-	for(int i=0; i<3; i++){
-		pData->coggg[i] = T_cog(i,3);
-		pData->l_foot[i] = leg_kin.T_l_base[6](i,3);
-		pData->r_foot[i] = leg_kin.T_r_base[6](i,3);
-	}
+	// FKKKKK 移去callback最前面update
+	//leg_kin.FK (T_cog, leg_kin.l_leg_target_angles, leg_kin.r_leg_target_angles, leg_kin.waist_target_angles);
+	//for(int i=0; i<3; i++){
+	//	pData->actual_cog[i] = T_cog(i,3);
+	//	pData->actual_left_foot[i] = leg_kin.T_l_base[6](i,3);
+	//	pData->actual_right_foot[i] = leg_kin.T_r_base[6](i,3);
+	//}
 
 }
 void GravityCompensation(F64_T *l_leg_gc, F64_T *r_leg_gc)
@@ -2136,12 +2236,12 @@ void MotorPosPidControl(F64_T *CB_targetTheta, F64_T *CB_actualTheta, USER_DAT *
 	for(k=0; k<TOTAL_AXIS; k++)
 	{
 		errorTheta[k] = CB_targetTheta[k] - CB_actualTheta[k];
-		if(pData->MotorState == MotorState_OPG)
+		if(pData->MotorState == MotorState_OPG && pData->Flag_PpReachTarget == 1)
 		{
-			if(k == 22) errorTheta[k] += l_leg_gc[1];
-			if(k == 26) errorTheta[k] += l_leg_gc[5];
-			if(k == 28) errorTheta[k] += r_leg_gc[1];
-			if(k == 32) errorTheta[k] += r_leg_gc[5];
+			if(k == 22) errorTheta[k] += l_leg_gc[1] * pData->gc_l_hip_pitch;
+			if(k == 26) errorTheta[k] += l_leg_gc[5] * pData->gc_l_ankle_pitch;
+			if(k == 28) errorTheta[k] += r_leg_gc[1] * pData->gc_r_hip_pitch;
+			if(k == 32) errorTheta[k] += r_leg_gc[5] * pData->gc_r_ankle_pitch;
 		}
 		if(errorThetaSum[k] < maxErrorThetaSum)
 			errorThetaSum[k] = errorThetaSum[k] + errorTheta[k];

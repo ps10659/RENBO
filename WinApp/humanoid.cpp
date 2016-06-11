@@ -108,6 +108,7 @@ if(1)
 				break;
 			case 'o':
 				cout << "pp: home" << endl;
+				pWinData->Flag_ResetT_cog = 1;	
 				PP_Move_deg(Pos_home, 2.0, false);
 				break;
 			case 'p':
@@ -144,10 +145,22 @@ if(1)
 			}
 			case 'R':
 			{
+				pWinData->Flag_PpReachTarget = 0;
+				pWinData->target_cog[0] = 0;
+				pWinData->target_cog[1] = 0;
+				pWinData->target_cog[2] = pWinData->cog_height_for_IK;
+				pWinData->target_left_foot[0] = 0;
+				pWinData->target_left_foot[1] = 0.5 * pWinData->foot_distance;
+				pWinData->target_left_foot[2] = 0;
+				pWinData->target_right_foot[0] = 0;
+				pWinData->target_right_foot[1] = -0.5 * pWinData->foot_distance;
+				pWinData->target_right_foot[2] = 0;
+				pWinData->Flag_ResetCnt = 1;
+				
 				pWinData->Flag_break_while = 0;
+				pWinData->Flag_ResetStaticInOPG = 1;
 				pWinData->next_state_cmd = 1;
 				pWinData->curr_state = 1;
-				pWinData->Flag_ResetCnt;
 				pWinData->MotorState = MotorState_OPG;
 				
 				system("CLS");
@@ -181,6 +194,11 @@ if(1)
 							if(pWinData->curr_state == 5)
 								pWinData->next_state_cmd = 0;
 							break;
+
+						case '9':
+							ImportOPG();
+							break;
+
 						case 'h':
 							pWinData->Flag_break_while = 1;
 							HoldPos();
@@ -190,26 +208,25 @@ if(1)
 						
 					}
 					system("CLS");
-					printf("%d, %d, %d\n", pWinData->curr_state, pWinData->next_state, pWinData->next_state_cmd);
-					cout << pWinData->curr_state << ", " <<  pWinData->next_state << ", " <<  pWinData->next_state_cmd << endl;
-					cout << setw(10) << pWinData->cog[0];
-					cout << setw(10) << pWinData->cog[1];
-					cout << setw(10) << pWinData->cog[2] << endl;
-					cout << setw(10) << pWinData->left_foot[0];
-					cout << setw(10) << pWinData->left_foot[1];
-					cout << setw(10) << pWinData->left_foot[2] << endl;
-					cout << setw(10) << pWinData->right_foot[0];
-					cout << setw(10) << pWinData->right_foot[1];
-					cout << setw(10) << pWinData->right_foot[2] << endl;
-					cout << setw(10) << pWinData->coggg[0];
-					cout << setw(10) << pWinData->coggg[1];
-					cout << setw(10) << pWinData->coggg[2] << endl;
-					cout << setw(10) << pWinData->l_foot[0];
-					cout << setw(10) << pWinData->l_foot[1];
-					cout << setw(10) << pWinData->l_foot[2] << endl;
-					cout << setw(10) << pWinData->r_foot[0];
-					cout << setw(10) << pWinData->r_foot[1];
-					cout << setw(10) << pWinData->r_foot[2] << endl;
+					//cout << pWinData->curr_state << ", " <<  pWinData->next_state << ", " <<  pWinData->next_state_cmd << endl;
+					cout << setw(10) << pWinData->target_cog[0];
+					cout << setw(10) << pWinData->target_cog[1];
+					cout << setw(10) << pWinData->target_cog[2] << endl;
+					cout << setw(10) << pWinData->target_left_foot[0];
+					cout << setw(10) << pWinData->target_left_foot[1];
+					cout << setw(10) << pWinData->target_left_foot[2] << endl;
+					cout << setw(10) << pWinData->target_right_foot[0];
+					cout << setw(10) << pWinData->target_right_foot[1];
+					cout << setw(10) << pWinData->target_right_foot[2] << endl << endl;
+					cout << setw(10) << pWinData->actual_cog[0];
+					cout << setw(10) << pWinData->actual_cog[1];
+					cout << setw(10) << pWinData->actual_cog[2] << endl;
+					cout << setw(10) << pWinData->actual_left_foot[0];
+					cout << setw(10) << pWinData->actual_left_foot[1];
+					cout << setw(10) << pWinData->actual_left_foot[2] << endl;
+					cout << setw(10) << pWinData->actual_right_foot[0];
+					cout << setw(10) << pWinData->actual_right_foot[1];
+					cout << setw(10) << pWinData->actual_right_foot[2] << endl;
 					/*cout << setw(10) << pWinData->left_foot_theta[0] * 180 / M_PI;
 					cout << setw(10) << pWinData->left_foot_theta[1] * 180 / M_PI;
 					cout << setw(10) << pWinData->left_foot_theta[2] * 180 / M_PI;
@@ -277,8 +294,8 @@ if(1)
 				goto _Byebye;
 			}
 
-			DisplayOptions();
 		}
+			DisplayOptions();
 		UpdateFtData();
 	}
 
@@ -321,7 +338,19 @@ void DisplayOptions()
 	printf("[8] set curr pos home\n");
 	printf("[9] import parameter.txt\n");
 	printf("[.] Write pose \n");
-	printf("[esc] Quit\n");
+	printf("[esc] Quit\n\n");
+
+	cout << setw(10) << pWinData->actual_cog[0];
+	cout << setw(10) << pWinData->actual_cog[1];
+	cout << setw(10) << pWinData->actual_cog[2] << endl;
+	cout << setw(10) << pWinData->actual_left_foot[0];
+	cout << setw(10) << pWinData->actual_left_foot[1];
+	cout << setw(10) << pWinData->actual_left_foot[2] << endl;
+	cout << setw(10) << pWinData->actual_right_foot[0];
+	cout << setw(10) << pWinData->actual_right_foot[1];
+	cout << setw(10) << pWinData->actual_right_foot[2] << endl << endl;
+
+	cout << pWinData->Flag_PpReachTarget;
 }
 
 void UpdataAllActualTheta(WIN32_DAT *pWinData)
@@ -397,6 +426,7 @@ void InitPwindata(WIN32_DAT *pWinData)
 	pWinData->Flag_PpReachTarget = 1;
 	pWinData->Flag_CspFinished = 0;
 	pWinData->Flag_AllHomeSensorReached = 0;
+	//pWinData->Flag_ResetT_cog = 1;	
 
 	//GenerateCubicPolyVec(pWinData);
 	UpdateSplineVec(pWinData->CubicPolyVec, MAX_MOTION_TIME_FRAME, 3);
@@ -809,6 +839,17 @@ void ImportOPG()
 	fin >> i;
 	UpdateSwingVec(pWinData->leg_swing_z_vec, i);
 
+	fin >> buffer;
+	fin >> pWinData->gc_l_hip_pitch;
+	
+	fin >> buffer;
+	fin >> pWinData->gc_r_hip_pitch;
+	
+	fin >> buffer;
+	fin >> pWinData->gc_l_ankle_pitch;
+	
+	fin >> buffer;
+	fin >> pWinData->gc_l_ankle_pitch;
 }
 
 void StartMaster()

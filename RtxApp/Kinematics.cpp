@@ -31,11 +31,11 @@ Kinematics::Kinematics()
 	waist_actual_angle[0] = 0;
 	waist_actual_angle[1] = 0;
 
-	pelvis_w = 12.0;
+	pelvis_w = 12.5;//12.0;
 	pelvis_h = 11.0;
 	thigh = 26.0;
 	shin = 22.0;
-	sole = 12.5;
+	sole = 15.7;//12.5;
 
 	mass[0] = 3.39;
 	mass[1] = 0;
@@ -341,7 +341,7 @@ void Kinematics::GC (int sup_leg, double *l_leg_gc, double *r_leg_gc)
 		r_leg_gc[i] = link_cog[6+i];
 	}*/
 	if (sup_leg == 0){
-		l_leg_gc[1] = 2 * M_PI / 180;
+		l_leg_gc[1] = 1 * M_PI / 180;
 		l_leg_gc[5] = 1 * M_PI / 180;
 		r_leg_gc[1] = 0;
 		r_leg_gc[5] = 0;
@@ -354,7 +354,7 @@ void Kinematics::GC (int sup_leg, double *l_leg_gc, double *r_leg_gc)
 	else{
 		l_leg_gc[1] = 0;
 		l_leg_gc[5] = 0;
-		r_leg_gc[1] = -2 * M_PI / 180;
+		r_leg_gc[1] = -1 * M_PI / 180;
 		r_leg_gc[5] = -1 * M_PI / 180;
 
 		//l_leg_gc[1] = 0;

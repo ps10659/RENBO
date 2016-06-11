@@ -1,23 +1,35 @@
 step_time
-1
+0.7
 
 cog_height_for_omega
-70
+73
 
 cog_height_for_IK
-70
+73
 
 foot_distance
 22
 
 step_length
-5
+8
 
 swing_leg_height
-2
+1
 
 leg_swing_xy_vec_order
 3
 
 leg_swing_z_vec_order
 3
+
+gc_l_hip_pitch
+1.5
+
+gc_r_hip_pitch
+1.5
+
+gc_l_ankle_pitch
+0
+
+gc_r_ankle_pitch
+0

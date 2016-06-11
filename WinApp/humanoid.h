@@ -55,6 +55,7 @@ typedef struct
 	BOOL_T		Flag_AllHomeSensorReached;
 	BOOL_T		Flag_HomeSensorReached[TOTAL_AXIS];
 	BOOL_T		Flag_SetCurrPosHome;
+	BOOL_T		Flag_ResetT_cog;
 
 	// motor parameters
 	F64_T		motorTorqueSwitch[TOTAL_AXIS];
@@ -96,17 +97,18 @@ typedef struct
 									//  2: walk backward
 	F64_T		leg_swing_xy_vec[2500];	
 	F64_T		leg_swing_z_vec[2500];	// 暫時用GenerateCubicPolyVec的3rd order spline, 有需要再改
-	F64_T		cog[4];
-	F64_T		left_foot[4];
-	F64_T		right_foot[4];
+	F64_T		target_cog[4];
+	F64_T		target_left_foot[4];
+	F64_T		target_right_foot[4];
 	F64_T		left_foot_theta[6];
 	F64_T		right_foot_theta[6];
 	F64_T		l_leg_gc[6];	// temp for checking
 	F64_T		r_leg_gc[6];	// temp
-	F64_T		coggg[3];	// temp
-	F64_T		l_foot[3];	// temp
-	F64_T		r_foot[3];	// temp
+	F64_T		actual_cog[3];	// temp
+	F64_T		actual_left_foot[3];	// temp
+	F64_T		actual_right_foot[3];	// temp
 	BOOL_T		Flag_break_while;
+	BOOL_T		Flag_ResetStaticInOPG;
 
 	F64_T		step_time;
 	F64_T		cog_height_for_omega;
@@ -114,6 +116,10 @@ typedef struct
 	F64_T		foot_distance;
 	F64_T		step_length;
 	F64_T		swing_leg_height;
+	F64_T		gc_l_hip_pitch;
+	F64_T		gc_r_hip_pitch;
+	F64_T		gc_l_ankle_pitch;
+	F64_T		gc_r_ankle_pitch;
 
 	// force torque data
 	I16_T mx[2];

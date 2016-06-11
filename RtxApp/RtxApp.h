@@ -131,6 +131,7 @@ typedef struct
 	BOOL_T		Flag_AllHomeSensorReached;
 	BOOL_T		Flag_HomeSensorReached[TOTAL_AXIS];
 	BOOL_T		Flag_SetCurrPosHome;
+	BOOL_T		Flag_ResetT_cog;
 
 	// motor parameters
 	F64_T		motorTorqueSwitch[TOTAL_AXIS];
@@ -172,24 +173,29 @@ typedef struct
 									//  2: walk backward
 	F64_T		leg_swing_xy_vec[2500];	
 	F64_T		leg_swing_z_vec[2500];	// 暫時用GenerateCubicPolyVec的3rd order spline, 有需要再改
-	F64_T		cog[4];
-	F64_T		left_foot[4];
-	F64_T		right_foot[4];
+	F64_T		target_cog[4];
+	F64_T		target_left_foot[4];
+	F64_T		target_right_foot[4];
 	F64_T		left_foot_theta[6];
 	F64_T		right_foot_theta[6];
 	F64_T		l_leg_gc[6];	// temp for checking
 	F64_T		r_leg_gc[6];	// temp
-	F64_T		coggg[3];	// temp
-	F64_T		l_foot[3];	// temp
-	F64_T		r_foot[3];	// temp
+	F64_T		actual_cog[3];	// temp
+	F64_T		actual_left_foot[3];	// temp
+	F64_T		actual_right_foot[3];	// temp
 	BOOL_T		Flag_break_while;
-	
+	BOOL_T		Flag_ResetStaticInOPG;
+
 	F64_T		step_time;
 	F64_T		cog_height_for_omega;
 	F64_T		cog_height_for_IK;
 	F64_T		foot_distance;
 	F64_T		step_length;
 	F64_T		swing_leg_height;
+	F64_T		gc_l_hip_pitch;
+	F64_T		gc_r_hip_pitch;
+	F64_T		gc_l_ankle_pitch;
+	F64_T		gc_r_ankle_pitch;
 
 	// force torque data
 	I16_T mx[2];
@@ -240,6 +246,7 @@ void PP_UpdateCbTargetTheta(F64_T *targetTheta, F64_T *CB_actualTheta, I32_T *PP
 void CSP_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T *CPS_cnt);
 void Fts_UpdateCbTargetTheta(F64_T *CB_targetTheta, F64_T *CB_actualTheta, I32_T *CSP_cnt);
 void OPG_UpdateTargetPose(Eigen::Matrix4d& T_cog, Eigen::Matrix4d& T_left_foot, Eigen::Matrix4d& T_right_foot, I32_T *OPG_cnt);
+void PP_UpdateTargetPose(Eigen::Matrix4d& T_cog, Eigen::Matrix4d& T_left_foot, Eigen::Matrix4d& T_right_foot, I32_T *PP_cnt);
 
 I16_T TargetTorqueTrimming(F64_T tempTorque);
 void UpdateIK_FK(F64_T *CB_targetTheta, Eigen::Matrix4d& T_cog, Eigen::Matrix4d& T_left_foot, Eigen::Matrix4d& T_right_foot);
