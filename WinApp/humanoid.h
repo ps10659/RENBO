@@ -84,6 +84,7 @@ typedef struct
 	I32_T		adaptive_cnt;
 
 	// OPG related variables
+	I16_T		sup_leg;	
 	I16_T		curr_state;	
 	I16_T		next_state;	
 	I16_T		next_state_cmd;		// -2: before started 
@@ -100,8 +101,19 @@ typedef struct
 	F64_T		right_foot[4];
 	F64_T		left_foot_theta[6];
 	F64_T		right_foot_theta[6];
+	F64_T		l_leg_gc[6];	// temp for checking
+	F64_T		r_leg_gc[6];	// temp
+	F64_T		coggg[3];	// temp
+	F64_T		l_foot[3];	// temp
+	F64_T		r_foot[3];	// temp
 	BOOL_T		Flag_break_while;
 
+	F64_T		step_time;
+	F64_T		cog_height_for_omega;
+	F64_T		cog_height_for_IK;
+	F64_T		foot_distance;
+	F64_T		step_length;
+	F64_T		swing_leg_height;
 
 	// force torque data
 	I16_T mx[2];
@@ -162,6 +174,7 @@ void UpdatePpPose(int pose_num);
 void WritePpPose();
 void ImportParameterTxt();
 void PrintImportParameterTxt();
+void ImportOPG();
 
 // 
 void StartMaster();

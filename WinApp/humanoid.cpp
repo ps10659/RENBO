@@ -63,6 +63,7 @@ if(1)
 
 	// update parameter
 	ImportParameterTxt();
+	ImportOPG();
 	UpdateWalkTraj();
 
 	printf("=======================\n");
@@ -200,7 +201,16 @@ if(1)
 					cout << setw(10) << pWinData->right_foot[0];
 					cout << setw(10) << pWinData->right_foot[1];
 					cout << setw(10) << pWinData->right_foot[2] << endl;
-					cout << setw(10) << pWinData->left_foot_theta[0] * 180 / M_PI;
+					cout << setw(10) << pWinData->coggg[0];
+					cout << setw(10) << pWinData->coggg[1];
+					cout << setw(10) << pWinData->coggg[2] << endl;
+					cout << setw(10) << pWinData->l_foot[0];
+					cout << setw(10) << pWinData->l_foot[1];
+					cout << setw(10) << pWinData->l_foot[2] << endl;
+					cout << setw(10) << pWinData->r_foot[0];
+					cout << setw(10) << pWinData->r_foot[1];
+					cout << setw(10) << pWinData->r_foot[2] << endl;
+					/*cout << setw(10) << pWinData->left_foot_theta[0] * 180 / M_PI;
 					cout << setw(10) << pWinData->left_foot_theta[1] * 180 / M_PI;
 					cout << setw(10) << pWinData->left_foot_theta[2] * 180 / M_PI;
 					cout << setw(10) << pWinData->left_foot_theta[3] * 180 / M_PI;
@@ -211,7 +221,20 @@ if(1)
 					cout << setw(10) << pWinData->right_foot_theta[2] * 180 / M_PI;
 					cout << setw(10) << pWinData->right_foot_theta[3] * 180 / M_PI;
 					cout << setw(10) << pWinData->right_foot_theta[4] * 180 / M_PI;
-					cout << setw(10) << pWinData->right_foot_theta[5] * 180 / M_PI << endl;
+					cout << setw(10) << pWinData->right_foot_theta[5] * 180 / M_PI << endl;*/
+					/*cout << setw(10) << pWinData->l_leg_gc[0];
+					cout << setw(10) << pWinData->l_leg_gc[1];
+					cout << setw(10) << pWinData->l_leg_gc[2];
+					cout << setw(10) << pWinData->l_leg_gc[3];
+					cout << setw(10) << pWinData->l_leg_gc[4];
+					cout << setw(10) << pWinData->l_leg_gc[5] << endl;
+					cout << setw(10) << pWinData->r_leg_gc[0];
+					cout << setw(10) << pWinData->r_leg_gc[1];
+					cout << setw(10) << pWinData->r_leg_gc[2];
+					cout << setw(10) << pWinData->r_leg_gc[3];
+					cout << setw(10) << pWinData->r_leg_gc[4];
+					cout << setw(10) << pWinData->r_leg_gc[5] << endl;*/
+
 					//UpdateFtData();
 				}
 				HoldPos();
@@ -243,6 +266,7 @@ if(1)
 
 			case '9':
 				ImportParameterTxt();
+				ImportOPG();
 				break;
 			
 			case '.':
@@ -486,7 +510,7 @@ void UpdateSwingVec(double *vec, int splineType)
 {
 	// total 2500 time frames -> 2500*0.002 = 5 second
 	double vec_1[1250];
-	UpdateSplineVec(vec_1, 1250, 5);
+	UpdateSplineVec(vec_1, 1250, splineType);
 	for(int i=0; i<1250; i++){
 		vec[i] = vec_1[i];
 		vec[2499-i] = vec_1[i];
@@ -749,6 +773,41 @@ void PrintImportParameterTxt()
 	}*/
 	printf("\n\n");
 
+
+}
+void ImportOPG()
+{
+	int i;
+
+	ifstream fin;
+	char buffer[40];
+    fin.open("C:..\\OPG.txt", ios::in);
+
+	fin >> buffer;
+	fin >> pWinData->step_time;
+
+	fin >> buffer;
+	fin >> pWinData->cog_height_for_omega;
+
+	fin >> buffer;
+	fin >> pWinData->cog_height_for_IK;
+
+	fin >> buffer;
+	fin >> pWinData->foot_distance;
+
+	fin >> buffer;
+	fin >> pWinData->step_length;
+
+	fin >> buffer;
+	fin >> pWinData->swing_leg_height;
+
+	fin >> buffer;
+	fin >> i;
+	UpdateSplineVec(pWinData->leg_swing_xy_vec, 2500, i);
+
+	fin >> buffer;
+	fin >> i;
+	UpdateSwingVec(pWinData->leg_swing_z_vec, i);
 
 }
 

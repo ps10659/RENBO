@@ -26,9 +26,9 @@ public:
 
 	bool FK();
 
-	bool FK (double l_leg_actual_angles[6], double r_leg_actual_angles[6], double waist_theta[2]);
+	bool FK (const Eigen::Matrix4d& T_cog, double l_leg_actual_angles[6], double r_leg_actual_angles[6], double waist_theta[2]);
 
-	void GC (bool leftLeg);
+	void GC (int sup_leg, double *l_leg_gc, double *r_leg_gc);
 
 	void setCurrentJointAngle (double l_leg_angles[6], double r_leg_angles[6]);
 
@@ -61,6 +61,11 @@ public:
 	double r_leg_target_angles[6];
 	double waist_target_angles[2];
 
+	// read from encoder
+	double l_leg_actual_angle[6];
+	double r_leg_actual_angle[6];
+	double waist_actual_angle[2];
+
 protected:
 
 	inline void updateDH();
@@ -70,10 +75,7 @@ protected:
 	Eigen::Matrix4d T_BN[14];
 	Eigen::Matrix4d T_C[14];
 
-	// read from encoder
-	double l_leg_actual_angle[6];
-	double r_leg_actual_angle[6];
-	double waist_actual_angle[2];
+
 
 	// dh matrixs
 	Eigen::Matrix4d	T_trunk_waist,

@@ -115,7 +115,6 @@ typedef struct
 	F64_T		actualTheta[TOTAL_AXIS];
 	I16_T		supportState;	// 0:left 1:right 2:double 3:none
 
-
 	// used by event waiting
 	BOOL_T		Flag_StartMasterDone;
 	BOOL_T		Flag_SetMotorParameterDone;
@@ -161,19 +160,37 @@ typedef struct
 	I32_T		adaptive_cnt;
 
 	// OPG related variables
+	I16_T		sup_leg;	
 	I16_T		curr_state;	
 	I16_T		next_state;	
-	I16_T		next_state_cmd;
+	I16_T		next_state_cmd;		// -2: before started 
+									// -1: stop 
+									//  0: begin to stop
+									//  1: begin to start
+									//  5: walk in the same place
+									//  8: walk forward
+									//  2: walk backward
 	F64_T		leg_swing_xy_vec[2500];	
-	F64_T		leg_swing_z_vec[2500];
+	F64_T		leg_swing_z_vec[2500];	// 暫時用GenerateCubicPolyVec的3rd order spline, 有需要再改
 	F64_T		cog[4];
 	F64_T		left_foot[4];
 	F64_T		right_foot[4];
 	F64_T		left_foot_theta[6];
 	F64_T		right_foot_theta[6];
+	F64_T		l_leg_gc[6];	// temp for checking
+	F64_T		r_leg_gc[6];	// temp
+	F64_T		coggg[3];	// temp
+	F64_T		l_foot[3];	// temp
+	F64_T		r_foot[3];	// temp
 	BOOL_T		Flag_break_while;
-
 	
+	F64_T		step_time;
+	F64_T		cog_height_for_omega;
+	F64_T		cog_height_for_IK;
+	F64_T		foot_distance;
+	F64_T		step_length;
+	F64_T		swing_leg_height;
+
 	// force torque data
 	I16_T mx[2];
 	I16_T my[2];
@@ -193,7 +210,7 @@ typedef struct
 
 	F64_T FzThreshold;
 	F64_T MxyThreshold;
-
+	
 	// temp
 	I32_T DoubleSupport_cnt;
 }USER_DAT;
@@ -226,7 +243,8 @@ void OPG_UpdateTargetPose(Eigen::Matrix4d& T_cog, Eigen::Matrix4d& T_left_foot, 
 
 I16_T TargetTorqueTrimming(F64_T tempTorque);
 void UpdateIK_FK(F64_T *CB_targetTheta, Eigen::Matrix4d& T_cog, Eigen::Matrix4d& T_left_foot, Eigen::Matrix4d& T_right_foot);
-void MotorPosPidControl(F64_T *CB_targetTheta, F64_T *CB_actualTheta, USER_DAT *pData);
+void GravityCompensation(F64_T *l_leg_gc, F64_T *r_leg_gc);
+void MotorPosPidControl(F64_T *CB_targetTheta, F64_T *CB_actualTheta, USER_DAT *pData, F64_T *l_leg_gc, F64_T *r_leg_gc);
 
 // global variables
 static PVOID	location;

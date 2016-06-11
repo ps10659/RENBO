@@ -37,10 +37,20 @@ Kinematics::Kinematics()
 	shin = 22.0;
 	sole = 12.5;
 
-	for (int i = 0; i < 13; ++i)
-	{
-		mass[i] = 1;
-	}
+	mass[0] = 3.39;
+	mass[1] = 0;
+	mass[2] = 4.097;
+	mass[3] = 4.58;
+	mass[4] = 0;
+	mass[5] = 3.684;
+	mass[6] = 46.8;
+	mass[7] = 3.684;
+	mass[8] = 0;
+	mass[9] = 4.58;
+	mass[10] = 4.097;
+	mass[11] = 0;
+	mass[12] = 3.39;
+
 }
 
 bool Kinematics::IK(const Eigen::Matrix4d& COM, const Eigen::Matrix4d& left_leg, const Eigen::Matrix4d& right_leg)
@@ -169,8 +179,11 @@ bool Kinematics::IK(const Eigen::Matrix4d& COM, const Eigen::Matrix4d& left_leg,
 	if(COM(1,3)+12 < left_leg(1,3))
 	{
 		l_leg_target_angles[1] *= -1;
-		r_leg_target_angles[1] *= -1;
 		l_leg_target_angles[5] *= -1;
+	}
+	if(COM(1,3)-12 < right_leg(1,3))
+	{
+		r_leg_target_angles[1] *= -1;
 		r_leg_target_angles[5] *= -1;
 	}
 	return true;
@@ -178,6 +191,11 @@ bool Kinematics::IK(const Eigen::Matrix4d& COM, const Eigen::Matrix4d& left_leg,
 
 bool Kinematics::pre_FK(const Eigen::Matrix4d& T_cog, double *waist_angles)
 {
+	// compute T_waist_center from T_cog according to waist_angles command
+
+	waist_target_angles[0] = waist_angles[0];
+	waist_target_angles[1] = waist_angles[1];
+
 	T_waist_yaw = matDH(0.0, 0, 0.0,  M_PI / 2+waist_angles[0]);
 	T_waist_roll = matDH(0.0, M_PI / 2, 0.0, waist_angles[1]);
 
@@ -202,8 +220,9 @@ bool Kinematics::FK()
 	return true;
 }
 
-bool Kinematics::FK (double l_leg_actual_angles[6], double r_leg_actual_angles[6], double waist_theta[2])
+bool Kinematics::FK (const Eigen::Matrix4d& T_cog, double l_leg_actual_angles[6], double r_leg_actual_angles[6], double waist_theta[2])
 {
+
 	T_trunk_waist = matDH(0.0, M_PI / 2, 0.0,  M_PI / 2+waist_theta[0]);
 
 	T_r_relative[0] = matDH(-pelvis_w, M_PI / 2, 0.0, waist_theta[1]);
@@ -225,34 +244,36 @@ bool Kinematics::FK (double l_leg_actual_angles[6], double r_leg_actual_angles[6
 	Eigen::Matrix4d tmp2 = matDH(0.0, M_PI / 2, 0.0, -M_PI / 2+ l_leg_actual_angles[5]);
 	T_l_relative[6] = tmp2*matDH(0.0, 0, -sole, M_PI / 2 );
 
-	T_r_base[0] =T_trunk_waist*T_r_relative[0];
+	T_r_base[0] = T_cog*T_trunk_waist*T_r_relative[0];
 	for (int i = 1; i < 7; ++i)
 	{
 		T_r_base[i] = T_r_base[i - 1] * T_r_relative[i];
 	}
 
-	T_l_base[0] = T_trunk_waist*T_l_relative[0];
+	T_l_base[0] = T_cog*T_trunk_waist*T_l_relative[0];
 	for (int i = 1; i < 7; ++i)
 	{
 		T_l_base[i] = T_l_base[i - 1] * T_l_relative[i];
 	}
 
-	l_hip_actual_pos = getDHPos(T_l_relative[2]);
-	r_hip_actual_pos = getDHPos(T_r_relative[2]);
+	//l_hip_actual_pos = getDHPos(T_l_relative[2]);
+	//r_hip_actual_pos = getDHPos(T_r_relative[2]);
 
-	l_knee_actual_pos = getDHPos(T_l_relative[3]);
-	r_knee_actual_pos = getDHPos(T_r_relative[3]);
+	//l_knee_actual_pos = getDHPos(T_l_relative[3]);
+	//r_knee_actual_pos = getDHPos(T_r_relative[3]);
 
-	l_ankle_actual_pos = getDHPos(T_l_relative[5]);
-	r_ankle_actual_pos = getDHPos(T_r_relative[5]);
+	//l_ankle_actual_pos = getDHPos(T_l_relative[5]);
+	//r_ankle_actual_pos = getDHPos(T_r_relative[5]);
 
-	l_foot_actual_pos = getDHPos(T_l_relative[6]);
-	r_foot_actual_pos = getDHPos(T_r_relative[6]);
+	//l_foot_actual_pos = getDHPos(T_l_relative[6]);
+	//r_foot_actual_pos = getDHPos(T_r_relative[6]);
+
+	//
 
 	return true;
 }
 
-void Kinematics::GC (bool leftLeg)
+void Kinematics::GC (int sup_leg, double *l_leg_gc, double *r_leg_gc)
 {
 	Eigen::Vector3d force[12];
 	Eigen::Vector3d e[12];
@@ -261,21 +282,49 @@ void Kinematics::GC (bool leftLeg)
 	Eigen::Vector3d r;
 	Eigen::Vector3d g;
 	Eigen::Vector3d nVector;
-	Eigen::Matrix4d T_BN[13];
-	Eigen::Matrix4d T_C[13];
+	Eigen::Matrix4d T_BN[14];
+	Eigen::Matrix4d T_C[14];
+
+	for(int i=0; i<7;i++)
+	{
+		T_C[i] = T_l_relative[6-i].inverse();
+		T_BN[i] = T_l_base[6-i].inverse();
+		T_C[i+7] = T_r_relative[i];
+		T_BN[i+7] = T_r_base[i];
+	}
+
 
 	zVector << 0, 0, 1;
 	g << 0, 0, -9.8;
 
-	if (leftLeg)
+	if (sup_leg == 0)
 	{
 		for (int i = 0; i<12; i++)
 		{
-			CoG[i] = (getDHPos(T_BN[i]) + getDHPos(T_BN[i + 1]))/2;
+			CoG[i] = (getDHPos(T_BN[i+1]) + getDHPos(T_BN[i + 2]))/2;
 			force[i] = mass[i + 1] * g;
-			e[i] = getDHRot(T_C[i])*g;
+			e[i] = getDHRot(T_C[i+1])*g;
 		}
 		for (int i = 0; i<12; i++)
+		{
+			nVector = T_C[i+1].block<3, 1>(0, 2);
+			for (int j = i; j<12; j++)
+			{
+				r = CoG[j] - getDHPos(T_BN[i+1]);
+				r = r - nVector*nVector.dot(r);
+				link_cog[i] = link_cog[i] + e[i].dot(r.cross(force[i]));
+			}
+		}
+	}
+	else if (sup_leg == 1)
+	{
+		for (int i = 11; i>=0; i--)
+		{
+			CoG[i] = (getDHPos(T_BN[i]) + getDHPos(T_BN[i - 1]))/2;
+			force[i] = mass[i - 1] * g;
+			e[i] = getDHRot(T_C[i]).inverse()*g;
+		}
+		for (int i = 11; i>=0; i--)
 		{
 			nVector = T_C[i].block<3, 1>(0, 2);
 			for (int j = i; j<12; j++)
@@ -285,6 +334,33 @@ void Kinematics::GC (bool leftLeg)
 				link_cog[i] = link_cog[i] + e[i].dot(r.cross(force[i]));
 			}
 		}
+	}
+
+	/*for(int i=0; i<6; i++){
+		l_leg_gc[i] = link_cog[5-i];
+		r_leg_gc[i] = link_cog[6+i];
+	}*/
+	if (sup_leg == 0){
+		l_leg_gc[1] = 2 * M_PI / 180;
+		l_leg_gc[5] = 1 * M_PI / 180;
+		r_leg_gc[1] = 0;
+		r_leg_gc[5] = 0;
+
+		//l_leg_gc[1] = 1000;
+		//l_leg_gc[5] = 1000;
+		//r_leg_gc[1] = 0;
+		//r_leg_gc[5] = 0;
+	}
+	else{
+		l_leg_gc[1] = 0;
+		l_leg_gc[5] = 0;
+		r_leg_gc[1] = -2 * M_PI / 180;
+		r_leg_gc[5] = -1 * M_PI / 180;
+
+		//l_leg_gc[1] = 0;
+		//l_leg_gc[5] = 0;
+		//r_leg_gc[1] = -1000;
+		//r_leg_gc[5] = -1000;
 	}
 }
 
