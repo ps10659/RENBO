@@ -64,6 +64,7 @@ if(1)
 	// update parameter
 	ImportParameterTxt();
 	ImportOPG();
+	ImportFtsTxt();
 	UpdateWalkTraj();
 
 	printf("=======================\n");
@@ -196,6 +197,7 @@ if(1)
 							break;
 						case '9':
 							ImportOPG();
+							ImportFtsTxt();
 							break;
 						case 'h':
 							pWinData->Flag_break_while = 1;
@@ -206,51 +208,43 @@ if(1)
 						
 					}
 					system("CLS");
-					//cout << pWinData->curr_state << ", " <<  pWinData->next_state << ", " <<  pWinData->next_state_cmd << endl;
-					cout << setw(10) << pWinData->target_cog[0];
-					cout << setw(10) << pWinData->target_cog[1];
-					cout << setw(10) << pWinData->target_cog[2] << endl;
-					cout << setw(10) << pWinData->target_left_foot[0];
-					cout << setw(10) << pWinData->target_left_foot[1];
-					cout << setw(10) << pWinData->target_left_foot[2] << endl;
-					cout << setw(10) << pWinData->target_right_foot[0];
-					cout << setw(10) << pWinData->target_right_foot[1];
-					cout << setw(10) << pWinData->target_right_foot[2] << endl << endl;
-					cout << setw(10) << pWinData->actual_cog[0];
-					cout << setw(10) << pWinData->actual_cog[1];
-					cout << setw(10) << pWinData->actual_cog[2] << endl;
-					cout << setw(10) << pWinData->actual_left_foot[0];
-					cout << setw(10) << pWinData->actual_left_foot[1];
-					cout << setw(10) << pWinData->actual_left_foot[2] << endl;
-					cout << setw(10) << pWinData->actual_right_foot[0];
-					cout << setw(10) << pWinData->actual_right_foot[1];
-					cout << setw(10) << pWinData->actual_right_foot[2] << endl;
-					/*cout << setw(10) << pWinData->left_foot_theta[0] * 180 / M_PI;
-					cout << setw(10) << pWinData->left_foot_theta[1] * 180 / M_PI;
-					cout << setw(10) << pWinData->left_foot_theta[2] * 180 / M_PI;
-					cout << setw(10) << pWinData->left_foot_theta[3] * 180 / M_PI;
-					cout << setw(10) << pWinData->left_foot_theta[4] * 180 / M_PI;
-					cout << setw(10) << pWinData->left_foot_theta[5] * 180 / M_PI << endl;
-					cout << setw(10) << pWinData->right_foot_theta[0] * 180 / M_PI;
-					cout << setw(10) << pWinData->right_foot_theta[1] * 180 / M_PI;
-					cout << setw(10) << pWinData->right_foot_theta[2] * 180 / M_PI;
-					cout << setw(10) << pWinData->right_foot_theta[3] * 180 / M_PI;
-					cout << setw(10) << pWinData->right_foot_theta[4] * 180 / M_PI;
-					cout << setw(10) << pWinData->right_foot_theta[5] * 180 / M_PI << endl;*/
-					/*cout << setw(10) << pWinData->l_leg_gc[0];
-					cout << setw(10) << pWinData->l_leg_gc[1];
-					cout << setw(10) << pWinData->l_leg_gc[2];
-					cout << setw(10) << pWinData->l_leg_gc[3];
-					cout << setw(10) << pWinData->l_leg_gc[4];
-					cout << setw(10) << pWinData->l_leg_gc[5] << endl;
-					cout << setw(10) << pWinData->r_leg_gc[0];
-					cout << setw(10) << pWinData->r_leg_gc[1];
-					cout << setw(10) << pWinData->r_leg_gc[2];
-					cout << setw(10) << pWinData->r_leg_gc[3];
-					cout << setw(10) << pWinData->r_leg_gc[4];
-					cout << setw(10) << pWinData->r_leg_gc[5] << endl;*/
+					//cout << setw(10) << pWinData->target_cog[0];
+					//cout << setw(10) << pWinData->target_cog[1];
+					//cout << setw(10) << pWinData->target_cog[2] << endl;
+					//cout << setw(10) << pWinData->target_left_foot[0];
+					//cout << setw(10) << pWinData->target_left_foot[1];
+					//cout << setw(10) << pWinData->target_left_foot[2] << endl;
+					//cout << setw(10) << pWinData->target_right_foot[0];
+					//cout << setw(10) << pWinData->target_right_foot[1];
+					//cout << setw(10) << pWinData->target_right_foot[2] << endl << endl;
+					//cout << setw(10) << pWinData->actual_cog[0];
+					//cout << setw(10) << pWinData->actual_cog[1];
+					//cout << setw(10) << pWinData->actual_cog[2] << endl;
+					//cout << setw(10) << pWinData->actual_left_foot[0];
+					//cout << setw(10) << pWinData->actual_left_foot[1];
+					//cout << setw(10) << pWinData->actual_left_foot[2] << endl;
+					//cout << setw(10) << pWinData->actual_right_foot[0];
+					//cout << setw(10) << pWinData->actual_right_foot[1];
+					//cout << setw(10) << pWinData->actual_right_foot[2] << endl;
 
-					//UpdateFtData();
+					UpdateFtData();
+
+					cout << setw(10) << "zmp";
+					cout << setw(10) << pWinData->zmp_x;
+					cout << setw(10) << pWinData->zmp_y << endl << endl;
+
+					cout << setw(10) << "zmp_left";
+					cout << setw(10) << pWinData->zmp_lx;
+					cout << setw(10) << pWinData->zmp_ly << endl << endl;
+
+					cout << setw(10) << "zmp_right";
+					cout << setw(10) << pWinData->zmp_rx;
+					cout << setw(10) << pWinData->zmp_ry << endl << endl;
+
+					cout << setw(10) << "fz_0/1";
+					cout << setw(10) << pWinData->fz[0];
+					cout << setw(10) << pWinData->fz[1] << endl << endl;
+
 				}
 				HoldPos();
 				break;
@@ -282,6 +276,7 @@ if(1)
 			case '9':
 				ImportParameterTxt();
 				ImportOPG();
+				ImportFtsTxt();
 				break;
 			
 			case '.':
@@ -293,8 +288,8 @@ if(1)
 			}
 
 		}
-			DisplayOptions();
 		UpdateFtData();
+		DisplayOptions();
 	}
 
 
@@ -338,15 +333,27 @@ void DisplayOptions()
 	printf("[.] Write pose \n");
 	printf("[esc] Quit\n\n");
 
-	cout << setw(10) << pWinData->actual_cog[0];
-	cout << setw(10) << pWinData->actual_cog[1];
-	cout << setw(10) << pWinData->actual_cog[2] << endl;
-	cout << setw(10) << pWinData->actual_left_foot[0];
-	cout << setw(10) << pWinData->actual_left_foot[1];
-	cout << setw(10) << pWinData->actual_left_foot[2] << endl;
-	cout << setw(10) << pWinData->actual_right_foot[0];
-	cout << setw(10) << pWinData->actual_right_foot[1];
-	cout << setw(10) << pWinData->actual_right_foot[2] << endl << endl;
+	cout << setw(10) << "F/T";
+	cout << setw(10) << pWinData->mx[0];
+	cout << setw(10) << pWinData->my[0];
+	cout << setw(10) << pWinData->mz[0];
+	cout << setw(10) << pWinData->fx[0];
+	cout << setw(10) << pWinData->fx[0];
+	cout << setw(10) << pWinData->fz[0] << endl << endl;
+
+	cout << setw(10) << "zmp_left";
+	cout << setw(10) << pWinData->zmp_lx;
+	cout << setw(10) << pWinData->zmp_ly << endl << endl;
+
+	//cout << setw(10) << pWinData->actual_cog[0];
+	//cout << setw(10) << pWinData->actual_cog[1];
+	//cout << setw(10) << pWinData->actual_cog[2] << endl;
+	//cout << setw(10) << pWinData->actual_left_foot[0];
+	//cout << setw(10) << pWinData->actual_left_foot[1];
+	//cout << setw(10) << pWinData->actual_left_foot[2] << endl;
+	//cout << setw(10) << pWinData->actual_right_foot[0];
+	//cout << setw(10) << pWinData->actual_right_foot[1];
+	//cout << setw(10) << pWinData->actual_right_foot[2] << endl << endl;
 
 	cout << pWinData->Flag_PpReachTarget;
 }
@@ -849,6 +856,35 @@ void ImportOPG()
 	fin >> buffer;
 	fin >> pWinData->gc_l_ankle_pitch;
 }
+void ImportFtsTxt()
+{
+	int i;
+
+	ifstream fin;
+	char buffer[40];
+    fin.open("C:..\\fts.txt", ios::in);
+	
+	fin >> buffer;
+	fin >> pWinData->zmp_unit;
+
+	fin >> buffer;
+	fin >> pWinData->mx_offset[0];
+
+	fin >> buffer;
+	fin >> pWinData->mx_offset[1];
+
+	fin >> buffer;
+	fin >> pWinData->my_offset[0];
+
+	fin >> buffer;
+	fin >> pWinData->my_offset[1];
+
+	fin >> buffer;
+	fin >> pWinData->fz_offset[0];
+
+	fin >> buffer;
+	fin >> pWinData->fz_offset[1];
+}
 
 void StartMaster()
 {
@@ -973,19 +1009,65 @@ void FtsTest()
 }
 void UpdateFtData()
 {
+	double fz_threshold = 100;
+	double l_weighting;
 	getForceData(&fts);
 
-	pWinData->mx[0] = fts.mx[0];
-	pWinData->my[0] = fts.my[0];
+	pWinData->mx[0] = fts.mx[0] + pWinData->mx_offset[0];
+	pWinData->my[0] = fts.my[0] + pWinData->my_offset[0];
 	pWinData->mz[0] = fts.mz[0];
 	pWinData->fx[0] = fts.fx[0];
 	pWinData->fy[0] = fts.fy[0];
-	pWinData->fz[0] = fts.fz[0];
+	pWinData->fz[0] = fts.fz[0] * -1 + pWinData->fz_offset[0];
 
-	pWinData->mx[1] = fts.mx[1];
-	pWinData->my[1] = fts.my[1];
+	pWinData->mx[1] = fts.mx[1] + pWinData->mx_offset[1];;
+	pWinData->my[1] = fts.my[1] + pWinData->my_offset[1];;
 	pWinData->mz[1] = fts.mz[1];
 	pWinData->fx[1] = fts.fx[1];
 	pWinData->fy[1] = fts.fy[1];
-	pWinData->fz[1] = fts.fz[1];
+	pWinData->fz[1] = fts.fz[1] * -1 + pWinData->fz_offset[1];
+
+
+	if(pWinData->fz[0] > fz_threshold && pWinData->fz[1] > fz_threshold)
+	{
+		pWinData->zmp_lx = -1 * pWinData->my[0] / pWinData->fz[0];
+		pWinData->zmp_ly = pWinData->mx[0] / pWinData->fz[0];
+
+		pWinData->zmp_rx = -1 * pWinData->my[1] / pWinData->fz[1];
+		pWinData->zmp_ry = pWinData->mx[1] / pWinData->fz[1];
+
+		l_weighting = pWinData->fz[0] / (pWinData->fz[0] + pWinData->fz[1]);
+
+		pWinData->zmp_x = l_weighting * (pWinData->target_left_foot[0] + pWinData->zmp_lx) + (1 - l_weighting) * (pWinData->target_right_foot[0] + pWinData->zmp_rx);
+		pWinData->zmp_y = l_weighting * (pWinData->target_left_foot[1] + pWinData->zmp_ly) + (1 - l_weighting) * (pWinData->target_right_foot[1] + pWinData->zmp_ry);
+	}
+	else if(pWinData->fz[0] > fz_threshold)
+	{
+		pWinData->zmp_lx = -1 * pWinData->my[0] / pWinData->fz[0];
+		pWinData->zmp_ly = pWinData->mx[0] / pWinData->fz[0];
+
+		pWinData->zmp_x = pWinData->target_left_foot[0] + pWinData->zmp_lx;
+		pWinData->zmp_y = pWinData->target_left_foot[1] + pWinData->zmp_ly;
+	}
+	else if(pWinData->fz[1] > fz_threshold)
+	{
+		pWinData->zmp_rx = -1 * pWinData->my[1] / pWinData->fz[1];
+		pWinData->zmp_ry = pWinData->mx[1] / pWinData->fz[1];
+
+		pWinData->zmp_x = pWinData->target_right_foot[0] + pWinData->zmp_rx;
+		pWinData->zmp_y = pWinData->target_right_foot[1] + pWinData->zmp_ry;
+	}
+	else
+	{
+		pWinData->zmp_x = 0;
+		pWinData->zmp_y = 0;
+	}
+
+	pWinData->zmp_lx *= pWinData->zmp_unit;
+	pWinData->zmp_ly *= pWinData->zmp_unit;
+	pWinData->zmp_rx *= pWinData->zmp_unit;
+	pWinData->zmp_ry *= pWinData->zmp_unit;
+	pWinData->zmp_x *= pWinData->zmp_unit;
+	pWinData->zmp_y *= pWinData->zmp_unit;
+
 }

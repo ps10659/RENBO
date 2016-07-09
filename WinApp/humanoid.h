@@ -122,13 +122,24 @@ typedef struct
 	F64_T		gc_r_ankle_pitch;
 
 	// force torque data
-	I16_T mx[2];
-	I16_T my[2];
-	I16_T mz[2];
-	I16_T fx[2];
-	I16_T fy[2];
-	I16_T fz[2];
-	
+	F64_T mx[2];
+	F64_T my[2];
+	F64_T mz[2];
+	F64_T fx[2];
+	F64_T fy[2];
+	F64_T fz[2];
+	F64_T mx_offset[2];
+	F64_T my_offset[2];
+	F64_T fz_offset[2];
+		
+	F64_T zmp_lx;
+	F64_T zmp_ly;
+	F64_T zmp_rx;
+	F64_T zmp_ry;
+	F64_T zmp_x;
+	F64_T zmp_y;
+	F64_T zmp_unit;
+
 	F64_T Fts_LRK;	//left ankle roll K
 	F64_T Fts_LRC;	//left ankle roll C
 	F64_T Fts_LPK;	//left ankle pitch K
@@ -181,6 +192,7 @@ void WritePpPose();
 void ImportParameterTxt();
 void PrintImportParameterTxt();
 void ImportOPG();
+void ImportFtsTxt();
 
 // 
 void StartMaster();
