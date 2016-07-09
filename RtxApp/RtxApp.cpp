@@ -1854,9 +1854,11 @@ void OPG_UpdateTargetPose(Eigen::Matrix4d& T_cog, Eigen::Matrix4d& T_left_foot, 
 	static int start_cnt_down		= 2;
 	static int stop_cnt_down		= 2;
 	static int sup_leg				= 1;
+	static int global_cnt			= 0;
 
 	if(pData->Flag_ResetStaticInOPG == 1)
 	{
+		global_cnt = 0;
 		direction_changed	= 0;
 		sup_leg = 1;
 		cp_init << 0, 0;
@@ -2107,7 +2109,27 @@ void OPG_UpdateTargetPose(Eigen::Matrix4d& T_cog, Eigen::Matrix4d& T_left_foot, 
 	}
 	pData->sup_leg = sup_leg;
 
+
+	// save ft and foot value for generating zmp traj
+	if(global_cnt < 10000)
+	{
+		pData->l_mx[global_cnt] = pData->mx[0];
+		pData->l_my[global_cnt] = pData->my[0];
+		pData->l_fz[global_cnt] = pData->fz[0];
+
+		pData->r_mx[global_cnt] = pData->mx[1];
+		pData->r_my[global_cnt] = pData->my[1];
+		pData->r_fz[global_cnt] = pData->fz[1];
+
+		pData->l_foot_x[global_cnt] = left_foot(0);
+		pData->l_foot_y[global_cnt] = left_foot(1);
+	
+		pData->r_foot_x[global_cnt] = right_foot(0);
+		pData->r_foot_y[global_cnt] = right_foot(1);
+	}
+
 	// clock
+	global_cnt ++;
 	(*OPG_cnt) ++;
 	if((*OPG_cnt) == cycle_frames)
 		(*OPG_cnt) = 0;
@@ -2173,7 +2195,7 @@ void UpdateIK_FK(F64_T *CB_targetTheta, Eigen::Matrix4d& T_cog, Eigen::Matrix4d&
 	// IKKKKK
 	double waist_angles[2] = {0};
 	//waist_angles[0] = M_PI / 12;
-	waist_angles[0] = atan((T_right_foot(0,3) - T_left_foot(0,3))/4/(T_left_foot(1,3) - T_right_foot(1,3)));
+	//waist_angles[0] = atan((T_right_foot(0,3) - T_left_foot(0,3))/6/(T_left_foot(1,3) - T_right_foot(1,3)));
 
 	leg_kin.pre_FK(T_cog, waist_angles); // compute T_waist_center from T_cog according to waist_angles command
 	
@@ -2186,6 +2208,10 @@ void UpdateIK_FK(F64_T *CB_targetTheta, Eigen::Matrix4d& T_cog, Eigen::Matrix4d&
 
 	CB_targetTheta[19] = leg_kin.waist_target_angles[0]*-1.3;
 	CB_targetTheta[20] = leg_kin.waist_target_angles[1];
+
+	CB_targetTheta[5] = 0.6 * CB_targetTheta[32];
+	CB_targetTheta[8] = 0.6 * CB_targetTheta[32];
+
 	for(int i=0; i<6; i++){
 		CB_targetTheta[i+21] = leg_kin.l_leg_target_angles[i];
 		CB_targetTheta[i+27] = leg_kin.r_leg_target_angles[i];

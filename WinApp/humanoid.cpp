@@ -278,7 +278,11 @@ if(1)
 				ImportOPG();
 				ImportFtsTxt();
 				break;
-			
+
+			case '3':
+				WriteFtsData();
+				break;
+
 			case '.':
 				WritePpPose();
 				break;
@@ -329,11 +333,12 @@ void DisplayOptions()
 
 	printf("[7] reset home position\n");
 	printf("[8] set curr pos home\n");
-	printf("[9] import parameter.txt\n");
+	printf("[9] import parameter\n");
+	printf("[3] write fts data\n");
 	printf("[.] Write pose \n");
 	printf("[esc] Quit\n\n");
 
-	cout << setw(10) << "F/T";
+	cout << setw(10) << "F/T left";
 	cout << setw(10) << pWinData->mx[0];
 	cout << setw(10) << pWinData->my[0];
 	cout << setw(10) << pWinData->mz[0];
@@ -341,9 +346,21 @@ void DisplayOptions()
 	cout << setw(10) << pWinData->fx[0];
 	cout << setw(10) << pWinData->fz[0] << endl << endl;
 
+	cout << setw(10) << "F/T right";
+	cout << setw(10) << pWinData->mx[1];
+	cout << setw(10) << pWinData->my[1];
+	cout << setw(10) << pWinData->mz[1];
+	cout << setw(10) << pWinData->fx[1];
+	cout << setw(10) << pWinData->fx[1];
+	cout << setw(10) << pWinData->fz[1] << endl << endl;
+
 	cout << setw(10) << "zmp_left";
 	cout << setw(10) << pWinData->zmp_lx;
 	cout << setw(10) << pWinData->zmp_ly << endl << endl;
+
+	cout << setw(10) << "zmp_left";
+	cout << setw(10) << pWinData->zmp_rx;
+	cout << setw(10) << pWinData->zmp_ry << endl << endl;
 
 	//cout << setw(10) << pWinData->actual_cog[0];
 	//cout << setw(10) << pWinData->actual_cog[1];
@@ -410,7 +427,75 @@ void WriteWalkingTrajectories(WIN32_DAT *pWinData)
 	file1.close();
 	file2.close();
 }
+void WriteFtsData()
+{
+	fstream file;
+	file.open("C:..\\..\\FtsData\\FtsData.txt", ios::out);
+	
+	for(int i=0; i<10000; i++)
+	{
+		file << pWinData->l_mx[i] << " ";
+	}
+	file<<"\n";
 
+	for(int i=0; i<10000; i++)
+	{
+		file << pWinData->l_my[i] << " ";
+	}
+	file<<"\n";
+
+	for(int i=0; i<10000; i++)
+	{
+		file << pWinData->l_fz[i] << " ";
+	}
+	file<<"\n";
+
+	for(int i=0; i<10000; i++)
+	{
+		file << pWinData->r_mx[i] << " ";
+	}
+	file<<"\n";
+
+	for(int i=0; i<10000; i++)
+	{
+		file << pWinData->r_my[i] << " ";
+	}
+	file<<"\n";
+
+	for(int i=0; i<10000; i++)
+	{
+		file << pWinData->r_fz[i] << " ";
+	}
+	file<<"\n";
+
+	for(int i=0; i<10000; i++)
+	{
+		file << pWinData->l_foot_x[i] << " ";
+	}
+	file<<"\n";
+
+	for(int i=0; i<10000; i++)
+	{
+		file << pWinData->l_foot_y[i] << " ";
+	}
+	file<<"\n";
+
+	for(int i=0; i<10000; i++)
+	{
+		file << pWinData->r_foot_x[i] << " ";
+	}
+	file<<"\n";
+
+	for(int i=0; i<10000; i++)
+	{
+		file << pWinData->r_foot_y[i] << " ";
+	}
+	file<<"\n";
+
+	file.close();
+	printf("Write Fts and foot trajectories done\n");
+
+}
 
 void InitPwindata(WIN32_DAT *pWinData)
 {
@@ -858,8 +943,6 @@ void ImportOPG()
 }
 void ImportFtsTxt()
 {
-	int i;
-
 	ifstream fin;
 	char buffer[40];
     fin.open("C:..\\fts.txt", ios::in);

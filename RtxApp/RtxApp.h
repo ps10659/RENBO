@@ -208,6 +208,17 @@ typedef struct
 	F64_T my_offset[2];
 	F64_T fz_offset[2];
 	
+	F64_T l_mx[10000];  // for recording
+	F64_T l_my[10000];	// 10000 point = 20 sec
+	F64_T l_fz[10000];
+	F64_T r_mx[10000];
+	F64_T r_my[10000];
+	F64_T r_fz[10000];
+	F64_T l_foot_x[10000];
+	F64_T l_foot_y[10000];
+	F64_T r_foot_x[10000];
+	F64_T r_foot_y[10000];
+
 	F64_T zmp_lx;
 	F64_T zmp_ly;
 	F64_T zmp_rx;

@@ -2,7 +2,7 @@ step_time
 1
 
 cog_height_for_omega
-70
+60
 
 cog_height_for_IK
 73
@@ -11,7 +11,7 @@ foot_distance
 25
 
 step_length
-12
+6
 
 swing_leg_height
 2

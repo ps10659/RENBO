@@ -2,19 +2,19 @@ zmp_unit
 3.6
 
 left_mx_offset
--5980
+-125
 
 right_mx_offset
--5980
+-20
 
 left_my_offset
-4000
+80
 
 right_my_offset
-4000
+0
 
 left_fz_offset
-3000
+-165
 
 right_fz_offset
-2965
+5
