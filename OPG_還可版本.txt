@@ -2,7 +2,7 @@ step_time
 0.6
 
 cog_height_for_omega
-100
+110
 
 cog_height_for_IK
 73
@@ -14,7 +14,7 @@ step_length
 6
 
 swing_leg_height
-1.2
+1.5
 
 leg_swing_xy_vec_order
 3

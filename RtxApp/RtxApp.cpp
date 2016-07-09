@@ -2063,7 +2063,8 @@ void OPG_UpdateTargetPose(Eigen::Matrix4d& T_cog, Eigen::Matrix4d& T_left_foot, 
 		// reset the static andf shared variables
 		pData->next_state_cmd = -1;
 		pData->Flag_HoldPosSaved = 0;
-		pData->MotorState = MotorState_Hold;
+		//pData->MotorState = MotorState_Hold;
+		pData->MotorState = MotorState_OPG;
 		pData->Flag_break_while = 1; // break the OPG loop in WinApp
 	}
 	else
@@ -2172,6 +2173,7 @@ void UpdateIK_FK(F64_T *CB_targetTheta, Eigen::Matrix4d& T_cog, Eigen::Matrix4d&
 	// IKKKKK
 	double waist_angles[2] = {0};
 	//waist_angles[0] = M_PI / 12;
+	waist_angles[0] = atan((T_right_foot(0,3) - T_left_foot(0,3))/4/(T_left_foot(1,3) - T_right_foot(1,3)));
 
 	leg_kin.pre_FK(T_cog, waist_angles); // compute T_waist_center from T_cog according to waist_angles command
 	
@@ -2182,7 +2184,7 @@ void UpdateIK_FK(F64_T *CB_targetTheta, Eigen::Matrix4d& T_cog, Eigen::Matrix4d&
 		pData->right_foot_theta[i] = leg_kin.r_leg_target_angles[i];
 	}
 
-	CB_targetTheta[19] = leg_kin.waist_target_angles[0];
+	CB_targetTheta[19] = leg_kin.waist_target_angles[0]*-1.3;
 	CB_targetTheta[20] = leg_kin.waist_target_angles[1];
 	for(int i=0; i<6; i++){
 		CB_targetTheta[i+21] = leg_kin.l_leg_target_angles[i];

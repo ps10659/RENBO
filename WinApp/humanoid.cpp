@@ -194,11 +194,9 @@ if(1)
 							if(pWinData->curr_state == 5)
 								pWinData->next_state_cmd = 0;
 							break;
-
 						case '9':
 							ImportOPG();
 							break;
-
 						case 'h':
 							pWinData->Flag_break_while = 1;
 							HoldPos();
