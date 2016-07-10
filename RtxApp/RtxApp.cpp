@@ -1854,11 +1854,10 @@ void OPG_UpdateTargetPose(Eigen::Matrix4d& T_cog, Eigen::Matrix4d& T_left_foot, 
 	static int start_cnt_down		= 2;
 	static int stop_cnt_down		= 2;
 	static int sup_leg				= 1;
-	static int global_cnt			= 0;
 
 	if(pData->Flag_ResetStaticInOPG == 1)
 	{
-		global_cnt = 0;
+		pData->global_cnt = 0;
 		direction_changed	= 0;
 		sup_leg = 1;
 		cp_init << 0, 0;
@@ -2111,25 +2110,31 @@ void OPG_UpdateTargetPose(Eigen::Matrix4d& T_cog, Eigen::Matrix4d& T_left_foot, 
 
 
 	// save ft and foot value for generating zmp traj
-	if(global_cnt < 10000)
+	if(pData->global_cnt < 10000)
 	{
-		pData->l_mx[global_cnt] = pData->mx[0];
-		pData->l_my[global_cnt] = pData->my[0];
-		pData->l_fz[global_cnt] = pData->fz[0];
+		pData->l_mx[pData->global_cnt] = pData->mx[0];
+		pData->l_my[pData->global_cnt] = pData->my[0];
+		pData->l_fz[pData->global_cnt] = pData->fz[0];
 
-		pData->r_mx[global_cnt] = pData->mx[1];
-		pData->r_my[global_cnt] = pData->my[1];
-		pData->r_fz[global_cnt] = pData->fz[1];
+		pData->r_mx[pData->global_cnt] = pData->mx[1];
+		pData->r_my[pData->global_cnt] = pData->my[1];
+		pData->r_fz[pData->global_cnt] = pData->fz[1];
 
-		pData->l_foot_x[global_cnt] = left_foot(0);
-		pData->l_foot_y[global_cnt] = left_foot(1);
+		pData->l_foot_x[pData->global_cnt] = left_foot(0);
+		pData->l_foot_y[pData->global_cnt] = left_foot(1);
 	
-		pData->r_foot_x[global_cnt] = right_foot(0);
-		pData->r_foot_y[global_cnt] = right_foot(1);
+		pData->r_foot_x[pData->global_cnt] = right_foot(0);
+		pData->r_foot_y[pData->global_cnt] = right_foot(1);
+
+		pData->zmp0_x[pData->global_cnt] = zmp(0);
+		pData->zmp0_y[pData->global_cnt] = zmp(1);
+
+		pData->sup[pData->global_cnt] = sup_leg;
+
 	}
 
 	// clock
-	global_cnt ++;
+	pData->global_cnt ++;
 	(*OPG_cnt) ++;
 	if((*OPG_cnt) == cycle_frames)
 		(*OPG_cnt) = 0;
@@ -2266,10 +2271,10 @@ void MotorPosPidControl(F64_T *CB_targetTheta, F64_T *CB_actualTheta, USER_DAT *
 		errorTheta[k] = CB_targetTheta[k] - CB_actualTheta[k];
 		if(pData->MotorState == MotorState_OPG && pData->Flag_PpReachTarget == 1)
 		{
-			if(k == 22) errorTheta[k] += l_leg_gc[1] * pData->gc_l_hip_pitch;
-			if(k == 26) errorTheta[k] += l_leg_gc[5] * pData->gc_l_ankle_pitch;
-			if(k == 28) errorTheta[k] += r_leg_gc[1] * pData->gc_r_hip_pitch;
-			if(k == 32) errorTheta[k] += r_leg_gc[5] * pData->gc_r_ankle_pitch;
+			if(k == 22 && pData->fz[0] > 300) errorTheta[k] += l_leg_gc[1] * pData->gc_l_hip_pitch;
+			if(k == 26 && pData->fz[0] > 300) errorTheta[k] += l_leg_gc[5] * pData->gc_l_ankle_pitch;
+			if(k == 28 && pData->fz[1] > 300) errorTheta[k] += r_leg_gc[1] * pData->gc_r_hip_pitch;
+			if(k == 32 && pData->fz[1] > 300) errorTheta[k] += r_leg_gc[5] * pData->gc_r_ankle_pitch;
 		}
 		if(errorThetaSum[k] < maxErrorThetaSum)
 			errorThetaSum[k] = errorThetaSum[k] + errorTheta[k];
@@ -2290,3 +2295,4 @@ void MotorPosPidControl(F64_T *CB_targetTheta, F64_T *CB_actualTheta, USER_DAT *
 		// !!
 	}
 }
+

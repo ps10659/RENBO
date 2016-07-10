@@ -199,6 +199,10 @@ if(1)
 							ImportOPG();
 							ImportFtsTxt();
 							break;
+						case '3':
+							pWinData->global_cnt = 0;
+							break;
+
 						case 'h':
 							pWinData->Flag_break_while = 1;
 							HoldPos();
@@ -208,24 +212,6 @@ if(1)
 						
 					}
 					system("CLS");
-					//cout << setw(10) << pWinData->target_cog[0];
-					//cout << setw(10) << pWinData->target_cog[1];
-					//cout << setw(10) << pWinData->target_cog[2] << endl;
-					//cout << setw(10) << pWinData->target_left_foot[0];
-					//cout << setw(10) << pWinData->target_left_foot[1];
-					//cout << setw(10) << pWinData->target_left_foot[2] << endl;
-					//cout << setw(10) << pWinData->target_right_foot[0];
-					//cout << setw(10) << pWinData->target_right_foot[1];
-					//cout << setw(10) << pWinData->target_right_foot[2] << endl << endl;
-					//cout << setw(10) << pWinData->actual_cog[0];
-					//cout << setw(10) << pWinData->actual_cog[1];
-					//cout << setw(10) << pWinData->actual_cog[2] << endl;
-					//cout << setw(10) << pWinData->actual_left_foot[0];
-					//cout << setw(10) << pWinData->actual_left_foot[1];
-					//cout << setw(10) << pWinData->actual_left_foot[2] << endl;
-					//cout << setw(10) << pWinData->actual_right_foot[0];
-					//cout << setw(10) << pWinData->actual_right_foot[1];
-					//cout << setw(10) << pWinData->actual_right_foot[2] << endl;
 
 					UpdateFtData();
 
@@ -282,6 +268,9 @@ if(1)
 			case '3':
 				WriteFtsData();
 				break;
+			case '2':
+				ResetFtsOffset();
+				break;
 
 			case '.':
 				WritePpPose();
@@ -335,6 +324,7 @@ void DisplayOptions()
 	printf("[8] set curr pos home\n");
 	printf("[9] import parameter\n");
 	printf("[3] write fts data\n");
+	printf("[2] reset fts offset\n");
 	printf("[.] Write pose \n");
 	printf("[esc] Quit\n\n");
 
@@ -492,6 +482,24 @@ void WriteFtsData()
 	}
 	file<<"\n";
 
+	for(int i=0; i<10000; i++)
+	{
+		file << pWinData->zmp0_x[i] << " ";
+	}
+	file<<"\n";
+	
+	for(int i=0; i<10000; i++)
+	{
+		file << pWinData->zmp0_y[i] << " ";
+	}
+	file<<"\n";
+
+	for(int i=0; i<10000; i++)
+	{
+		file << pWinData->sup[i] << " ";
+	}
+	file<<"\n";
+	
 	file.close();
 	printf("Write Fts and foot trajectories done\n");
 
@@ -1098,14 +1106,14 @@ void UpdateFtData()
 
 	pWinData->mx[0] = fts.mx[0] + pWinData->mx_offset[0];
 	pWinData->my[0] = fts.my[0] + pWinData->my_offset[0];
-	pWinData->mz[0] = fts.mz[0];
+	pWinData->mz[0] = fts.mz[0] * -1+ pWinData->mz_offset[0];
 	pWinData->fx[0] = fts.fx[0];
 	pWinData->fy[0] = fts.fy[0];
 	pWinData->fz[0] = fts.fz[0] * -1 + pWinData->fz_offset[0];
 
 	pWinData->mx[1] = fts.mx[1] + pWinData->mx_offset[1];;
 	pWinData->my[1] = fts.my[1] + pWinData->my_offset[1];;
-	pWinData->mz[1] = fts.mz[1];
+	pWinData->mz[1] = fts.mz[1] * -1 + pWinData->mz_offset[1];
 	pWinData->fx[1] = fts.fx[1];
 	pWinData->fy[1] = fts.fy[1];
 	pWinData->fz[1] = fts.fz[1] * -1 + pWinData->fz_offset[1];
@@ -1153,4 +1161,34 @@ void UpdateFtData()
 	pWinData->zmp_x *= pWinData->zmp_unit;
 	pWinData->zmp_y *= pWinData->zmp_unit;
 
+}
+void ResetFtsOffset()
+{
+	int num = 100;
+
+	double mx_sum[2] = {0};
+	double my_sum[2] = {0};
+	double mz_sum[2] = {0};
+	double fz_sum[2] = {0};
+
+
+	for(int i=0; i<num; i++)
+	{
+		UpdateFtData();
+		for(int j=0; j<2; j++)
+		{
+			mx_sum[j] += pWinData->mx[j];
+			my_sum[j] += pWinData->my[j];
+			mz_sum[j] += pWinData->mz[j];
+			fz_sum[j] += pWinData->fz[j];
+		}
+	}
+
+	for(int j=0; j<2; j++)
+	{
+		pWinData->mx_offset[j] += -mx_sum[j]/num;
+		pWinData->my_offset[j] += -my_sum[j]/num;
+		pWinData->mz_offset[j] += -mz_sum[j]/num;
+		pWinData->fz_offset[j] += -fz_sum[j]/num;
+	}
 }

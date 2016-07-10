@@ -161,6 +161,7 @@ typedef struct
 	I32_T		adaptive_cnt;
 
 	// OPG related variables
+	I16_T		global_cnt;
 	I16_T		sup_leg;	
 	I16_T		curr_state;	
 	I16_T		next_state;	
@@ -206,6 +207,7 @@ typedef struct
 	F64_T fz[2];
 	F64_T mx_offset[2];
 	F64_T my_offset[2];
+	F64_T mz_offset[2];
 	F64_T fz_offset[2];
 	
 	F64_T l_mx[10000];  // for recording
@@ -218,6 +220,9 @@ typedef struct
 	F64_T l_foot_y[10000];
 	F64_T r_foot_x[10000];
 	F64_T r_foot_y[10000];
+	F64_T zmp0_x[10000];
+	F64_T zmp0_y[10000];
+	I32_T sup[10000];
 
 	F64_T zmp_lx;
 	F64_T zmp_ly;
